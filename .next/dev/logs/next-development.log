@@ -1,0 +1,9 @@
+[00:00:00.543] Server  LOG     ✓ Ready in 412ms
+[00:00:04.227] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:04.406] Browser WARN    Image with src "/images/logo.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:00:04.406] Browser WARN    Image with src "/images/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:04.406] Browser WARN    Image with src "/images/occy.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:06.099] Server  WARN    ⚠ The requested resource "/images/blockchain.gif" is an animated image so it will not be optimized. Consider adding the "unoptimized" property to the <Image>.
+[00:00:06.106] Server  WARN    ⚠ The requested resource "/images/blended-protos.gif" is an animated image so it will not be optimized. Consider adding the "unoptimized" property to the <Image>.
+[00:00:06.106] Server  WARN    ⚠ The requested resource "/images/fuzz.gif" is an animated image so it will not be optimized. Consider adding the "unoptimized" property to the <Image>.
