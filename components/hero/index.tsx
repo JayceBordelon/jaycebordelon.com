@@ -17,12 +17,6 @@ export default function HeroSection() {
       external: true,
     },
     {
-      icon: () => <Image width={20} height={20} src="/images/occy.png" alt="occy" />,
-      label: "OccupAI",
-      href: "https://occupai.us",
-      external: true,
-    },
-    {
       icon: IconBrandGithub,
       label: "GitHub",
       href: "https://github.com/JayceBordelon",
@@ -107,7 +101,7 @@ export default function HeroSection() {
           {/* Typing Text Role */}
           <motion.div className="mt-4 h-10 sm:h-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
             <TypingText
-              text={["Mastercard - SWE", "OccupAI - Co-Founder", "WashU - CS Alum"]}
+              text={["Mechanize Inc. - SWE", "WashU - CS Alum"]}
               typingSpeed={60}
               pauseDuration={4000}
               deletingSpeed={40}
