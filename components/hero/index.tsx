@@ -13,7 +13,7 @@ export default function HeroSection() {
     {
       icon: IconCalendar,
       label: "Meet With Me",
-      href: "https://calendly.com/jayce-occupai/30min",
+      href: "https://calendly.com/jaycebordelon/30min",
       external: true,
     },
     {
