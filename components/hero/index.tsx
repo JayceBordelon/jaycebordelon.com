@@ -1,6 +1,6 @@
 "use client";
 
-import { IconBrandGithub, IconBrandLinkedin, IconCalendar, IconSettings, IconWriting } from "@tabler/icons-react";
+import { IconBrandGithub, IconBrandLinkedin, IconCalendar, IconChartLine, IconSettings, IconWriting } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +29,12 @@ export default function HeroSection() {
       external: true,
     },
     { icon: IconWriting, label: "Blog", href: "/blog" },
+    {
+      icon: IconChartLine,
+      label: "JayceTrades",
+      href: "https://jaycetrades.com",
+      external: true,
+    },
     {
       icon: IconSettings,
       label: "Mechanize",
