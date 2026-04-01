@@ -71,9 +71,7 @@ export default function PostsClient({ posts }: PostsClientProps) {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                     <div className="absolute top-4 left-4">
-                      <Badge className="backdrop-blur-sm bg-card/80 text-foreground border border-border/50">
-                        {post.label}
-                      </Badge>
+                      <Badge className="backdrop-blur-sm bg-card/80 text-foreground border border-border/50">{post.label}</Badge>
                     </div>
                   </div>
 
