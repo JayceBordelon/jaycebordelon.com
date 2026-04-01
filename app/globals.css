@@ -12,10 +12,10 @@
   --popover-foreground: #0f172a;
   --primary: #475569;
   --primary-foreground: #ffffff;
-  --secondary: #64748b;
+  --secondary: #4b5563;
   --secondary-foreground: #ffffff;
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted-foreground: #4b5563;
   --accent: #94a3b8;
   --accent-foreground: #0f172a;
   --destructive: #ef4444;
@@ -197,7 +197,7 @@ body {
 
 [data-rehype-pretty-code-figure] pre[data-language]::before {
   content: attr(data-language);
-  @apply absolute right-3 top-2 text-xs text-muted-foreground uppercase tracking-wide;
+  @apply absolute right-3 top-2 text-xs text-foreground/50 uppercase tracking-wide;
 }
 
 [data-rehype-pretty-code-figure] pre {
@@ -217,5 +217,5 @@ body {
 [data-line-numbers] > [data-line]::before {
   counter-increment: line;
   content: counter(line);
-  @apply inline-block w-4 mr-4 text-right text-muted-foreground/50;
+  @apply inline-block w-4 mr-4 text-right text-muted-foreground;
 }
