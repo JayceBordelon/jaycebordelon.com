@@ -31,8 +31,8 @@ export default function HeroSection() {
     { icon: IconWriting, label: "Blog", href: "/blog" },
     {
       icon: IconChartLine,
-      label: "JayceTrades",
-      href: "https://jaycetrades.com",
+      label: "VibeTradez",
+      href: "https://vibetradez.com",
       external: true,
     },
     {
