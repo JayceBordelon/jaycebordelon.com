@@ -105,7 +105,12 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       <script
         type="application/ld+json"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD structured data
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        // JSON.stringify can emit a literal '</script>' inside a string
+        // field (post.title / post.summary are author-controlled), which
+        // would break out of the <script> tag and create an XSS surface.
+        // Escape '<' to its JSON unicode form so the browser parser
+        // can't terminate the script early.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       {/* Back button */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">

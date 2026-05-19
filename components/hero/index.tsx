@@ -153,8 +153,8 @@ export default function HeroSection() {
                         asChild
                         className="cursor-pointer h-11 w-11 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground hover:border-primary hover:scale-110 transition-all duration-200 shadow-lg shadow-black/5"
                       >
-                        <Link href={link.href ?? "#"} target={link.external ? "_blank" : undefined}>
-                          <link.icon className="h-5 w-5" />
+                        <Link href={link.href ?? "#"} target={link.external ? "_blank" : undefined} rel={link.external ? "noopener noreferrer" : undefined} aria-label={link.label}>
+                          <link.icon className="h-5 w-5" aria-hidden="true" />
                         </Link>
                       </Button>
                     </TooltipTrigger>
