@@ -26,8 +26,8 @@ export default function Header() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button size="icon" asChild className="cursor-pointer">
-                    <Link href="https://github.com/JayceBordelon" target="_blank" rel="noopener noreferrer">
-                      <IconBrandGithub className="h-4 w-4" />
+                    <Link href="https://github.com/JayceBordelon" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                      <IconBrandGithub className="h-4 w-4" aria-hidden="true" />
                     </Link>
                   </Button>
                 </TooltipTrigger>
@@ -39,8 +39,8 @@ export default function Header() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button size="icon" asChild className="cursor-pointer">
-                    <Link href="https://linkedin.com/in/JayceBordelon" target="_blank" rel="noopener noreferrer">
-                      <IconBrandLinkedin className="h-4 w-4" />
+                    <Link href="https://linkedin.com/in/JayceBordelon" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                      <IconBrandLinkedin className="h-4 w-4" aria-hidden="true" />
                     </Link>
                   </Button>
                 </TooltipTrigger>
