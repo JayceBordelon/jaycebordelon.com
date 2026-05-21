@@ -4,8 +4,7 @@ Personal portfolio and blog. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui (
 
 ## Related repos
 
-- [auth.jaycebordelon.com](https://github.com/JayceBordelon/auth.jaycebordelon.com) — centralized OAuth identity provider. Any signed-in surface here brokers through it.
-- [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) — sibling project deployed on the same droplet (AI-powered options trading service).
+- [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) — AI-powered options trading service. Separate stack on a separate droplet; no shared infra.
 
 ## What's here
 
@@ -14,7 +13,7 @@ Personal portfolio and blog. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui (
 - `content/` — MDX blog posts (one file per post, frontmatter-driven)
 - `lib/` — utilities (date formatting, MDX helpers, theme tokens)
 - `Dockerfile` — multi-stage Node.js build for production deploys
-- `docker-compose.yml` — single-service compose slice with Traefik labels for `jaycebordelon.com` + `www` + `jayceb.com` legacy redirect
+- `docker-compose.yml` — self-contained two-service stack (Traefik + portfolio container) with own letsencrypt volume + bridge network. Drop-in deployable on any droplet.
 - `.github/workflows/` — PR checks (Biome lint, Next build, actionlint on workflows)
 
 ## Tech stack
@@ -61,7 +60,7 @@ Production binds the canonical domain plus the `www` subdomain plus the legacy `
 - `jaycebordelon.com` / `www.jaycebordelon.com` → this container, port 3000
 - `jayceb.com` / `www.jayceb.com` → 301 redirect to `jaycebordelon.com`
 
-The Traefik container itself is not in this repo; it's expected to be running on the same Docker network (`app-network`, declared `external`) alongside this service.
+Traefik runs as a sibling service inside this repo's `docker-compose.yml` (own letsencrypt cert volume, own bridge network). The stack is fully self-contained; deploying to a fresh droplet is `docker compose up -d --build` after DNS is pointed.
 
 ## Design system
 

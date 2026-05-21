@@ -40,12 +40,15 @@ CSS variables in `globals.css`, font stack (Plus Jakarta Sans, JetBrains Mono), 
 
 ## Hostname routing
 
-This service binds `Host(\`jaycebordelon.com\`)` + `www.jaycebordelon.com` + the legacy `jayceb.com` apex (permanent redirect) via Traefik labels in `docker-compose.yml`. The Traefik container itself lives outside this repo on the `app-network` (declared `external`). If you change the labels, the legacy `jayceb.com` redirect needs to keep working — there are still inbound links pointing at it.
+This service binds `Host(\`jaycebordelon.com\`)` + `www.jaycebordelon.com` + the legacy `jayceb.com` apex (permanent redirect) via Traefik labels in `docker-compose.yml`. Traefik runs as a sibling service inside this repo's compose with its own letsencrypt volume and bridge network. If you change the labels, the legacy `jayceb.com` redirect needs to keep working — there are still inbound links pointing at it.
 
-## Related services
+## No auth here
 
-- [auth.jaycebordelon.com](https://github.com/JayceBordelon/auth.jaycebordelon.com) — OAuth provider for any signed-in surfaces added here.
-- [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) — sibling project on the same droplet.
+This site has no signed-in surfaces and no plan to add them. Google OAuth lives in [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) only. If you ever do add auth here, fold it in-process the same way vibetradez did rather than spinning up a shared auth service.
+
+## Related repos
+
+- [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) — separate stack on a separate droplet.
 
 ## Local dev
 
