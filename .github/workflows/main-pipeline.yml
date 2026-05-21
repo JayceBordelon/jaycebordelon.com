@@ -1,0 +1,149 @@
+name: CI/CD Pipeline
+
+# Auto-fires on every push to main and on manual dispatch. Deploys the
+# portfolio container via SSH to the droplet, using the unified
+# ~/projects/docker-compose.yml that owns Traefik and the shared
+# app-network.
+#
+# No market-hours guard here: a portfolio outage doesn't touch live
+# trading. Drops in any time.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-jaycebordelon-com
+  cancel-in-progress: false
+
+env:
+  PROJECTS_PATH: /home/jayce/projects
+  REPO_DIR: /home/jayce/projects/jaycebordelon.com
+  SERVICE: jaycebordelon-com
+
+jobs:
+  sync:
+    name: Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull latest on droplet
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ env.REPO_DIR }}
+            # --ff-only refuses to pull when the local has diverged
+            # from origin (e.g. someone hand-edited a tracked file on
+            # the droplet). Better to fail loud than auto-merge.
+            git pull --ff-only origin main
+
+  build:
+    name: Build
+    needs: sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: docker compose build
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          # --no-cache ensures we don't reuse stale Node layers when
+          # package-lock.json or content/ MDX has changed but the
+          # Dockerfile didn't. Build cost is ~60s; fine.
+          script: |
+            set -e
+            cd ${{ env.PROJECTS_PATH }}
+            docker compose build --no-cache ${{ env.SERVICE }}
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.status.outputs.status }}
+    steps:
+      - name: docker rollout (zero-downtime)
+        id: rollout
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          # docker rollout scales up a new container before terminating
+          # the old one. --wait-after-healthy 30 keeps the old container
+          # alive an extra 30s after the new one passes its healthcheck,
+          # so in-flight requests drain instead of being cut off.
+          script: |
+            set -e
+            cd ${{ env.PROJECTS_PATH }}
+            docker rollout ${{ env.SERVICE }} --timeout 120 --wait-after-healthy 30
+
+      - name: Ensure Traefik is up
+        if: always()
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          # Defensive: if Traefik got nuked by an unrelated cleanup or
+          # crashed, bring it back up before declaring the deploy good.
+          # docker compose up -d traefik is a no-op when Traefik is
+          # already healthy.
+          script: |
+            cd ${{ env.PROJECTS_PATH }}
+            docker compose up -d traefik
+
+      - name: Compute status
+        id: status
+        if: always()
+        run: |
+          if [ "${{ steps.rollout.outcome }}" = "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  healthcheck:
+    name: Health Check
+    needs: deploy
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify endpoints
+        run: |
+          set -e
+          # Allow ~30s for traefik+container to settle into the new image.
+          sleep 30
+          for url in "https://jaycebordelon.com" "https://www.jaycebordelon.com"; do
+            code=$(curl -sSL -o /dev/null -w '%{http_code}' "$url")
+            if [ "$code" != "200" ]; then
+              echo "::error::$url returned $code"
+              exit 1
+            fi
+            echo "$url: $code"
+          done
+
+  cleanup:
+    name: Cleanup
+    needs: deploy
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: docker image prune
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          # image prune (not system prune) so we only delete dangling
+          # images. Containers, volumes, networks belonging to sibling
+          # repos are untouched. --filter "until=24h" keeps recent
+          # images around for instant rollback.
+          script: |
+            docker image prune -af --filter "until=24h"
