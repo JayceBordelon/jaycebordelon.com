@@ -1,0 +1,33 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  portfolio:
+    name: Lint + Build • Portfolio
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Biome check
+        run: npx biome check .
+      - name: Next build
+        run: npx next build
+
+  workflows:
+    name: Lint • Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: actionlint
+        uses: docker://rhysd/actionlint:latest
+        env:
+          SHELLCHECK_OPTS: -S warning
+        with:
+          args: -color

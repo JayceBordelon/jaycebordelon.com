@@ -1,0 +1,49 @@
+# jaycebordelon.com service slice. Expected to run alongside Traefik
+# on the same `app-network` overlay; the Traefik container itself and
+# the network live outside this repo and are referenced as external.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+services:
+  jaycebordelon-com:
+    image: jaycebordelon.com:latest
+    build:
+      context: .
+    expose:
+      - "3000"
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "app=jaycebordelon.com"
+      - "traefik.enable=true"
+      # Main router for canonical domain
+      - "traefik.http.routers.jaycebordelon.rule=Host(`jaycebordelon.com`) || Host(`www.jaycebordelon.com`)"
+      - "traefik.http.routers.jaycebordelon.entrypoints=websecure"
+      - "traefik.http.routers.jaycebordelon.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.jaycebordelon.priority=10"
+      - "traefik.http.services.jaycebordelon.loadbalancer.server.port=3000"
+      # Redirect router for old domain
+      - "traefik.http.routers.jayceb-redirect.rule=Host(`jayceb.com`) || Host(`www.jayceb.com`)"
+      - "traefik.http.routers.jayceb-redirect.entrypoints=websecure"
+      - "traefik.http.routers.jayceb-redirect.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.jayceb-redirect.priority=5"
+      - "traefik.http.routers.jayceb-redirect.middlewares=redirect-to-jaycebordelon"
+      # Redirect middleware
+      - "traefik.http.middlewares.redirect-to-jaycebordelon.redirectregex.regex=^https://(www\\.)?jaycebordelon\\.com(.*)"
+      - "traefik.http.middlewares.redirect-to-jaycebordelon.redirectregex.replacement=https://jaycebordelon.com$${2}"
+      - "traefik.http.middlewares.redirect-to-jaycebordelon.redirectregex.permanent=true"
+
+networks:
+  app-network:
+    external: true
