@@ -55,6 +55,10 @@ next-env.d.ts
 # Vercel
 .vercel
 
+# Cloudflare Workers / Pages
+.wrangler/
+.dev.vars
+
 # ========================
 # Docker / Logs
 # ========================

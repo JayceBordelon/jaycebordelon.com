@@ -1,0 +1,11 @@
+<div class="pointer-events-none fixed inset-0 -z-10 select-none" aria-hidden="true">
+  <svg class="h-full w-full text-primary" viewBox="-1000 -900 2000 1800" fill="none" preserveAspectRatio="xMidYMid slice">
+    <title>Background paths</title>
+    <!-- Paths injected at build time by scripts/generate-background.mjs; same
+         math the previous Framer Motion version used (80 paths × 2 mirrored).
+         Stroke opacity scales with index so the field looks diffused rather
+         than uniform. CSS-only path-draw animation runs once on first paint
+         then settles; no JS, no runtime cost. -->
+    {{ backgroundPaths }}
+  </svg>
+</div>

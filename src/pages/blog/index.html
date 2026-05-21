@@ -1,0 +1,32 @@
+---
+title: Blog
+ogTitle: Blog | Jayce Bordelon
+description: Notes on software engineering, system design, and building things that work.
+ogType: website
+ogImage: /images/dawg.jpg
+canonical: https://jaycebordelon.com/blog
+header: blog
+htmlClass: ""
+bodyClass: "min-h-screen"
+pageScripts: |
+  <script src="/scripts/blog-filter.js" defer></script>
+---
+<section class="py-32">
+  <div class="container mx-auto flex flex-col items-center gap-16 px-4 lg:px-16">
+    <div class="max-w-3xl text-center">
+      <h1 class="mb-4 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">Blog Posts</h1>
+      <p class="mb-8 text-lg text-muted-foreground md:text-xl">
+        My takes on stuff. These posts are filled with opinions ranging from technical architecture and programming to career advice and general, personal musings.
+      </p>
+    </div>
+
+    <div id="tag-filter" class="flex flex-wrap justify-center gap-2">
+      {{ tagFilter }}
+    </div>
+
+    <div id="posts-grid" class="grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+      {{ postCards }}
+    </div>
+    <p id="no-posts" class="hidden col-span-full text-center py-12 text-lg text-muted-foreground">No posts found matching your criteria.</p>
+  </div>
+</section>
