@@ -54,7 +54,7 @@ Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the l
 
 1. `src/pages/<route>.html` with YAML frontmatter at the top (`title`, `description`, `ogImage`, `canonical`, `header: home` or `blog`).
 2. Body is plain HTML with Tailwind utility classes.
-3. `npm run build`. The page lands at `/<route>` (Nginx `try_files` resolves the `.html` extension).
+3. `npm run build`. The page lands at `/<route>` (Cloudflare Pages resolves the `.html` extension automatically for pretty URLs).
 
 ## Design system
 
@@ -62,9 +62,18 @@ Carried over from the previous shadcn config: same CSS variables in `src/styles.
 
 The shadcn React components themselves are gone. What survives is the design tokens + the Tailwind utility-class strings. Re-applying a shadcn-style Card, Badge, etc. means hand-writing the same `class="..."` string used in the original component.
 
+## Hosting
+
+This site lives on **Cloudflare Pages**, not a droplet. Every push to `main` triggers a build in Cloudflare's CI (`npm run build`) and publishes `dist/` to their global CDN. Settings (production branch, build command, output dir, Node version) are configured one-time in the Cloudflare dashboard.
+
+There is no Dockerfile, no nginx config, no compose, no SSH deploy. Don't add any. If you find yourself wanting to "containerize this for deploy," stop — the entire deploy is `git push`.
+
 ## Hostname routing
 
-This service binds `Host(\`jaycebordelon.com\`)` + `www.jaycebordelon.com` + the legacy `jayceb.com` apex (permanent redirect) via Traefik labels in `docker-compose.yml`. Traefik runs as a sibling service inside this repo's compose with its own letsencrypt volume and bridge network. If you change the labels, the legacy `jayceb.com` redirect needs to keep working — there are still inbound links pointing at it.
+Custom domains are set in the Cloudflare Pages dashboard under the project's "Custom domains" tab:
+
+- `jaycebordelon.com` (apex) and `www.jaycebordelon.com` both resolve to the Pages project. Cloudflare auto-provisions Let's Encrypt certs.
+- The legacy `jayceb.com` permanent redirect is configured via a Cloudflare Page Rule (or Bulk Redirect) pointing at `https://jaycebordelon.com`. There are still inbound links to `jayceb.com`, so the redirect must keep working.
 
 ## No auth here
 
