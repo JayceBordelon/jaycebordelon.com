@@ -6,7 +6,7 @@ on:
 
 jobs:
   portfolio:
-    name: Lint + Build • Portfolio
+    name: Build • Portfolio
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -15,10 +15,22 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: Biome check
-        run: npx biome check .
-      - name: Next build
-        run: npx next build
+      - name: Build static site
+        run: npm run build
+      - name: Verify dist/ shape
+        # Catch a build that silently produces an empty dist (e.g. a
+        # path reshuffle that breaks the page walker). At minimum we
+        # expect index.html + blog/index.html + styles.css + the
+        # post pages.
+        run: |
+          set -e
+          test -f dist/index.html
+          test -f dist/blog/index.html
+          test -f dist/styles.css
+          test -f dist/sitemap.xml
+          test -f dist/robots.txt
+          # At least one blog post HTML output:
+          ls dist/blog/posts/*.html > /dev/null
 
   workflows:
     name: Lint • Workflows

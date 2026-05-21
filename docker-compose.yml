@@ -6,7 +6,9 @@
 # Two services:
 #   - traefik: TLS termination + Host() routing (canonical apex +
 #     www + the legacy jayceb.com permanent redirect)
-#   - jaycebordelon-com: Next.js 16 portfolio + MDX blog
+#   - jaycebordelon-com: nginx serving static HTML built from src/.
+#     Build step compiles markdown posts + Tailwind into dist/; final
+#     image is nginx:alpine with no Node runtime.
 x-logging: &default-logging
   driver: json-file
   options:
@@ -51,11 +53,11 @@ services:
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 5s
     labels:
       - "app=jaycebordelon.com"
       - "traefik.enable=true"

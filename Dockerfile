@@ -1,45 +1,30 @@
-FROM node:20-alpine AS base
+# Two-stage build: Node only to compile the static site, then a thin
+# nginx image to serve dist/. No Node runtime in production; the final
+# image is ~30MB and ships pure HTML + CSS + a handful of plain JS
+# files. No JSX, no React, no Next.js — see scripts/build.mjs.
 
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm install
+# Install only what's needed to build; gray-matter, marked, and the
+# tailwind CLI. Two-step copy lets `npm ci` layer-cache when only the
+# site content changes.
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
-FROM base AS builder
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
 RUN npm run build
 
-FROM base AS runner
-WORKDIR /app
+# ------------------------------------------------------------------
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+FROM nginx:1.27-alpine AS runner
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/content ./content
-
-USER nextjs
+# Default nginx config doesn't know about HTML5 history fallback or
+# the right cache headers for fingerprinted assets; this one does.
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
+# nginx:alpine ships a startup script that picks up /etc/nginx/conf.d/*
+# and runs daemon off. No additional CMD needed.

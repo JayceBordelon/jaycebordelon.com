@@ -4,39 +4,63 @@ Operator notes for this repo. Read before touching the portfolio.
 
 ## Development rules
 
-### Always biome check --write before pushing
+### Always run `npm run build` before pushing
 
 ```bash
-npx biome check --write .
+npm run build
 ```
 
-`biome check` without `--write` is not enough — it reports format errors but doesn't apply them, so the working tree still has CI-failing files when you commit. CI runs Biome with format-as-error semantics; a stray unwrapped string or long line fails the PR even though `biome check` (no `--write`) only "warned" locally.
+Runs the HTML generator (`scripts/build.mjs`) then the Tailwind CLI. Catches:
 
-### Always next build before pushing
+- Markdown frontmatter typos that break a post's metadata
+- Unreplaced `{{ placeholders }}` from a partial template (build prints `warn: unreplaced placeholders: [...]`)
+- Tailwind class lookup failures (v4 errors loudly on `@apply` of an unknown utility)
 
-```bash
-npx next build
-```
-
-Catches type errors, broken imports, missing static assets, and MDX frontmatter typos. CI runs this on every PR.
+CI runs the same command and asserts the expected files exist in `dist/`.
 
 ### Always use feature branches
 
 Never push directly to `main`. Open a PR, let CI run, merge.
 
-## Latest documentation, not recalled syntax
+## Architecture rules
 
-When working with Next.js, shadcn/ui, Tailwind CSS, MDX, Framer Motion, or any external library, fetch and read the current documentation before writing code. Don't rely on recalled syntax or API signatures — they may be outdated. This applies even if it takes extra time. Incorrect assumptions about APIs cause more rework than the time saved by skipping docs.
+### No JSX runtime, ever
 
-## Design system consistency
+This site is intentionally framework-free. Adding React, Astro, or any JSX runtime is a regression on the scope this site was deliberately reduced to. If a feature needs interactivity:
 
-CSS variables in `globals.css`, font stack (Plus Jakarta Sans, JetBrains Mono), shadcn/ui configuration (new-york style, neutral base, lucide icons) are shared with sibling projects. Visual changes here should stay consistent with the same tokens used elsewhere.
+1. First try CSS (animations, hover states, `:has()` selectors are powerful).
+2. Then try ~10-50 LOC of vanilla JS in `src/scripts/` (see `theme.js`, `typing.js`, `blog-filter.js` as the size budget).
+3. Only beyond that, reach for a build-time include (a partial in `src/partials/`) or a build-script enhancement.
 
-## Blog content lifecycle
+The whole site, including images, weighs about 18MB. The HTML + CSS without images is about 90KB. Keep it that way.
 
-- Posts: `content/posts/*.mdx`. Built into the production sitemap and blog index.
-- Drafts: `drafts/*.mdx`. Not built into the production site. Move into `content/posts/` to publish.
-- Frontmatter parsed by `lib/mdx.ts`. Required: `title`, `date` (ISO `YYYY-MM-DD`), `description`, `tags` (string array).
+### No client-side routing
+
+Every page is a real file at a real URL. No SPA shell, no hydration. The browser navigates between pages with normal HTTP.
+
+### Markdown for posts, HTML for layout
+
+Blog posts: `src/posts/*.md` with YAML frontmatter. Rendered by `marked` at build time. If you need MDX-style components in a post, add it as a build-script hook (e.g. a `[[admonition warning]] ... [[/admonition]]` shortcode the script transforms), not by pulling in MDX.
+
+Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the layout fills (title, description, content). The page itself can also have placeholders that the build script fills before wrapping (used for blog/index.html's tag filter + post cards).
+
+## Adding a blog post
+
+1. `src/posts/<slug>.md` with the frontmatter shape used by existing posts (`title`, `summary`, `label`, `author`, `published`, `image`, `readTime`, optional `tags`).
+2. Cover image in `public/images/`.
+3. `npm run build` → post HTML at `dist/blog/posts/<slug>.html`, card on the blog index, entry in `sitemap.xml`.
+
+## Adding a page
+
+1. `src/pages/<route>.html` with YAML frontmatter at the top (`title`, `description`, `ogImage`, `canonical`, `header: home` or `blog`).
+2. Body is plain HTML with Tailwind utility classes.
+3. `npm run build`. The page lands at `/<route>` (Nginx `try_files` resolves the `.html` extension).
+
+## Design system
+
+Carried over from the previous shadcn config: same CSS variables in `src/styles.css`, same fonts (Plus Jakarta Sans, JetBrains Mono, Source Serif 4 for serif blog body), same `--radius` and shadow scale. Visual changes should stay consistent with the tokens.
+
+The shadcn React components themselves are gone. What survives is the design tokens + the Tailwind utility-class strings. Re-applying a shadcn-style Card, Badge, etc. means hand-writing the same `class="..."` string used in the original component.
 
 ## Hostname routing
 
@@ -44,7 +68,7 @@ This service binds `Host(\`jaycebordelon.com\`)` + `www.jaycebordelon.com` + the
 
 ## No auth here
 
-This site has no signed-in surfaces and no plan to add them. Google OAuth lives in [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) only. If you ever do add auth here, fold it in-process the same way vibetradez did rather than spinning up a shared auth service.
+This site has no signed-in surfaces and no plan to add them. Google OAuth lives in [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) only.
 
 ## Related repos
 
@@ -53,8 +77,10 @@ This site has no signed-in surfaces and no plan to add them. Google OAuth lives 
 ## Local dev
 
 ```bash
-npm run dev
+npm install
+npm run build
+npm run serve
 # http://localhost:3000
 ```
 
-Hot reload + MDX changes pick up automatically.
+Edit, re-run `npm run build`, refresh the browser. Or run `npm run watch:css` in one terminal for Tailwind hot-rebuild while you re-run the HTML build manually.
