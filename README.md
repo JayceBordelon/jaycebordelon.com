@@ -21,7 +21,7 @@ src/
 │   └── post.html         Per-post article wrapper
 ├── posts/         Blog posts in markdown with YAML frontmatter
 ├── scripts/       Vanilla JS shipped to the browser (theme toggle,
-│                  typing animation, blog filter)
+│                  typing animation, blog filter, copy-code button)
 └── styles.css     Tailwind v4 input — design tokens + reveal/glow keyframes
 
 scripts/
@@ -34,8 +34,8 @@ scripts/
 |---|---|
 | Markup | Plain HTML in `src/pages/` + `src/partials/` |
 | Styles | Tailwind v4 (CLI compile), with `globals.css` design tokens copied from the previous shadcn config so the look is identical |
-| Content | Markdown in `src/posts/`, rendered via `marked` at build time |
-| Interactivity | ~120 LOC of vanilla JS across three files (theme, typing, blog filter). No bundler. |
+| Content | Markdown in `src/posts/`, rendered via `marked` at build time. Code blocks highlighted by Shiki (build-time, dual light/dark); supports `:::note`/`tip`/`warning`/`danger` admonitions and auto heading anchors. |
+| Interactivity | ~150 LOC of vanilla JS across four files (theme, typing, blog filter, copy-code). No bundler, no client framework. |
 | Build | One Node script. ~200ms HTML, ~150ms Tailwind. |
 | Hosting | Cloudflare Pages. Cloudflare's CI runs `npm run build`, then serves `dist/` from their global CDN with automatic HTTPS. |
 

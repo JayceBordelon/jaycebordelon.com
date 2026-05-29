@@ -186,3 +186,181 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* --- Post rendering: Shiki code blocks, admonitions, heading anchors --- *
+ * All build-time output. Shiki emits per-token --shiki-light / --shiki-dark
+ * CSS variables (defaultColor:false); we pick light by default and switch
+ * to the dark vars under html.dark, so highlighting follows the theme
+ * toggle with zero client JS. */
+@layer components {
+  /* Token + surface colors from Shiki's dual-theme variables */
+  .shiki,
+  .shiki span {
+    color: var(--shiki-light);
+  }
+  html.dark .shiki,
+  html.dark .shiki span {
+    color: var(--shiki-dark);
+  }
+
+  .code-block {
+    position: relative;
+    margin: 1.5rem 0;
+  }
+
+  .prose pre.shiki {
+    margin: 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background-color: var(--shiki-light-bg);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+  html.dark .prose pre.shiki {
+    background-color: var(--shiki-dark-bg);
+  }
+  .prose pre.shiki code {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 400;
+    background: none;
+    padding: 0;
+    border: 0;
+    color: inherit;
+  }
+  /* Kill the typography plugin's inline-code backtick quotes inside code blocks */
+  .prose pre.shiki code::before,
+  .prose pre.shiki code::after {
+    content: none;
+  }
+
+  /* Inline code — distinct from the serif body, no backtick quotes */
+  .prose :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    font-weight: 500;
+    background-color: var(--muted);
+    color: var(--foreground);
+    padding: 0.15em 0.4em;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .prose :not(pre) > code::before,
+  .prose :not(pre) > code::after {
+    content: none;
+  }
+
+  /* Copy-to-clipboard button (added by copy-code.js) */
+  .copy-code {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--card) 78%, transparent);
+    color: var(--muted-foreground);
+    cursor: pointer;
+    opacity: 0;
+    backdrop-filter: blur(4px);
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .code-block:hover .copy-code,
+  .copy-code:focus-visible {
+    opacity: 1;
+  }
+  .copy-code:hover {
+    color: var(--foreground);
+    border-color: var(--ring);
+  }
+  .copy-code.copied {
+    color: #16a34a;
+    border-color: #16a34a;
+  }
+
+  /* Heading anchor links — revealed on hover of the heading */
+  .heading-anchor {
+    margin-left: 0.4em;
+    font-weight: 400;
+    color: var(--muted-foreground);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .prose :is(h2, h3):hover .heading-anchor,
+  .heading-anchor:focus-visible {
+    opacity: 0.55;
+  }
+  .heading-anchor:hover {
+    opacity: 1;
+    color: var(--primary);
+  }
+
+  /* Admonitions (:::note / info / tip / warning / danger) */
+  .admonition {
+    margin: 1.5rem 0;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: var(--radius);
+    background-color: var(--muted);
+    font-family: var(--font-sans);
+  }
+  .admonition-title {
+    margin: 0 0 0.35rem 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .admonition-content {
+    font-size: 0.95rem;
+  }
+  .admonition-content > :first-child {
+    margin-top: 0;
+  }
+  .admonition-content > :last-child {
+    margin-bottom: 0;
+  }
+  .admonition-note {
+    border-left-color: var(--primary);
+  }
+  .admonition-note .admonition-title {
+    color: var(--primary);
+  }
+  .admonition-info {
+    border-left-color: #0ea5e9;
+    background-color: color-mix(in srgb, #0ea5e9 8%, var(--background));
+  }
+  .admonition-info .admonition-title {
+    color: #0ea5e9;
+  }
+  .admonition-tip {
+    border-left-color: #16a34a;
+    background-color: color-mix(in srgb, #16a34a 8%, var(--background));
+  }
+  .admonition-tip .admonition-title {
+    color: #16a34a;
+  }
+  .admonition-warning {
+    border-left-color: #d97706;
+    background-color: color-mix(in srgb, #d97706 9%, var(--background));
+  }
+  .admonition-warning .admonition-title {
+    color: #d97706;
+  }
+  .admonition-danger {
+    border-left-color: var(--destructive);
+    background-color: color-mix(in srgb, var(--destructive) 9%, var(--background));
+  }
+  .admonition-danger .admonition-title {
+    color: var(--destructive);
+  }
+}
