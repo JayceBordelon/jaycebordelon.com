@@ -17,6 +17,7 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.0",
     "@tailwindcss/typography": "^0.5.16",
+    "shiki": "^4.1.0",
     "tailwindcss": "^4.1.0"
   }
 }

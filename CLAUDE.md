@@ -40,7 +40,14 @@ Every page is a real file at a real URL. No SPA shell, no hydration. The browser
 
 ### Markdown for posts, HTML for layout
 
-Blog posts: `src/posts/*.md` with YAML frontmatter. Rendered by `marked` at build time. If you need MDX-style components in a post, add it as a build-script hook (e.g. a `[[admonition warning]] ... [[/admonition]]` shortcode the script transforms), not by pulling in MDX.
+Blog posts: `src/posts/*.md` with YAML frontmatter. Rendered by `marked` at build time. The renderer is configured in `scripts/build.mjs` (`configureMarked`); all rendering enhancements run at build time and ship as plain HTML + CSS (no client framework). If you need a new MDX-style component in a post, add it as a `marked` extension there, not by pulling in MDX.
+
+Authoring features the renderer supports today:
+
+- **Syntax highlighting** via Shiki (build-time, a `devDependency`, never shipped to the browser). Fence a code block with a language (` ```bash `, ` ```typescript `, etc.) and it gets dual light/dark highlighting that follows the `.dark` theme toggle through CSS variables, zero client JS. Supported languages are the `SHIKI_LANGS` array in `build.mjs`; add to it for a new language. Unknown languages fall back to plaintext rather than failing the build.
+- **Admonitions**: `:::note`, `:::info`, `:::tip`, `:::warning`, `:::danger`, optionally with an inline title (`:::warning Heads up`), closed by a line containing only `:::`. Styled in `styles.css` under `.admonition-*`.
+- **Heading anchors**: `##` and `###` headings auto-get a slug `id` and a hover `#` link. Slug dedup is per-post.
+- **Copy button**: post pages load `src/scripts/copy-code.js`, which adds a hover copy-to-clipboard button to each code block. Progressive enhancement — code is fully readable without JS.
 
 Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the layout fills (title, description, content). The page itself can also have placeholders that the build script fills before wrapping (used for blog/index.html's tag filter + post cards).
 

@@ -20,6 +20,7 @@ import { join, dirname, basename, extname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
+import { createHighlighter } from "shiki";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -94,6 +95,113 @@ function escapeJSONForScript(obj) {
   // '<' to its JSON unicode form so the browser parser can't terminate
   // the script early. Input is the OBJECT, not a pre-stringified string.
   return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
+/* ---------------------------------------------------------------- *
+ * Markdown engine config (Shiki highlighting, heading anchors,      *
+ * admonitions). All build-time; the rendered HTML ships no JS.      *
+ * ---------------------------------------------------------------- */
+
+// Languages the posts actually use, plus a few common ones so future
+// posts highlight without a build change. Keep this list tight — each
+// grammar adds to build time, not to shipped output.
+const SHIKI_LANGS = ["bash", "shell", "protobuf", "typescript", "javascript", "json", "go", "python", "html", "css", "yaml", "diff", "sql", "rust", "c", "cpp"];
+
+function slugify(text) {
+  return String(text)
+    .toLowerCase()
+    .replace(/<[^>]+>/g, "") // strip any inline HTML tags
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+const ADMONITION_META = {
+  note: { label: "Note" },
+  info: { label: "Info" },
+  tip: { label: "Tip" },
+  warning: { label: "Warning" },
+  danger: { label: "Danger" },
+};
+
+// Map a fenced code's language token to a grammar Shiki has loaded,
+// falling back to plaintext so an unknown lang never throws the build.
+function resolveLang(highlighter, lang) {
+  const requested = (lang || "").trim().split(/\s+/)[0].toLowerCase();
+  if (requested && highlighter.getLoadedLanguages().includes(requested)) return requested;
+  return "text";
+}
+
+function configureMarked(highlighter) {
+  const usedSlugs = new Map();
+
+  marked.use({
+    gfm: true,
+    hooks: {
+      preprocess(markdown) {
+        // Heading-id dedup is per-document, not per-build.
+        usedSlugs.clear();
+        return markdown;
+      },
+    },
+    extensions: [
+      {
+        name: "admonition",
+        level: "block",
+        start(src) {
+          const i = src.indexOf("\n:::");
+          const head = src.startsWith(":::") ? 0 : -1;
+          if (head === 0) return 0;
+          return i === -1 ? undefined : i + 1;
+        },
+        tokenizer(src) {
+          const rule = /^:::(\w+)(?:[ \t]+([^\n]*))?\n([\s\S]*?)\n:::[ \t]*(?:\n+|$)/;
+          const match = rule.exec(src);
+          if (!match) return undefined;
+          const [raw, kindRaw, titleRaw, body] = match;
+          const kind = kindRaw.toLowerCase();
+          if (!ADMONITION_META[kind]) return undefined;
+          const token = {
+            type: "admonition",
+            raw,
+            kind,
+            title: (titleRaw || "").trim(),
+            tokens: [],
+          };
+          this.lexer.blockTokens(body, token.tokens);
+          return token;
+        },
+        renderer(token) {
+          const meta = ADMONITION_META[token.kind];
+          const heading = token.title || meta.label;
+          const inner = this.parser.parse(token.tokens);
+          return `<div class="admonition admonition-${token.kind}">
+  <p class="admonition-title">${escapeHTML(heading)}</p>
+  <div class="admonition-content">${inner}</div>
+</div>\n`;
+        },
+      },
+    ],
+    renderer: {
+      code({ text, lang }) {
+        const language = resolveLang(highlighter, lang);
+        return highlighter.codeToHtml(text, {
+          lang: language,
+          themes: { light: "github-light-default", dark: "github-dark-default" },
+          defaultColor: false,
+        });
+      },
+      heading({ tokens, depth }) {
+        const inner = this.parser.parseInline(tokens);
+        if (depth === 1 || depth > 3) return `<h${depth}>${inner}</h${depth}>\n`;
+        const base = slugify(inner) || "section";
+        const seen = usedSlugs.get(base) ?? 0;
+        usedSlugs.set(base, seen + 1);
+        const id = seen === 0 ? base : `${base}-${seen}`;
+        return `<h${depth} id="${id}" class="scroll-mt-24">${inner}<a href="#${id}" class="heading-anchor" aria-label="Link to this section">#</a></h${depth}>\n`;
+      },
+    },
+  });
 }
 
 /* ---------------------------------------------------------------- *
@@ -306,6 +414,7 @@ function buildPosts() {
         ogImage: data.image,
         header: "blog",
         bodyClass: "min-h-screen",
+        pageScripts: '<script src="/scripts/copy-code.js" defer></script>',
         jsonLd,
       },
       body,
@@ -447,9 +556,15 @@ Sitemap: ${SITE_URL}/sitemap.xml
  * Run                                                               *
  * ---------------------------------------------------------------- */
 
-function main() {
+async function main() {
   if (existsSync(DIST)) rmSync(DIST, { recursive: true });
   mkdirSync(DIST, { recursive: true });
+
+  const highlighter = await createHighlighter({
+    themes: ["github-light-default", "github-dark-default"],
+    langs: SHIKI_LANGS,
+  });
+  configureMarked(highlighter);
 
   buildPages();
   const posts = buildPosts();
@@ -464,4 +579,7 @@ function main() {
   console.log(`build: dist/ ready (${posts.length} posts, ${Math.round(total / 1024)}KB on disk)`);
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
