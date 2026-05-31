@@ -178,9 +178,23 @@
   .animate-shimmer {
     animation: shimmer 3s linear infinite;
   }
-  /* Background SVG path-draw — runs once on first paint */
-  @keyframes draw {
-    to { stroke-dashoffset: 0; }
+  /* Background SVG paths breathe infinitely. Each <path> carries pathLength="1"
+     so dash units are normalized to [0,1], with stroke-dasharray:1 1 (the dash
+     equals one full length). A full-length dash can never tile twice on the
+     curve, so exactly one contiguous segment is ever visible and the lines
+     never look doubled. The animation eases stroke-dashoffset from 0 to -0.7
+     and back (alternate), so each line draws to full then recedes to about 30
+     percent, the same 30 to 100 percent range Framer Motion's pathLength used,
+     with a smooth reversal and no snap or flicker. */
+  @keyframes flow {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -0.7; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bg-path {
+      animation: none !important;
+      stroke-dasharray: none !important;
+    }
   }
   .tabular-nums {
     font-variant-numeric: tabular-nums;
