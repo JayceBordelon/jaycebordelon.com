@@ -207,13 +207,18 @@
  * to the dark vars under html.dark, so highlighting follows the theme
  * toggle with zero client JS. */
 @layer components {
-  /* Token + surface colors from Shiki's dual-theme variables */
-  .shiki,
-  .shiki span {
+  /* Token + surface colors from Shiki's dual-theme variables.
+     Scoped under `.prose pre.shiki` (specificity 0,2,1) so they outrank the
+     Tailwind Typography plugin's `.prose :where(pre)` rule (0,1,0), which
+     otherwise wins on source order and forces its near-white
+     --tw-prose-pre-code onto the base text, washing out unspanned tokens
+     against the light background. */
+  .prose pre.shiki,
+  .prose pre.shiki span {
     color: var(--shiki-light);
   }
-  html.dark .shiki,
-  html.dark .shiki span {
+  html.dark .prose pre.shiki,
+  html.dark .prose pre.shiki span {
     color: var(--shiki-dark);
   }
 
