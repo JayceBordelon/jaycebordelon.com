@@ -178,22 +178,71 @@
   .animate-shimmer {
     animation: shimmer 3s linear infinite;
   }
-  /* Background SVG paths breathe infinitely. Each <path> carries pathLength="1"
-     so dash units are normalized to [0,1], with stroke-dasharray:1 1 (the dash
-     equals one full length). A full-length dash can never tile twice on the
-     curve, so exactly one contiguous segment is ever visible and the lines
-     never look doubled. The animation eases stroke-dashoffset from 0 to -0.7
-     and back (alternate), so each line draws to full then recedes to about 30
-     percent, the same 30 to 100 percent range Framer Motion's pathLength used,
-     with a smooth reversal and no snap or flicker. */
-  @keyframes flow {
-    from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -0.7; }
+  /* Aurora background. A few large, heavily-blurred brand-color blobs that
+     drift and breathe behind content at low opacity (the Linear / Vercel
+     look). Fixed, pointer-inert, behind everything, clipped to the viewport.
+     Pure CSS, GPU-cheap (transform + opacity only), no JS, no DOM cost. */
+  .aurora-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+  }
+  .aurora-blob {
+    position: absolute;
+    border-radius: 9999px;
+    /* Blur the blobs to mush so there are no visible edges. */
+    filter: blur(90px);
+    opacity: 0.06;
+    will-change: transform;
+  }
+  /* Dark mode reads a touch brighter so the blobs don't vanish on near-black. */
+  html.dark .aurora-blob {
+    opacity: 0.1;
+  }
+  .aurora-blob-1 {
+    top: -10%;
+    left: -5%;
+    width: 45vw;
+    height: 45vw;
+    background: var(--primary);
+    animation: aurora-drift-1 34s ease-in-out infinite alternate;
+  }
+  .aurora-blob-2 {
+    top: 30%;
+    right: -10%;
+    width: 40vw;
+    height: 40vw;
+    background: var(--accent);
+    animation: aurora-drift-2 42s ease-in-out infinite alternate;
+  }
+  .aurora-blob-3 {
+    bottom: -15%;
+    left: 25%;
+    width: 38vw;
+    height: 38vw;
+    background: var(--secondary);
+    animation: aurora-drift-3 38s ease-in-out infinite alternate;
+  }
+  /* Each blob drifts a short distance and breathes in scale; the slow,
+     desynced loops keep the field alive without ever drawing the eye. */
+  @keyframes aurora-drift-1 {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(8vw, 6vh, 0) scale(1.15); }
+  }
+  @keyframes aurora-drift-2 {
+    from { transform: translate3d(0, 0, 0) scale(1.1); }
+    to   { transform: translate3d(-7vw, 9vh, 0) scale(0.95); }
+  }
+  @keyframes aurora-drift-3 {
+    from { transform: translate3d(0, 0, 0) scale(0.95); }
+    to   { transform: translate3d(6vw, -7vh, 0) scale(1.2); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .bg-path {
+    .aurora-blob {
       animation: none !important;
-      stroke-dasharray: none !important;
     }
   }
   .tabular-nums {
