@@ -235,8 +235,13 @@ function generateBackgroundPaths() {
       const pathLeftY = baseLeftY + staggerY;
       const pathQuarterX = baseLeftX * 0.5 + staggerX * 0.7;
       const pathQuarterY = baseLeftY * 0.6 + baseMidY * 0.4 + staggerY * 0.8;
-      const pathMidX = baseMidX + staggerX;
-      const pathMidY = baseMidY + staggerY * 0.5;
+      // Spread the midpoints wide so the curves fan through a broad band
+      // instead of pinching into an hourglass waist at screen center. The
+      // mid X/Y now scale strongly with the path index (t), so each curve
+      // keeps a distinct lane through the middle rather than converging on
+      // (0, -100) like every other path.
+      const pathMidX = baseMidX + staggerX + t * 520;
+      const pathMidY = baseMidY + staggerY * 2.6;
       const pathRightX = baseRightX + staggerX;
       const pathRightY = baseRightY + staggerY * 1.5;
 
@@ -249,11 +254,15 @@ function generateBackgroundPaths() {
 
       const d = `M${pathLeftX} ${pathLeftY} Q${spreadLeftX} ${spreadLeftY} ${pathQuarterX} ${pathQuarterY} Q${spread1X} ${spread1Y} ${pathMidX} ${pathMidY} Q${spread2X} ${spread2Y} ${pathRightX} ${pathRightY}`;
       const opacity = 0.08 + i * 0.012;
-      // path-draw animation runs once on first paint with a stagger so
-      // the field "writes itself in" over a couple seconds; pure CSS,
-      // no JS runtime cost. After settling, paths stay drawn.
-      const delay = ((t + 1) / 2) * 2; // 0s to 2s
-      out.push(`<path d="${d}" stroke="currentColor" stroke-width="0.5" stroke-opacity="${opacity.toFixed(3)}" style="stroke-dasharray:6000;stroke-dashoffset:6000;animation:draw 8s ease-out ${delay.toFixed(2)}s forwards;" />`);
+      // Each path flows forever. pathLength="1" normalizes dash units to
+      // [0,1]; the dash pattern (0.6 + 0.4) sums to exactly 1, so one
+      // gap sweeps the full curve and a dashoffset shift of 1 per cycle
+      // loops seamlessly with no snap. Per-path duration plus a negative
+      // start offset desync the field so it shimmers rather than pulsing in
+      // unison. Pure CSS, no JS runtime cost.
+      const dur = 10 + (i % 7); // 10s to 16s per sweep (full breathe is 2x)
+      const phase = -(((t + 1) / 2) * dur); // negative start, spread across the cycle
+      out.push(`<path d="${d}" stroke="currentColor" stroke-width="0.5" stroke-opacity="${opacity.toFixed(3)}" pathLength="1" class="bg-path" style="stroke-dasharray:1 1;animation:flow ${dur}s ease-in-out ${phase.toFixed(2)}s infinite alternate;" />`);
     }
   }
   return out.join("\n      ");
