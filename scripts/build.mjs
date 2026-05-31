@@ -205,79 +205,15 @@ function configureMarked(highlighter) {
 }
 
 /* ---------------------------------------------------------------- *
- * Background SVG (deterministic; generated once)                    *
- * ---------------------------------------------------------------- */
-
-function generateBackgroundPaths() {
-  // Mirror of the prior Framer Motion background-paths math. 80 paths
-  // × 2 mirrored sets = 160 quadratic Bézier curves with staggered
-  // offsets. Stroke opacity scales with index so the field looks
-  // diffused rather than uniform.
-  const out = [];
-  for (const position of [1, -1]) {
-    const numPaths = 80;
-    const spread = 700;
-    const diagonalOffset = 350;
-    const baseLeftX = -1200 * position;
-    const baseLeftY = diagonalOffset;
-    const baseMidX = 0;
-    const baseMidY = -100;
-    const baseRightX = 1200 * position;
-    const baseRightY = -diagonalOffset;
-
-    for (let i = 0; i < numPaths; i++) {
-      const t = (i / (numPaths - 1)) * 2 - 1;
-      const spreadAmount = t * spread;
-      const staggerX = t * 150;
-      const staggerY = t * 100;
-
-      const pathLeftX = baseLeftX + staggerX;
-      const pathLeftY = baseLeftY + staggerY;
-      const pathQuarterX = baseLeftX * 0.5 + staggerX * 0.7;
-      const pathQuarterY = baseLeftY * 0.6 + baseMidY * 0.4 + staggerY * 0.8;
-      // Spread the midpoints wide so the curves fan through a broad band
-      // instead of pinching into an hourglass waist at screen center. The
-      // mid X/Y now scale strongly with the path index (t), so each curve
-      // keeps a distinct lane through the middle rather than converging on
-      // (0, -100) like every other path.
-      const pathMidX = baseMidX + staggerX + t * 520;
-      const pathMidY = baseMidY + staggerY * 2.6;
-      const pathRightX = baseRightX + staggerX;
-      const pathRightY = baseRightY + staggerY * 1.5;
-
-      const spreadLeftX = (pathLeftX + pathQuarterX) / 2;
-      const spreadLeftY = (pathLeftY + pathQuarterY) / 2 - spreadAmount * 0.6;
-      const spread1X = (pathQuarterX + pathMidX) / 2;
-      const spread1Y = (pathQuarterY + pathMidY) / 2 + spreadAmount;
-      const spread2X = (pathMidX + pathRightX) / 2;
-      const spread2Y = (pathMidY + pathRightY) / 2 - spreadAmount;
-
-      const d = `M${pathLeftX} ${pathLeftY} Q${spreadLeftX} ${spreadLeftY} ${pathQuarterX} ${pathQuarterY} Q${spread1X} ${spread1Y} ${pathMidX} ${pathMidY} Q${spread2X} ${spread2Y} ${pathRightX} ${pathRightY}`;
-      const opacity = 0.08 + i * 0.012;
-      // Each path flows forever. pathLength="1" normalizes dash units to
-      // [0,1]; the dash pattern (0.6 + 0.4) sums to exactly 1, so one
-      // gap sweeps the full curve and a dashoffset shift of 1 per cycle
-      // loops seamlessly with no snap. Per-path duration plus a negative
-      // start offset desync the field so it shimmers rather than pulsing in
-      // unison. Pure CSS, no JS runtime cost.
-      const dur = 10 + (i % 7); // 10s to 16s per sweep (full breathe is 2x)
-      const phase = -(((t + 1) / 2) * dur); // negative start, spread across the cycle
-      out.push(`<path d="${d}" stroke="currentColor" stroke-width="0.5" stroke-opacity="${opacity.toFixed(3)}" pathLength="1" class="bg-path" style="stroke-dasharray:1 1;animation:flow ${dur}s ease-in-out ${phase.toFixed(2)}s infinite alternate;" />`);
-    }
-  }
-  return out.join("\n      ");
-}
-
-/* ---------------------------------------------------------------- *
  * Build defaults                                                    *
  * ---------------------------------------------------------------- */
 
 const layoutTemplate = read(join(SRC, "partials/layout.html"));
 const headerHome = read(join(SRC, "partials/header-home.html"));
 const headerBlog = read(join(SRC, "partials/header-blog.html"));
-const backgroundTemplate = read(join(SRC, "partials/background.html"));
 const postTemplate = read(join(SRC, "partials/post.html"));
-const backgroundSVG = applyTemplate(backgroundTemplate, { backgroundPaths: generateBackgroundPaths() });
+// The background is a static, CSS-driven aurora (no per-path generation).
+const backgroundSVG = read(join(SRC, "partials/background.html"));
 
 function renderPage({ frontmatter, body, slug }) {
   const header = frontmatter.header === "blog" ? headerBlog : headerHome;
