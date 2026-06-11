@@ -10,16 +10,9 @@
 
   function setActive(active) {
     buttons.forEach(function (b) {
-      var isActive = (b.dataset.tag || "") === active;
-      // Two visual states: primary-filled (active) vs outline (inactive).
-      // Toggle the relevant Tailwind classes; keep the shared sizing classes.
-      if (isActive) {
-        b.classList.add("bg-primary", "text-primary-foreground");
-        b.classList.remove("border", "border-input", "hover:bg-accent");
-      } else {
-        b.classList.remove("bg-primary", "text-primary-foreground");
-        b.classList.add("border", "border-input", "hover:bg-accent");
-      }
+      // One class carries the visual state; styles live in styles.css
+      // (.tag-button vs .tag-button.active, solid apricot when active).
+      b.classList.toggle("active", (b.dataset.tag || "") === active);
     });
   }
 

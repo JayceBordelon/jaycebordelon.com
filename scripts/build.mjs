@@ -5,7 +5,7 @@
  * Output: dist/ tree (plain HTML + CSS + images), drop-in for nginx.
  *
  * Pipeline:
- *   1. Render the background SVG once (math-generated, deterministic).
+ *   1. Read the background partial once (static markup, no generation).
  *   2. Render each src/pages/**.html through the layout partial.
  *   3. Render each src/posts/*.md to a blog post HTML via the post partial.
  *   4. Render the blog index with the list of post cards.
@@ -185,11 +185,16 @@ function configureMarked(highlighter) {
     renderer: {
       code({ text, lang }) {
         const language = resolveLang(highlighter, lang);
-        return highlighter.codeToHtml(text, {
+        const highlighted = highlighter.codeToHtml(text, {
           lang: language,
           themes: { light: "github-light-default", dark: "github-dark-default" },
           defaultColor: false,
         });
+        // Build-time wrapper: carries the small language label (CSS
+        // ::before reads data-lang) and anchors the copy button that
+        // copy-code.js appends at runtime.
+        const langAttr = language === "text" ? "" : ` data-lang="${language}"`;
+        return `<div class="code-block"${langAttr}>${highlighted}</div>\n`;
       },
       heading({ tokens, depth }) {
         const inner = this.parser.parseInline(tokens);
@@ -212,7 +217,7 @@ const layoutTemplate = read(join(SRC, "partials/layout.html"));
 const headerHome = read(join(SRC, "partials/header-home.html"));
 const headerBlog = read(join(SRC, "partials/header-blog.html"));
 const postTemplate = read(join(SRC, "partials/post.html"));
-// The background is a static, CSS-driven aurora (no per-path generation).
+// The background is a solid ground with one faint structural circle outline.
 const backgroundSVG = read(join(SRC, "partials/background.html"));
 
 function renderPage({ frontmatter, body, slug }) {
@@ -301,23 +306,17 @@ function buildPosts() {
 
     const tagBlock =
       data.tags && data.tags.length > 0
-        ? `<div class="flex flex-wrap gap-2 pt-2">${data.tags
+        ? `<div class="mt-5 flex flex-wrap gap-2">${data.tags
             .map(
               (t) =>
-                `<span class="inline-flex items-center rounded-md border border-input px-2 py-0.5 text-xs font-medium">${escapeHTML(t)}</span>`
+                `<span class="inline-flex items-center rounded-md border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-medium text-foreground">${escapeHTML(t)}</span>`
             )
             .join("")}</div>`
         : "";
 
     const readTimeBlock = data.readTime
-      ? `<span class="text-muted-foreground">&bull;</span>
-         <div class="flex items-center gap-1.5 text-sm text-muted-foreground">
-           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-             <circle cx="12" cy="12" r="10" />
-             <polyline points="12 6 12 12 16 14" />
-           </svg>
-           <span>${escapeHTML(data.readTime)}</span>
-         </div>`
+      ? `<span aria-hidden="true">&middot;</span>
+         <span>${escapeHTML(data.readTime)}</span>`
       : "";
 
     const body = applyTemplate(postTemplate, {
@@ -379,64 +378,27 @@ function buildPosts() {
  * ---------------------------------------------------------------- */
 
 function renderPostCard(post) {
-  const initials = authorInitials(post.author || "");
   const tags = (post.tags || [])
-    .map((t) => `<span class="tag inline-flex items-center rounded-md border border-input px-2 py-0.5 text-xs font-medium cursor-pointer hover:bg-accent" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`)
+    .map(
+      (t) =>
+        `<span class="tag inline-flex cursor-pointer items-center rounded-md border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-medium text-foreground transition-colors duration-150 hover:bg-accent/25" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`
+    )
     .join("");
 
-  const readTime = post.readTime
-    ? `<span>&bull;</span>
-       <div class="flex items-center gap-1">
-         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-           <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-         </svg>
-         <span>${escapeHTML(post.readTime)}</span>
-       </div>`
-    : "";
-
+  const readTime = post.readTime ? `<span aria-hidden="true">&middot;</span><span>${escapeHTML(post.readTime)}</span>` : "";
+  const label = post.label ? `<span class="text-accent">${escapeHTML(post.label)}</span><span aria-hidden="true">&middot;</span>` : "";
   const tagsAttr = (post.tags || []).map((t) => escapeHTML(t)).join("|");
 
   return `
-<a href="/blog/posts/${post.id}" class="group post-card" data-tags="${tagsAttr}">
-  <div class="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-all hover:shadow-lg">
-    <div class="relative aspect-video w-full overflow-hidden">
-      <img src="${escapeHTML(post.image)}" alt="${escapeHTML(post.title)}" class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-      <div class="absolute left-4 top-4">
-        <span class="inline-flex items-center rounded-md border border-border/50 bg-card/80 px-2.5 py-0.5 text-xs font-semibold text-foreground backdrop-blur-sm">${escapeHTML(post.label || "")}</span>
-      </div>
-    </div>
-    <div class="space-y-3 p-6">
-      <h3 class="line-clamp-2 text-xl font-semibold tracking-tight transition-colors group-hover:text-primary">${escapeHTML(post.title)}</h3>
-      <div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-        <div class="flex items-center gap-2">
-          <div class="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-semibold">${initials}</div>
-          <span class="font-medium">${escapeHTML(post.author)}</span>
-        </div>
-        <span>&bull;</span>
-        <div class="flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" />
-          </svg>
-          <time datetime="${escapeHTML(post.published)}">${formatDate(post.published)}</time>
-        </div>
-        ${readTime}
-      </div>
-      <div class="flex flex-wrap gap-1.5">${tags}</div>
-    </div>
-    <div class="flex-1 px-6 pb-2">
-      <p class="line-clamp-3 text-muted-foreground">${escapeHTML(post.summary || "")}</p>
-    </div>
-    <div class="px-6 pb-6 pt-2">
-      <span class="inline-flex items-center text-sm font-medium text-primary underline-offset-4 group-hover:underline">
-        Read article
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 transition-transform group-hover:translate-x-1" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-        </svg>
-      </span>
-    </div>
+<a href="/blog/posts/${post.id}" class="group post-card block border-b border-border py-9" data-tags="${tagsAttr}">
+  <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+    ${label}
+    <time datetime="${escapeHTML(post.published)}">${formatDate(post.published)}</time>
+    ${readTime}
   </div>
+  <h2 class="mt-3 font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"><span class="title-underline">${escapeHTML(post.title)}</span></h2>
+  <p class="mt-3 max-w-2xl leading-relaxed text-muted-foreground">${escapeHTML(post.summary || "")}</p>
+  <div class="mt-4 flex flex-wrap gap-2">${tags}</div>
 </a>`;
 }
 
@@ -447,18 +409,15 @@ function buildBlogIndex(posts) {
 
   const allTags = Array.from(new Set(posts.flatMap((p) => p.tags || [])));
   const tagButtons = [
-    `<button type="button" class="tag-button inline-flex items-center rounded-md bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground cursor-pointer" data-tag="">All Posts</button>`,
-    ...allTags.map(
-      (t) =>
-        `<button type="button" class="tag-button inline-flex items-center rounded-md border border-input px-2.5 py-0.5 text-xs font-semibold cursor-pointer hover:bg-accent" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>`
-    ),
+    `<button type="button" class="tag-button active" data-tag="">All Posts</button>`,
+    ...allTags.map((t) => `<button type="button" class="tag-button" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>`),
   ].join("");
 
   const cards = posts.map(renderPostCard).join("\n");
 
   const body = applyTemplate(content, {
     tagFilter: tagButtons,
-    postCards: cards || `<p class="col-span-full text-center py-12 text-muted-foreground text-lg">No posts yet.</p>`,
+    postCards: cards || `<p class="py-12 text-center text-lg text-muted-foreground">No posts yet.</p>`,
   });
 
   const html = renderPage({ frontmatter: data, body, slug: "/blog" });

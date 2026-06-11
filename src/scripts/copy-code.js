@@ -1,14 +1,14 @@
-// Adds a copy button to every Shiki code block in a post. Progressive
-// enhancement: the code is fully readable without JS; this only wires up
-// the clipboard affordance. Kept deliberately tiny (see CLAUDE.md JS budget).
+// Adds a copy button to every code block in a post. The build wraps each
+// Shiki block in a .code-block div (which also carries the language label);
+// this script only appends the clipboard affordance. Progressive
+// enhancement: the code is fully readable without JS. Kept deliberately
+// tiny (see CLAUDE.md JS budget).
 (function () {
-  const blocks = document.querySelectorAll("article .shiki");
+  const wrappers = document.querySelectorAll("article .code-block");
 
-  for (const block of blocks) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "code-block";
-    block.parentNode.insertBefore(wrapper, block);
-    wrapper.appendChild(block);
+  for (const wrapper of wrappers) {
+    const block = wrapper.querySelector(".shiki");
+    if (!block) continue;
 
     const button = document.createElement("button");
     button.type = "button";

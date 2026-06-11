@@ -15,14 +15,14 @@ src/
 │   └── blog/index.html   Blog index (cards generated at build time)
 ├── partials/      Reused HTML fragments injected by the build
 │   ├── layout.html       <head> + body shell with {{ placeholders }}
-│   ├── header-home.html  Transparent header used on /
-│   ├── header-blog.html  Solid header used on /blog and post pages
-│   ├── background.html   Background SVG with 160 animated paths
+│   ├── header-home.html  Fixed header used on /
+│   ├── header-blog.html  Sticky header used on /blog and post pages
+│   ├── background.html   Solid background with one faint circle outline
 │   └── post.html         Per-post article wrapper
 ├── posts/         Blog posts in markdown with YAML frontmatter
 ├── scripts/       Vanilla JS shipped to the browser (theme toggle,
 │                  typing animation, blog filter, copy-code button)
-└── styles.css     Tailwind v4 input — design tokens + reveal/glow keyframes
+└── styles.css     Tailwind v4 input — design tokens + motion and component styles
 
 scripts/
 └── build.mjs      The whole build. Renders pages, posts, sitemap, robots.
@@ -33,7 +33,7 @@ scripts/
 | Component | Choice |
 |---|---|
 | Markup | Plain HTML in `src/pages/` + `src/partials/` |
-| Styles | Tailwind v4 (CLI compile), with `globals.css` design tokens copied from the previous shadcn config so the look is identical |
+| Styles | Tailwind v4 (CLI compile), with the Porcelain and Petrol design tokens defined as CSS variables in `src/styles.css` |
 | Content | Markdown in `src/posts/`, rendered via `marked` at build time. Code blocks highlighted by Shiki (build-time, dual light/dark); supports `:::note`/`tip`/`warning`/`danger` admonitions and auto heading anchors. |
 | Interactivity | ~150 LOC of vanilla JS across four files (theme, typing, blog filter, copy-code). No bundler, no client framework. |
 | Build | One Node script. ~200ms HTML, ~150ms Tailwind. |
@@ -101,7 +101,7 @@ There is no SSH, no droplet, no compose file. Cloudflare Pages auto-provisions a
 
 ## Design system
 
-Carried over from the previous shadcn config: same CSS variables for the palette, same font stack (Plus Jakarta Sans, JetBrains Mono, Source Serif 4 for blog typography), same `--radius` and shadow scale. The shadcn React components themselves are gone; what survives is the design tokens and the Tailwind utility classes, applied directly to plain HTML.
+Porcelain and Petrol. Light theme: cool porcelain background (#F3F4F1) with deep petrol (#14404D) for all text including body, desaturated petrol (#5C7780) for secondary text, and a warm apricot accent (#E8956D) used precisely for active nav, link underlines, tag chips, the typing caret, and focus rings. Dark theme: deep petrol background (#0D2832) with porcelain text (#EAEEEC) and the same apricot accent. Fonts: Bricolage Grotesque for display and headings, Public Sans for body and UI, JetBrains Mono for code. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
 
 ## CI / CD
 
