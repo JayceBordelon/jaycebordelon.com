@@ -70,3 +70,6 @@ docker-compose.override.yml
 *.bak
 *.tmp
 *.temp
+
+# Resume LaTeX source (local only; compiled PDF ships at public/Resume.pdf)
+resume/
