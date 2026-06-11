@@ -1,16 +1,26 @@
 <article class="mx-auto w-full max-w-3xl px-5 pb-24 pt-14 sm:px-6 sm:pt-20">
-  <header class="rise">
-    <p class="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-accent">{{ label }}</p>
+  <header class="draft title-block corner-brackets border border-border">
+    <div class="px-5 pb-7 pt-6 sm:px-7">
+      <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.26em] text-accent">{{ label }}</p>
 
-    <h1 class="mt-4 font-display text-4xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-5xl md:text-6xl">{{ title }}</h1>
+      <h1 class="mt-4 font-display text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl md:text-[2.6rem]">{{ title }}</h1>
 
-    <p class="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl">{{ summary }}</p>
+      <p class="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">{{ summary }}</p>
+    </div>
 
-    <div class="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-5 text-sm text-muted-foreground">
-      <span class="font-medium text-foreground">{{ author }}</span>
-      <span>{{ authorDesc }}</span>
-      <span aria-hidden="true">&middot;</span>
-      <time datetime="{{ published }}">{{ publishedFormatted }}</time>
+    <div class="tb-grid">
+      <div class="tb-cell">
+        <span class="tb-label" aria-hidden="true">Drawn By</span>
+        <span>{{ author }}</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tb-label" aria-hidden="true">Role</span>
+        <span>{{ authorDesc }}</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tb-label" aria-hidden="true">Date</span>
+        <time datetime="{{ published }}">{{ publishedFormatted }}</time>
+      </div>
       {{ readTimeBlock }}
     </div>
 
@@ -22,8 +32,8 @@
   </div>
 
   <footer class="mt-16 border-t border-border pt-8">
-    <a href="/blog" class="group inline-flex items-center gap-2 text-sm font-medium text-foreground">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <a href="/blog" class="group inline-flex items-center gap-2.5 font-mono text-xs font-medium uppercase tracking-[0.16em] text-foreground transition-colors duration-150 hover:text-accent">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="m12 19-7-7 7-7" />
         <path d="M19 12H5" />
       </svg>

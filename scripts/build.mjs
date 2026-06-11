@@ -187,7 +187,7 @@ function configureMarked(highlighter) {
         const language = resolveLang(highlighter, lang);
         const highlighted = highlighter.codeToHtml(text, {
           lang: language,
-          themes: { light: "github-light-default", dark: "github-dark-default" },
+          themes: { light: "github-light-default", dark: "nord" },
           defaultColor: false,
         });
         // Build-time wrapper: carries the small language label (CSS
@@ -217,7 +217,8 @@ const layoutTemplate = read(join(SRC, "partials/layout.html"));
 const headerHome = read(join(SRC, "partials/header-home.html"));
 const headerBlog = read(join(SRC, "partials/header-blog.html"));
 const postTemplate = read(join(SRC, "partials/post.html"));
-// The background is a solid ground with one faint structural circle outline.
+// The background is the drawing sheet: graph-paper grid, double frame,
+// registration marks, and grid-zone references.
 const backgroundSVG = read(join(SRC, "partials/background.html"));
 
 function renderPage({ frontmatter, body, slug }) {
@@ -304,20 +305,25 @@ function buildPosts() {
     const { data, content } = matter(raw);
     const html = marked.parse(content);
 
+    // Final row of the title block: tags as small mono part labels.
     const tagBlock =
       data.tags && data.tags.length > 0
-        ? `<div class="mt-5 flex flex-wrap gap-2">${data.tags
+        ? `<div class="flex flex-wrap gap-2 border-t border-border px-5 py-3 sm:px-7">${data.tags
             .map(
               (t) =>
-                `<span class="inline-flex items-center rounded-md border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-medium text-foreground">${escapeHTML(t)}</span>`
+                `<span class="inline-flex items-center border border-border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">${escapeHTML(t)}</span>`
             )
             .join("")}</div>`
         : "";
 
+    // Fourth title-block cell. Falls back to an empty cell so the
+    // 4-column grid stays fully ruled when a post omits readTime.
     const readTimeBlock = data.readTime
-      ? `<span aria-hidden="true">&middot;</span>
-         <span>${escapeHTML(data.readTime)}</span>`
-      : "";
+      ? `<div class="tb-cell">
+        <span class="tb-label" aria-hidden="true">Read Time</span>
+        <span>${escapeHTML(data.readTime)}</span>
+      </div>`
+      : `<div class="tb-cell" aria-hidden="true"></div>`;
 
     const body = applyTemplate(postTemplate, {
       label: escapeHTML(data.label || ""),
@@ -377,28 +383,36 @@ function buildPosts() {
  * Blog index                                                        *
  * ---------------------------------------------------------------- */
 
-function renderPostCard(post) {
+// Each card reads like a spec sheet: a ruled mono header strip with a
+// part number, the body below, tags as small part labels. Hover reveals
+// corner brackets and measurement ticks (see .spec-card in styles.css).
+function renderPostCard(post, index) {
+  const num = String(index + 1).padStart(3, "0");
   const tags = (post.tags || [])
     .map(
       (t) =>
-        `<span class="tag inline-flex cursor-pointer items-center rounded-md border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-medium text-foreground transition-colors duration-150 hover:bg-accent/25" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`
+        `<span class="tag inline-flex cursor-pointer items-center border border-border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors duration-150 hover:border-accent hover:text-accent" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`
     )
     .join("");
 
-  const readTime = post.readTime ? `<span aria-hidden="true">&middot;</span><span>${escapeHTML(post.readTime)}</span>` : "";
-  const label = post.label ? `<span class="text-accent">${escapeHTML(post.label)}</span><span aria-hidden="true">&middot;</span>` : "";
+  const readTime = post.readTime ? `<span aria-hidden="true">/</span><span>${escapeHTML(post.readTime)}</span>` : "";
+  const label = post.label ? `<span class="text-accent">${escapeHTML(post.label)}</span><span aria-hidden="true">/</span>` : "";
   const tagsAttr = (post.tags || []).map((t) => escapeHTML(t)).join("|");
 
   return `
-<a href="/blog/posts/${post.id}" class="group post-card block border-b border-border py-9" data-tags="${tagsAttr}">
-  <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+<a href="/blog/posts/${post.id}" class="group post-card spec-card corner-brackets block border border-border bg-card/50" data-tags="${tagsAttr}">
+  <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-border px-5 py-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
+    <span class="text-redline" aria-hidden="true">No. ${num}</span>
+    <span aria-hidden="true">/</span>
     ${label}
     <time datetime="${escapeHTML(post.published)}">${formatDate(post.published)}</time>
     ${readTime}
   </div>
-  <h2 class="mt-3 font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"><span class="title-underline">${escapeHTML(post.title)}</span></h2>
-  <p class="mt-3 max-w-2xl leading-relaxed text-muted-foreground">${escapeHTML(post.summary || "")}</p>
-  <div class="mt-4 flex flex-wrap gap-2">${tags}</div>
+  <div class="px-5 py-5 sm:px-6 sm:py-6">
+    <h2 class="font-display text-xl font-semibold leading-snug tracking-tight text-foreground transition-colors duration-150 group-hover:text-accent sm:text-2xl">${escapeHTML(post.title)}</h2>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">${escapeHTML(post.summary || "")}</p>
+    <div class="mt-4 flex flex-wrap gap-2">${tags}</div>
+  </div>
 </a>`;
 }
 
@@ -413,11 +427,11 @@ function buildBlogIndex(posts) {
     ...allTags.map((t) => `<button type="button" class="tag-button" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>`),
   ].join("");
 
-  const cards = posts.map(renderPostCard).join("\n");
+  const cards = posts.map((post, index) => renderPostCard(post, index)).join("\n");
 
   const body = applyTemplate(content, {
     tagFilter: tagButtons,
-    postCards: cards || `<p class="py-12 text-center text-lg text-muted-foreground">No posts yet.</p>`,
+    postCards: cards || `<p class="border border-border py-12 text-center font-mono text-sm uppercase tracking-[0.18em] text-muted-foreground">No posts yet.</p>`,
   });
 
   const html = renderPage({ frontmatter: data, body, slug: "/blog" });
@@ -465,7 +479,7 @@ async function main() {
   mkdirSync(DIST, { recursive: true });
 
   const highlighter = await createHighlighter({
-    themes: ["github-light-default", "github-dark-default"],
+    themes: ["github-light-default", "nord"],
     langs: SHIKI_LANGS,
   });
   configureMarked(highlighter);

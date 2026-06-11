@@ -65,9 +65,9 @@ Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the l
 
 ## Design system
 
-Porcelain and Petrol. A color-confident light design where body text is deep petrol (#14404D) instead of black on a cool porcelain ground (#F3F4F1), with a warm apricot accent (#E8956D) used precisely: active nav, link underlines, tag chips, the typing caret, focus rings. The dark theme inverts onto deep petrol (#0D2832) with porcelain text and keeps the apricot accent. All tokens live as CSS variables in `src/styles.css`; hairlines are the text color at 12% alpha via `--border`.
+Engineering blueprint. The site reads as a technical drawing: a graph-paper grid (minor line every 24px, major every 120px), a double sheet frame with registration crosshairs and grid-zone references, dimension-line underlines with end ticks, and spec-sheet cards with part numbers. Light theme is vellum drafting paper (#F4F1E8) with blue ink (#1C3A57 body, #1F5FAE accent) and a red revision pen (#BE3D24) for small marks. Dark theme is a midnight blueprint field (#0A1524) with white-blue text (#D8E4F2), cyan linework (#6FD2E8), and a warm markup orange (#F37E5A). Corners are square everywhere (`--radius: 0`); hairlines are ink at ~22% alpha via `--border`. It must never read as a CRT terminal: no green-on-black, no scanlines.
 
-Fonts: Bricolage Grotesque for display and headings, Public Sans for body and UI, JetBrains Mono for code only. Visual changes should stay consistent with the tokens.
+Fonts: Spline Sans Mono for display, annotations, and code; Spline Sans for body and UI. Visual changes should stay consistent with the tokens in `src/styles.css`.
 
 ## Hosting
 

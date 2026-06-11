@@ -14,23 +14,32 @@ pageScripts: |
 <section class="flex h-dvh items-center px-5 pt-16 sm:px-6">
   <div class="mx-auto flex w-full max-w-5xl flex-col-reverse items-start gap-10 md:flex-row md:items-center md:justify-between md:gap-16">
     <div class="max-w-xl">
-      <p class="rise flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.18em] text-accent" style="--rise-delay: 60ms;">
+      <p class="draft hidden font-mono text-[11px] font-medium uppercase tracking-[0.3em] sm:block" style="--draft-delay: 60ms;" aria-hidden="true">
+        <span class="text-accent">DWG NO. JB-001</span>
+        <span class="ml-3 text-redline">REV A</span>
+      </p>
+
+      <p class="draft flex items-center gap-3 font-mono text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground sm:mt-6 sm:text-sm" style="--draft-delay: 140ms;">
         <span class="inline-block h-px w-8 bg-accent" aria-hidden="true"></span>Software Engineer
       </p>
 
-      <h1 class="rise mt-5 font-display text-6xl font-bold leading-[0.95] tracking-tight text-foreground sm:text-7xl lg:text-8xl" style="--rise-delay: 140ms;">
+      <h1 class="draft mt-5 font-display text-5xl font-bold uppercase leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-7xl" style="--draft-delay: 220ms;">
         <span class="block">Jayce</span> <span class="block">Bordelon</span>
       </h1>
 
-      <div class="rise mt-7 flex h-8 items-center" style="--rise-delay: 220ms;">
+      <div class="dim-line dim-draw draft mt-5 max-w-md" style="--draft-delay: 420ms;" aria-hidden="true">
+        <span class="dim-label">Scale 1 : 1</span>
+      </div>
+
+      <div class="draft mt-6 flex h-8 items-center" style="--draft-delay: 340ms;">
         <span
           id="typing"
           data-words='["Mechanize Inc. - SWE", "WashU - CS Alum"]'
-          class="text-lg text-muted-foreground sm:text-xl"
+          class="font-mono text-base text-muted-foreground sm:text-lg"
         ></span><span class="typing-caret" aria-hidden="true"></span>
       </div>
 
-      <ul class="rise mt-10 flex flex-wrap items-center gap-3" style="--rise-delay: 300ms;">
+      <ul class="draft mt-8 flex flex-wrap items-center gap-3 sm:mt-10" style="--draft-delay: 460ms;">
         <li>
           <a
             href="https://calendly.com/jaycebordelon/30min"
@@ -38,7 +47,7 @@ pageScripts: |
             rel="noopener noreferrer"
             title="Meet With Me"
             aria-label="Meet With Me"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-[11px] border border-border text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -55,7 +64,7 @@ pageScripts: |
             rel="noopener noreferrer"
             title="GitHub"
             aria-label="GitHub"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-[11px] border border-border text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 .5C5.4.5 0 5.9 0 12.5c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.3 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6C20.6 22.3 24 17.8 24 12.5 24 5.9 18.6.5 12 .5z" />
@@ -69,7 +78,7 @@ pageScripts: |
             rel="noopener noreferrer"
             title="LinkedIn"
             aria-label="LinkedIn"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-[11px] border border-border text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.91 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
@@ -83,7 +92,7 @@ pageScripts: |
             rel="noopener noreferrer"
             title="VibeTradez"
             aria-label="VibeTradez"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-[11px] border border-border text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M3 3v18h18" />
@@ -98,7 +107,7 @@ pageScripts: |
             rel="noopener noreferrer"
             title="Mechanize"
             aria-label="Mechanize"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-[11px] border border-border text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -113,7 +122,7 @@ pageScripts: |
             rel="noopener noreferrer"
             title="Strava"
             aria-label="Strava"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-[11px] border border-border text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground"
+            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
@@ -123,14 +132,20 @@ pageScripts: |
       </ul>
     </div>
 
-    <div class="rise shrink-0" style="--rise-delay: 200ms;">
-      <img
-        src="/images/dawg.jpg"
-        alt="Jayce Bordelon"
-        width="280"
-        height="280"
-        class="h-auto w-36 rounded-2xl border border-border sm:w-48 md:w-72"
-      />
-    </div>
+    <figure class="draft shrink-0" style="--draft-delay: 300ms;">
+      <div class="crop-marks">
+        <img
+          src="/images/dawg.jpg"
+          alt="Jayce Bordelon"
+          width="280"
+          height="280"
+          class="h-auto w-32 border border-border sm:w-48 md:w-72"
+        />
+      </div>
+      <figcaption class="mt-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground" aria-hidden="true">
+        <span>Fig. 1</span>
+        <span class="hidden text-redline sm:inline">280 &times; 280</span>
+      </figcaption>
+    </figure>
   </div>
 </section>
