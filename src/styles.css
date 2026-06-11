@@ -274,58 +274,6 @@
  * default and switch to the dark vars under html.dark, so highlighting
  * follows the theme toggle with zero client JS.                         */
 @layer components {
-  .prose {
-    --tw-prose-body: var(--foreground);
-    --tw-prose-headings: var(--foreground);
-    --tw-prose-lead: var(--muted-foreground);
-    --tw-prose-links: var(--foreground);
-    --tw-prose-bold: var(--foreground);
-    --tw-prose-counters: var(--muted-foreground);
-    --tw-prose-bullets: var(--accent);
-    --tw-prose-hr: var(--border);
-    --tw-prose-quotes: var(--foreground);
-    --tw-prose-quote-borders: var(--accent);
-    --tw-prose-captions: var(--muted-foreground);
-    --tw-prose-code: var(--foreground);
-    --tw-prose-th-borders: var(--border);
-    --tw-prose-td-borders: var(--border);
-    font-family: var(--font-sans);
-  }
-  .prose :is(h1, h2, h3, h4) {
-    font-family: var(--font-display);
-    font-weight: 650;
-    letter-spacing: -0.015em;
-  }
-  .prose a {
-    font-weight: 500;
-    text-decoration: underline;
-    text-decoration-color: var(--accent);
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 3px;
-    transition: text-decoration-thickness 150ms ease;
-  }
-  .prose a:hover {
-    text-decoration-thickness: 3px;
-  }
-  .prose blockquote {
-    font-style: normal;
-    color: var(--muted-foreground);
-  }
-
-  /* Token + surface colors from Shiki's dual-theme variables.
-     Scoped under `.prose pre.shiki` (specificity 0,2,1) so they outrank
-     the Tailwind Typography plugin's `.prose :where(pre)` rule (0,1,0),
-     which otherwise wins on source order and forces its near-white
-     --tw-prose-pre-code onto the base text. */
-  .prose pre.shiki,
-  .prose pre.shiki span {
-    color: var(--shiki-light);
-  }
-  html.dark .prose pre.shiki,
-  html.dark .prose pre.shiki span {
-    color: var(--shiki-dark);
-  }
-
   /* Build-time wrapper around each fenced block; carries the language
      label and positions the copy button added by copy-code.js. */
   .code-block {
@@ -349,57 +297,6 @@
   .code-block:hover::before,
   .code-block:focus-within::before {
     opacity: 0;
-  }
-
-  .prose pre.shiki {
-    margin: 0;
-    padding: 1rem 1.15rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    /* Override the var the Typography plugin's (later-layer) pre rule
-       reads, so its background-color resolves to ours instead of its
-       dark default. The light surface is the supporting tint. */
-    --tw-prose-pre-bg: var(--muted);
-    background-color: var(--muted);
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    line-height: 1.65;
-  }
-  html.dark .prose pre.shiki {
-    --tw-prose-pre-bg: var(--card);
-    background-color: var(--card);
-  }
-  .prose pre.shiki code {
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: 400;
-    background: none;
-    padding: 0;
-    border: 0;
-    color: inherit;
-  }
-  /* Kill the typography plugin's inline-code backtick quotes inside code blocks */
-  .prose pre.shiki code::before,
-  .prose pre.shiki code::after {
-    content: none;
-  }
-
-  /* Inline code on the surface tint, no backtick quotes */
-  .prose :not(pre) > code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    font-weight: 500;
-    background-color: var(--muted);
-    color: var(--foreground);
-    padding: 0.15em 0.4em;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-  }
-  .prose :not(pre) > code::before,
-  .prose :not(pre) > code::after {
-    content: none;
   }
 
   /* Copy-to-clipboard button (added by copy-code.js) */
@@ -512,4 +409,106 @@
   .admonition-danger .admonition-title {
     color: var(--destructive);
   }
+}
+
+/* --- Prose token wiring (must stay OUTSIDE any @layer) -------------- *
+ * The Typography plugin emits its .prose defaults (near-black gray
+ * headings, gray-700 body) into @layer utilities, which outranks
+ * @layer components regardless of selector specificity. Un-layered
+ * author rules outrank every layer, so these live at the top level.
+ * Inside a layer they silently lose and dark mode renders near-black
+ * text on the petrol background.                                        */
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--foreground);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--accent);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+  font-family: var(--font-sans);
+}
+.prose :is(h1, h2, h3, h4) {
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+.prose a {
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: text-decoration-thickness 150ms ease;
+}
+.prose a:hover {
+  text-decoration-thickness: 3px;
+}
+.prose blockquote {
+  font-style: normal;
+  color: var(--muted-foreground);
+}
+
+/* Token + surface colors from Shiki's dual-theme variables. */
+.prose pre.shiki,
+.prose pre.shiki span {
+  color: var(--shiki-light);
+}
+html.dark .prose pre.shiki,
+html.dark .prose pre.shiki span {
+  color: var(--shiki-dark);
+}
+.prose pre.shiki {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  --tw-prose-pre-bg: var(--muted);
+  background-color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+html.dark .prose pre.shiki {
+  --tw-prose-pre-bg: var(--card);
+  background-color: var(--card);
+}
+.prose pre.shiki code {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  background: none;
+  padding: 0;
+  border: 0;
+  color: inherit;
+}
+/* Kill the typography plugin's inline-code backtick quotes inside code blocks */
+.prose pre.shiki code::before,
+.prose pre.shiki code::after {
+  content: none;
+}
+
+/* Inline code on the surface tint, no backtick quotes */
+.prose :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  font-weight: 500;
+  background-color: var(--muted);
+  color: var(--foreground);
+  padding: 0.15em 0.4em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
 }
