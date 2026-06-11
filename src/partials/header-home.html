@@ -1,37 +1,14 @@
-<header class="fixed top-0 z-50 w-full bg-transparent py-4">
-  <div class="mx-auto flex max-w-6xl items-center justify-between px-6">
-    <a href="/" class="flex items-center transition-opacity hover:opacity-80" aria-label="Home">
-      <img src="/images/logo.png" alt="" width="48" height="48" class="h-12 w-12" />
-    </a>
-    <nav class="flex items-center gap-3">
-      <a
-        href="/blog"
-        class="inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-      >
-        Blog
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20" />
-        </svg>
-      </a>
-      <a
-        href="/Resume.pdf"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-          <path d="M8 13h8" />
-          <path d="M8 17h6" />
-        </svg>
-        Resume
-      </a>
+<header class="fixed top-0 z-50 w-full border-b border-border bg-background">
+  <div class="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 sm:px-6">
+    <a href="/" class="font-display text-base font-bold tracking-tight text-foreground transition-colors duration-150 hover:text-muted-foreground sm:text-lg" aria-label="Home">Jayce Bordelon</a>
+    <nav class="flex items-center gap-4 sm:gap-6">
+      <a href="/blog" class="nav-link">Blog</a>
+      <a href="/Resume.pdf" target="_blank" rel="noopener noreferrer" class="nav-link">Resume</a>
       <button
         type="button"
         id="theme-toggle"
         aria-label="Toggle theme"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-[10px] text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden dark:block" aria-hidden="true">
           <circle cx="12" cy="12" r="4" />

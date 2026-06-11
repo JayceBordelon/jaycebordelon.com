@@ -65,9 +65,9 @@ Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the l
 
 ## Design system
 
-Carried over from the previous shadcn config: same CSS variables in `src/styles.css`, same fonts (Plus Jakarta Sans, JetBrains Mono, Source Serif 4 for serif blog body), same `--radius` and shadow scale. Visual changes should stay consistent with the tokens.
+Porcelain and Petrol. A color-confident light design where body text is deep petrol (#14404D) instead of black on a cool porcelain ground (#F3F4F1), with a warm apricot accent (#E8956D) used precisely: active nav, link underlines, tag chips, the typing caret, focus rings. The dark theme inverts onto deep petrol (#0D2832) with porcelain text and keeps the apricot accent. All tokens live as CSS variables in `src/styles.css`; hairlines are the text color at 12% alpha via `--border`.
 
-The shadcn React components themselves are gone. What survives is the design tokens + the Tailwind utility-class strings. Re-applying a shadcn-style Card, Badge, etc. means hand-writing the same `class="..."` string used in the original component.
+Fonts: Bricolage Grotesque for display and headings, Public Sans for body and UI, JetBrains Mono for code only. Visual changes should stay consistent with the tokens.
 
 ## Hosting
 
