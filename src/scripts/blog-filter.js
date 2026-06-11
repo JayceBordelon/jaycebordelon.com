@@ -11,7 +11,7 @@
   function setActive(active) {
     buttons.forEach(function (b) {
       // One class carries the visual state; styles live in styles.css
-      // (.tag-button vs .tag-button.active, solid apricot when active).
+      // (.tag-button vs .tag-button.active, filled ink when active).
       b.classList.toggle("active", (b.dataset.tag || "") === active);
     });
   }

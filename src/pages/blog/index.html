@@ -13,18 +13,26 @@ pageScripts: |
 ---
 <section class="px-5 pb-24 pt-16 sm:px-6 sm:pt-24">
   <div class="mx-auto w-full max-w-3xl">
-    <h1 class="rise font-display text-5xl font-bold tracking-tight text-foreground sm:text-6xl">Blog Posts</h1>
-    <p class="rise mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground" style="--rise-delay: 80ms;">
+    <p class="draft font-mono text-[11px] font-medium uppercase tracking-[0.3em]" aria-hidden="true">
+      <span class="text-accent">DWG NO. JB-002</span>
+      <span class="ml-3 text-redline">SHEET 1 OF 1</span>
+    </p>
+
+    <h1 class="draft mt-5 font-display text-4xl font-bold uppercase tracking-tight text-foreground sm:text-5xl" style="--draft-delay: 80ms;">Blog Posts</h1>
+
+    <div class="sheet-rule draw mt-6" style="--draft-delay: 200ms;" aria-hidden="true"></div>
+
+    <p class="draft mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground" style="--draft-delay: 160ms;">
       My takes on stuff. These posts are filled with opinions ranging from technical architecture and programming to career advice and general, personal musings.
     </p>
 
-    <div id="tag-filter" class="rise mt-10 flex flex-wrap gap-2" style="--rise-delay: 160ms;">
+    <div id="tag-filter" class="draft mt-10 flex flex-wrap gap-2" style="--draft-delay: 240ms;">
       {{ tagFilter }}
     </div>
 
-    <div id="posts-grid" class="rise mt-8 flex flex-col" style="--rise-delay: 240ms;">
+    <div id="posts-grid" class="draft mt-8 flex flex-col gap-5" style="--draft-delay: 320ms;">
       {{ postCards }}
     </div>
-    <p id="no-posts" class="hidden py-12 text-center text-lg text-muted-foreground">No posts found matching your criteria.</p>
+    <p id="no-posts" class="hidden border border-border py-12 text-center font-mono text-sm uppercase tracking-[0.18em] text-muted-foreground">No posts found matching your criteria.</p>
   </div>
 </section>

@@ -17,7 +17,7 @@ src/
 │   ├── layout.html       <head> + body shell with {{ placeholders }}
 │   ├── header-home.html  Fixed header used on /
 │   ├── header-blog.html  Sticky header used on /blog and post pages
-│   ├── background.html   Solid background with one faint circle outline
+│   ├── background.html   Blueprint sheet: grid, frame, registration marks
 │   └── post.html         Per-post article wrapper
 ├── posts/         Blog posts in markdown with YAML frontmatter
 ├── scripts/       Vanilla JS shipped to the browser (theme toggle,
@@ -33,7 +33,7 @@ scripts/
 | Component | Choice |
 |---|---|
 | Markup | Plain HTML in `src/pages/` + `src/partials/` |
-| Styles | Tailwind v4 (CLI compile), with the Porcelain and Petrol design tokens defined as CSS variables in `src/styles.css` |
+| Styles | Tailwind v4 (CLI compile), with the engineering-blueprint design tokens defined as CSS variables in `src/styles.css` |
 | Content | Markdown in `src/posts/`, rendered via `marked` at build time. Code blocks highlighted by Shiki (build-time, dual light/dark); supports `:::note`/`tip`/`warning`/`danger` admonitions and auto heading anchors. |
 | Interactivity | ~150 LOC of vanilla JS across four files (theme, typing, blog filter, copy-code). No bundler, no client framework. |
 | Build | One Node script. ~200ms HTML, ~150ms Tailwind. |
@@ -101,7 +101,7 @@ There is no SSH, no droplet, no compose file. Cloudflare Pages auto-provisions a
 
 ## Design system
 
-Porcelain and Petrol. Light theme: cool porcelain background (#F3F4F1) with deep petrol (#14404D) for all text including body, desaturated petrol (#5C7780) for secondary text, and a warm apricot accent (#E8956D) used precisely for active nav, link underlines, tag chips, the typing caret, and focus rings. Dark theme: deep petrol background (#0D2832) with porcelain text (#EAEEEC) and the same apricot accent. Fonts: Bricolage Grotesque for display and headings, Public Sans for body and UI, JetBrains Mono for code. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
+Engineering blueprint. The site is styled as a technical drawing sheet: graph-paper grid, double sheet frame with registration marks, dimension-line underlines, title blocks, and spec-sheet post cards. Light theme: vellum drafting paper (#F4F1E8) with blue ink (#1C3A57 body, #1F5FAE accent) and a red revision pen (#BE3D24) for annotations. Dark theme: midnight blueprint field (#0A1524) with white-blue text (#D8E4F2) and cyan linework (#6FD2E8). Fonts: Spline Sans Mono for display, annotations, and code; Spline Sans for body and UI. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
 
 ## CI / CD
 
