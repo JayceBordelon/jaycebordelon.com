@@ -9,10 +9,23 @@ header: home
 htmlClass: ""
 bodyClass: "h-dvh overflow-hidden"
 pageScripts: |
+  <script src="/scripts/plotter.js" defer></script>
   <script src="/scripts/typing.js" defer></script>
 ---
-<section class="flex h-dvh items-center px-5 pt-16 sm:px-6">
-  <div class="mx-auto flex w-full max-w-5xl flex-col-reverse items-start gap-10 md:flex-row md:items-center md:justify-between md:gap-16">
+<!-- The Plotter: a fine drafting pen traces the sheet on load, then lifts
+     away. JS-only enhancement; with no JS the CSS .draft reveal stands alone. -->
+<div id="plot-overlay" class="plot-overlay" aria-hidden="true">
+  <svg class="plot-trace" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+    <rect class="plot-trace-rect" x="6" y="8" width="88" height="84" pathLength="100" vector-effect="non-scaling-stroke" />
+  </svg>
+  <div class="plot-status">
+    <span class="plot-status-prompt" aria-hidden="true">$</span>
+    <span class="plot-status-label">render --hero</span>
+    <span class="plot-status-track"><span class="plot-status-fill"></span></span>
+  </div>
+</div>
+<section class="flex h-dvh items-center px-7 pt-16 sm:px-8 lg:px-12">
+  <div class="mx-auto flex w-full max-w-5xl flex-col-reverse items-start gap-8 md:flex-row md:items-center md:justify-between md:gap-16">
     <div class="max-w-xl">
       <p class="draft hidden font-mono text-[11px] font-medium uppercase tracking-[0.3em] sm:block" style="--draft-delay: 60ms;" aria-hidden="true">
         <span class="text-accent">DWG NO. JB-001</span>
@@ -20,7 +33,7 @@ pageScripts: |
       </p>
 
       <p class="draft flex items-center gap-3 font-mono text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground sm:mt-6 sm:text-sm" style="--draft-delay: 140ms;">
-        <span class="inline-block h-px w-8 bg-accent" aria-hidden="true"></span>Software Engineer
+        <span class="inline-block h-px w-8 bg-accent" aria-hidden="true"></span>Building Stuff
       </p>
 
       <h1 class="draft mt-5 font-display text-5xl font-bold uppercase leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-7xl" style="--draft-delay: 220ms;">
@@ -137,14 +150,14 @@ pageScripts: |
         <img
           src="/images/dawg.jpg"
           alt="Jayce Bordelon"
-          width="280"
-          height="280"
-          class="h-auto w-32 border border-border sm:w-48 md:w-72"
+          width="1179"
+          height="1462"
+          class="h-auto w-40 border border-border sm:w-48 md:w-72"
         />
       </div>
-      <figcaption class="mt-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground" aria-hidden="true">
+      <figcaption class="mt-4 flex items-baseline justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground" aria-hidden="true">
         <span>Fig. 1</span>
-        <span class="hidden text-redline sm:inline">280 &times; 280</span>
+        <span class="text-redline">1179 &times; 1462</span>
       </figcaption>
     </figure>
   </div>

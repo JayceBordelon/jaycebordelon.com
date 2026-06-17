@@ -302,7 +302,10 @@
     opacity: 0;
     transform: translateY(10px);
     animation: draft-in 0.55s cubic-bezier(0.25, 0.7, 0.3, 1) forwards;
-    animation-delay: var(--draft-delay, 0ms);
+    /* --plot-shift (default 0) lets the JS plotter path push the whole
+       reveal back so each element inks in as the pen passes; the no-JS
+       timeline keeps the original cadence. */
+    animation-delay: calc(var(--draft-delay, 0ms) + var(--plot-shift, 0ms));
   }
   @keyframes draft-in {
     to {
@@ -315,7 +318,7 @@
     transform: scaleX(0);
     transform-origin: left center;
     animation: draw-in 0.7s cubic-bezier(0.65, 0, 0.25, 1) forwards;
-    animation-delay: var(--draft-delay, 0ms);
+    animation-delay: calc(var(--draft-delay, 0ms) + var(--plot-shift, 0ms));
   }
   @keyframes draw-in {
     to {
@@ -365,6 +368,169 @@
   }
 }
 
+/* --- The Plotter: the sheet draws itself on first load --------------- *
+ * Concept: on load the drawing assembles itself — an SVG perimeter strokes
+ * itself along its length, the content inks in in order, and a quiet
+ * drafting-status caption fills a progress line, then it all lifts away.
+ *
+ * Progressive enhancement: the overlay markup is inert until plotter.js
+ * adds `js-plot` to <html>; with no JS the existing .draft reveal above
+ * stands alone and every element is fully visible. The overlay is always
+ * pointer-events:none and removes itself at the end, so nothing lingers
+ * over the page.                                                          */
+@layer components {
+  .plot-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    overflow: hidden;
+    /* Inert by default (no JS) so it never covers content. */
+    opacity: 0;
+    visibility: hidden;
+  }
+  .js-plot .plot-overlay {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.45s ease-out;
+  }
+  /* Once the plot completes, dim the whole rig out, then JS removes it. */
+  .js-plot.plot-done .plot-overlay {
+    opacity: 0;
+  }
+
+  /* The SVG perimeter the pen traces — strokes itself via dashoffset. */
+  .plot-trace {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .plot-trace-rect {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5px;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  .js-plot .plot-trace-rect {
+    animation: plot-stroke 1.5s cubic-bezier(0.7, 0, 0.3, 1) 0.05s forwards;
+  }
+  @keyframes plot-stroke {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* A quiet, centered drafting-status caption — not a tactical HUD: a small
+     datum square, a label, and a dimension-line track that inks in left to
+     right. No live coordinates, no blink, no percent counter. */
+  .plot-status {
+    position: absolute;
+    left: 50%;
+    bottom: 34px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--muted-foreground);
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  .js-plot .plot-status {
+    animation: plot-status-in 0.45s ease-out 0.15s forwards;
+  }
+  @keyframes plot-status-in {
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  .plot-status-prompt {
+    flex: none;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .plot-status-label {
+    color: var(--foreground);
+  }
+  /* The progress track is a small dimension line; the fill is the ink. */
+  .plot-status-track {
+    position: relative;
+    width: 132px;
+    height: 5px;
+    border-left: 1px solid var(--dim-color);
+    border-right: 1px solid var(--dim-color);
+  }
+  .plot-status-track::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    transform: translateY(-50%);
+    background-color: var(--dim-color);
+  }
+  .plot-status-fill {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 1px;
+    width: 0;
+    transform: translateY(-50%);
+    background-color: var(--accent);
+  }
+  /* The status fades out as the pen lifts. */
+  .js-plot.plot-done .plot-status {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+
+  /* Choreography: when JS drives the entrance, re-time the existing
+     .draft / .draw reveal so each element inks in just as the pen passes
+     over it. Defaults above (no .js-plot) are unchanged for the no-JS
+     path. The head visits the headline (~0.95s), typing (~1.35s), then
+     the social row (~1.75s); content reveals trail the pen by a beat. */
+  .js-plot .bp-grid {
+    animation-duration: 1.1s;
+  }
+  .js-plot .bp-frame,
+  .js-plot .reg-mark,
+  .js-plot .bp-zones {
+    /* The SVG perimeter is the hero trace; let the static frame fade in
+       just behind it so the corners look "stamped" as the pen rounds them. */
+    animation-delay: 1.2s;
+  }
+  /* Hold the hero copy back until the pen has finished tracing the frame
+     and dropped into the content area (~0.85s in). The per-element
+     --draft-delay ordering (60–460ms) then plays out in step with the
+     pen sweeping headline → typing → social row. */
+  .js-plot main .draft,
+  .js-plot main .draw,
+  .js-plot main .dim-draw {
+    --plot-shift: 1150ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* No motion: the overlay never shows and content is the static end
+       state (handled by the .draft reduced-motion block above). */
+    .plot-overlay {
+      display: none;
+    }
+    .js-plot .bp-grid,
+    .js-plot .bp-frame,
+    .js-plot .reg-mark,
+    .js-plot .bp-zones {
+      animation: none;
+      opacity: 1;
+    }
+  }
+}
+
 /* --- Drafting components: dimension lines, brackets, crop marks ------ */
 @layer components {
   /* Dimension line with end extension ticks and a centered label:
@@ -395,7 +561,7 @@
   .dim-line.dim-draw::after {
     transform: scaleX(0);
     animation: draw-in 0.7s cubic-bezier(0.65, 0, 0.25, 1) forwards;
-    animation-delay: var(--draft-delay, 0ms);
+    animation-delay: calc(var(--draft-delay, 0ms) + var(--plot-shift, 0ms));
   }
   .dim-label {
     font-family: var(--font-mono);
