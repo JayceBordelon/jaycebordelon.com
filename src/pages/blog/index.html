@@ -11,19 +11,16 @@ bodyClass: "min-h-screen"
 pageScripts: |
   <script src="/scripts/blog-filter.js" defer></script>
 ---
-<section class="px-5 pb-24 pt-16 sm:px-6 sm:pt-24">
+<section class="px-7 pb-24 pt-24 sm:px-8 sm:pt-28 lg:px-12">
   <div class="mx-auto w-full max-w-3xl">
-    <p class="draft font-mono text-[11px] font-medium uppercase tracking-[0.3em]" aria-hidden="true">
-      <span class="text-accent">DWG NO. JB-002</span>
-      <span class="ml-3 text-redline">SHEET 1 OF 1</span>
+    <p class="draft flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground" style="--draft-delay: 40ms;">
+      <span class="blob" aria-hidden="true"></span>Writing
     </p>
 
-    <h1 class="draft mt-5 font-display text-4xl font-bold uppercase tracking-tight text-foreground sm:text-5xl" style="--draft-delay: 80ms;">Blog Posts</h1>
+    <h1 class="draft mt-5 font-display text-5xl font-bold leading-[0.95] tracking-[-0.03em] text-foreground sm:text-6xl" style="--draft-delay: 100ms;">Notes and essays</h1>
 
-    <div class="sheet-rule draw mt-6" style="--draft-delay: 200ms;" aria-hidden="true"></div>
-
-    <p class="draft mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground" style="--draft-delay: 160ms;">
-      My takes on stuff. These posts are filled with opinions ranging from technical architecture and programming to career advice and general, personal musings.
+    <p class="statement draft mt-6 max-w-2xl text-xl sm:text-2xl" style="--draft-delay: 160ms;">
+      Opinions on building software <span class="ctx">from technical architecture and programming to career advice and the occasional personal musing.</span>
     </p>
 
     <div id="tag-filter" class="draft mt-10 flex flex-wrap gap-2" style="--draft-delay: 240ms;">
@@ -33,6 +30,6 @@ pageScripts: |
     <div id="posts-grid" class="draft mt-8 flex flex-col gap-5" style="--draft-delay: 320ms;">
       {{ postCards }}
     </div>
-    <p id="no-posts" class="hidden border border-border py-12 text-center font-mono text-sm uppercase tracking-[0.18em] text-muted-foreground">No posts found matching your criteria.</p>
+    <p id="no-posts" class="hidden rounded-2xl border border-border py-12 text-center font-mono text-sm uppercase tracking-[0.18em] text-muted-foreground">No posts found matching your criteria.</p>
   </div>
 </section>

@@ -383,35 +383,49 @@ function buildPosts() {
  * Blog index                                                        *
  * ---------------------------------------------------------------- */
 
-// Each card reads like a spec sheet: a ruled mono header strip with a
-// part number, the body below, tags as small part labels. Hover reveals
-// corner brackets and measurement ticks (see .spec-card in styles.css).
+// Each card reads like a Taste catalog entry: a squircle cover tile beside
+// an editorial body — a mono part-number / label / date / read-time line, the
+// title, the summary, tags, and a "Read" affordance (see .work-card in
+// styles.css). Hover lifts the card and eases the cover in.
 function renderPostCard(post, index) {
   const num = String(index + 1).padStart(3, "0");
   const tags = (post.tags || [])
     .map(
       (t) =>
-        `<span class="tag inline-flex cursor-pointer items-center border border-border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors duration-150 hover:border-accent hover:text-accent" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`
+        `<span class="tag inline-flex cursor-pointer items-center rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors duration-150 hover:border-accent hover:text-accent" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`
     )
     .join("");
 
-  const readTime = post.readTime ? `<span aria-hidden="true">/</span><span>${escapeHTML(post.readTime)}</span>` : "";
-  const label = post.label ? `<span class="text-accent">${escapeHTML(post.label)}</span><span aria-hidden="true">/</span>` : "";
+  const metaPieces = [`<span class="text-accent">No. ${num}</span>`];
+  if (post.label) metaPieces.push(escapeHTML(post.label));
+  metaPieces.push(`<time datetime="${escapeHTML(post.published)}">${formatDate(post.published)}</time>`);
+  if (post.readTime) metaPieces.push(escapeHTML(post.readTime));
+  const meta = metaPieces.join(`<span class="text-border" aria-hidden="true">|</span>`);
+
   const tagsAttr = (post.tags || []).map((t) => escapeHTML(t)).join("|");
 
+  const thumb = post.image
+    ? `<div class="work-thumb aspect-[16/10] border-b border-border sm:aspect-auto sm:border-b-0 sm:border-r">
+    <img src="${escapeHTML(post.image)}" alt="" width="640" height="400" loading="lazy" />
+  </div>`
+    : "";
+  const cols = post.image ? "sm:grid-cols-[210px_1fr]" : "";
+
   return `
-<a href="/blog/posts/${post.id}" class="group post-card spec-card corner-brackets block border border-border bg-card/50" data-tags="${tagsAttr}">
-  <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-border px-5 py-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:px-6">
-    <span class="text-redline" aria-hidden="true">No. ${num}</span>
-    <span aria-hidden="true">/</span>
-    ${label}
-    <time datetime="${escapeHTML(post.published)}">${formatDate(post.published)}</time>
-    ${readTime}
-  </div>
-  <div class="px-5 py-5 sm:px-6 sm:py-6">
-    <h2 class="font-display text-xl font-semibold leading-snug tracking-tight text-foreground transition-colors duration-150 group-hover:text-accent sm:text-2xl">${escapeHTML(post.title)}</h2>
-    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">${escapeHTML(post.summary || "")}</p>
-    <div class="mt-4 flex flex-wrap gap-2">${tags}</div>
+<a href="/blog/posts/${post.id}" class="group post-card work-card block border border-border bg-card/40" data-tags="${tagsAttr}">
+  <div class="grid grid-cols-1 ${cols}">
+    ${thumb}
+    <div class="flex flex-col px-5 py-5 sm:px-7 sm:py-6">
+      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        ${meta}
+      </div>
+      <h2 class="mt-3 font-display text-xl font-semibold leading-snug tracking-tight text-foreground transition-colors duration-150 group-hover:text-accent sm:text-2xl">${escapeHTML(post.title)}</h2>
+      <p class="mt-2.5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">${escapeHTML(post.summary || "")}</p>
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap gap-2">${tags}</div>
+        <span class="read-link" aria-hidden="true"><span class="dot"></span>Read</span>
+      </div>
+    </div>
   </div>
 </a>`;
 }
