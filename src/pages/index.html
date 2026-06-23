@@ -9,60 +9,36 @@ header: home
 htmlClass: ""
 bodyClass: "h-dvh overflow-hidden"
 pageScripts: |
-  <script src="/scripts/plotter.js" defer></script>
+  <script src="/scripts/scramble.js" defer></script>
   <script src="/scripts/typing.js" defer></script>
 ---
-<!-- The Plotter: a fine drafting pen traces the sheet on load, then lifts
-     away. JS-only enhancement; with no JS the CSS .draft reveal stands alone. -->
-<div id="plot-overlay" class="plot-overlay" aria-hidden="true">
-  <svg class="plot-trace" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
-    <rect class="plot-trace-rect" x="6" y="8" width="88" height="84" pathLength="100" vector-effect="non-scaling-stroke" />
-  </svg>
-  <div class="plot-status">
-    <span class="plot-status-prompt" aria-hidden="true">$</span>
-    <span class="plot-status-label">render --hero</span>
-    <span class="plot-status-track"><span class="plot-status-fill"></span></span>
-  </div>
-</div>
-<section class="flex h-dvh items-center px-7 pt-16 sm:px-8 lg:px-12">
-  <div class="mx-auto flex w-full max-w-5xl flex-col-reverse items-start gap-8 md:flex-row md:items-center md:justify-between md:gap-16">
-    <div class="max-w-xl">
-      <p class="draft hidden font-mono text-[11px] font-medium uppercase tracking-[0.3em] sm:block" style="--draft-delay: 60ms;" aria-hidden="true">
-        <span class="text-accent">DWG NO. JB-001</span>
-        <span class="ml-3 text-redline">REV A</span>
+<section class="relative flex h-dvh flex-col overflow-hidden">
+  <div class="flex flex-1 items-center">
+    <div class="mx-auto w-full max-w-5xl px-7 pt-16 sm:px-8 lg:px-12">
+      <p class="draft flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground" style="--draft-delay: 60ms;">
+        <span class="blob" aria-hidden="true"></span>Software Engineer
       </p>
 
-      <p class="draft flex items-center gap-3 font-mono text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground sm:mt-6 sm:text-sm" style="--draft-delay: 140ms;">
-        <span class="inline-block h-px w-8 bg-accent" aria-hidden="true"></span>Building Stuff
-      </p>
-
-      <h1 class="draft mt-5 font-display text-5xl font-bold uppercase leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-7xl" style="--draft-delay: 220ms;">
-        <span class="block">Jayce</span> <span class="block">Bordelon</span>
+      <h1 class="draft mt-5 font-display text-[3.25rem] font-bold leading-[0.95] tracking-[-0.03em] text-foreground sm:text-7xl lg:text-8xl" style="--draft-delay: 160ms;">
+        <span class="block">Jayce</span><span class="block">Bordelon</span>
       </h1>
 
-      <div class="dim-line dim-draw draft mt-5 max-w-md" style="--draft-delay: 420ms;" aria-hidden="true">
-        <span class="dim-label">Scale 1 : 1</span>
-      </div>
+      <p class="statement draft mt-6 max-w-xl text-xl sm:text-2xl" style="--draft-delay: 280ms;">
+        I build tools that solve real problems <span class="ctx">and write about what I learn along the way.</span>
+      </p>
 
-      <div class="draft mt-6 flex h-8 items-center" style="--draft-delay: 340ms;">
+      <div class="draft mt-6 flex h-7 items-center" style="--draft-delay: 360ms;">
         <span
           id="typing"
           data-words='["Mechanize Inc. - SWE", "WashU - CS Alum"]'
-          class="font-mono text-base text-muted-foreground sm:text-lg"
+          class="font-mono text-sm text-muted-foreground sm:text-base"
         ></span><span class="typing-caret" aria-hidden="true"></span>
       </div>
 
-      <ul class="draft mt-8 flex flex-wrap items-center gap-3 sm:mt-10" style="--draft-delay: 460ms;">
+      <ul class="draft mt-8 flex flex-wrap items-center gap-2.5" style="--draft-delay: 440ms;">
         <li>
-          <a
-            href="https://calendly.com/jaycebordelon/30min"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Meet With Me"
-            aria-label="Meet With Me"
-            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <a href="https://calendly.com/jaycebordelon/30min" target="_blank" rel="noopener noreferrer" title="Meet With Me" aria-label="Meet With Me" class="icon-square h-11 w-11 text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <path d="M16 2v4" />
               <path d="M8 2v4" />
@@ -71,94 +47,99 @@ pageScripts: |
           </a>
         </li>
         <li>
-          <a
-            href="https://github.com/JayceBordelon"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="GitHub"
-            aria-label="GitHub"
-            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <a href="https://github.com/JayceBordelon" target="_blank" rel="noopener noreferrer" title="GitHub" aria-label="GitHub" class="icon-square h-11 w-11 text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 .5C5.4.5 0 5.9 0 12.5c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.3 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6C20.6 22.3 24 17.8 24 12.5 24 5.9 18.6.5 12 .5z" />
             </svg>
           </a>
         </li>
         <li>
-          <a
-            href="https://linkedin.com/in/JayceBordelon"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="LinkedIn"
-            aria-label="LinkedIn"
-            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <a href="https://linkedin.com/in/JayceBordelon" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn" class="icon-square h-11 w-11 text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.91 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
             </svg>
           </a>
         </li>
         <li>
-          <a
-            href="https://vibetradez.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="VibeTradez"
-            aria-label="VibeTradez"
-            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <a href="https://vibetradez.com" target="_blank" rel="noopener noreferrer" title="VibeTradez" aria-label="VibeTradez" class="icon-square h-11 w-11 text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M3 3v18h18" />
               <path d="m19 9-5 5-4-4-3 3" />
             </svg>
           </a>
         </li>
         <li>
-          <a
-            href="https://www.mechanize.work/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Mechanize"
-            aria-label="Mechanize"
-            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <a href="https://www.mechanize.work/" target="_blank" rel="noopener noreferrer" title="Mechanize" aria-label="Mechanize" class="icon-square h-11 w-11 text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
           </a>
         </li>
         <li>
-          <a
-            href="https://www.strava.com/athletes/194417216"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Strava"
-            aria-label="Strava"
-            class="corner-brackets inline-flex h-11 w-11 items-center justify-center border border-border text-foreground transition-colors duration-150 hover:border-accent hover:text-accent"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <a href="https://www.strava.com/athletes/194417216" target="_blank" rel="noopener noreferrer" title="Strava" aria-label="Strava" class="icon-square h-11 w-11 text-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
             </svg>
           </a>
         </li>
       </ul>
     </div>
+  </div>
 
-    <figure class="draft shrink-0" style="--draft-delay: 300ms;">
-      <div class="crop-marks">
-        <img
-          src="/images/dawg.jpg"
-          alt="Jayce Bordelon"
-          width="1179"
-          height="1462"
-          class="h-auto w-40 border border-border sm:w-48 md:w-72"
-        />
-      </div>
-      <figcaption class="mt-4 flex items-baseline justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground" aria-hidden="true">
-        <span>Fig. 1</span>
-        <span class="text-redline">1179 &times; 1462</span>
-      </figcaption>
-    </figure>
+  <!-- The taste river: a marquee of things I have built, masked into
+       squircle tiles. Duplicated once for a seamless CSS loop; the second
+       set is hidden from assistive tech to avoid repeated links. -->
+  <div class="draft tile-river shrink-0 pb-7 sm:pb-9" style="--draft-delay: 540ms;">
+    <div class="marquee">
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52">
+        <span class="tile-cap" aria-hidden="true">Jayce</span>
+        <img src="/images/dawg.jpg" alt="Jayce Bordelon" width="320" height="320" loading="eager" />
+      </span>
+      <a href="https://vibetradez.com" target="_blank" rel="noopener noreferrer" class="tile h-28 w-40 sm:h-36 sm:w-52" aria-label="VibeTradez">
+        <span class="tile-cap" aria-hidden="true">VibeTradez</span>
+        <img src="/images/ai-trading.gif" alt="VibeTradez trading service" width="320" height="240" loading="lazy" />
+      </a>
+      <a href="/blog/posts/blended-protos" class="tile h-28 w-40 sm:h-36 sm:w-52" aria-label="Protobuf post">
+        <span class="tile-cap" aria-hidden="true">Protobufs</span>
+        <img src="/images/blended-protos.gif" alt="Blended prototypes" width="320" height="240" loading="lazy" />
+      </a>
+      <a href="https://github.com/JayceBordelon" target="_blank" rel="noopener noreferrer" class="tile h-28 w-40 sm:h-36 sm:w-52" aria-label="GitHub: Go work">
+        <span class="tile-cap" aria-hidden="true">Go</span>
+        <img src="/images/golang.gif" alt="Go programming" width="320" height="240" loading="lazy" />
+      </a>
+      <a href="https://www.mechanize.work/" target="_blank" rel="noopener noreferrer" class="tile h-28 w-40 sm:h-36 sm:w-52" aria-label="Mechanize">
+        <span class="tile-cap" aria-hidden="true">Mechanize</span>
+        <img src="/images/agile-concept.gif" alt="Engineering work" width="320" height="240" loading="lazy" />
+      </a>
+      <a href="/blog" class="tile h-28 w-40 sm:h-36 sm:w-52" aria-label="Blog">
+        <span class="tile-cap" aria-hidden="true">Notes</span>
+        <img src="/images/blockchain.gif" alt="Distributed systems" width="320" height="240" loading="lazy" />
+      </a>
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52" aria-hidden="true">
+        <span class="tile-cap">Jayce</span>
+        <img src="/images/dawg.jpg" alt="" width="320" height="320" loading="lazy" />
+      </span>
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52" aria-hidden="true">
+        <span class="tile-cap">VibeTradez</span>
+        <img src="/images/ai-trading.gif" alt="" width="320" height="240" loading="lazy" />
+      </span>
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52" aria-hidden="true">
+        <span class="tile-cap">Protobufs</span>
+        <img src="/images/blended-protos.gif" alt="" width="320" height="240" loading="lazy" />
+      </span>
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52" aria-hidden="true">
+        <span class="tile-cap">Go</span>
+        <img src="/images/golang.gif" alt="" width="320" height="240" loading="lazy" />
+      </span>
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52" aria-hidden="true">
+        <span class="tile-cap">Mechanize</span>
+        <img src="/images/agile-concept.gif" alt="" width="320" height="240" loading="lazy" />
+      </span>
+      <span class="tile h-28 w-40 sm:h-36 sm:w-52" aria-hidden="true">
+        <span class="tile-cap">Notes</span>
+        <img src="/images/blockchain.gif" alt="" width="320" height="240" loading="lazy" />
+      </span>
+    </div>
   </div>
 </section>

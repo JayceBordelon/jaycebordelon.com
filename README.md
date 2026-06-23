@@ -21,7 +21,8 @@ src/
 │   └── post.html         Per-post article wrapper
 ├── posts/         Blog posts in markdown with YAML frontmatter
 ├── scripts/       Vanilla JS shipped to the browser (theme toggle,
-│                  typing animation, blog filter, copy-code button)
+│                  typing animation, blog filter, copy-code button,
+│                  scramble-on-hover)
 └── styles.css     Tailwind v4 input — design tokens + motion and component styles
 
 scripts/
@@ -33,9 +34,9 @@ scripts/
 | Component | Choice |
 |---|---|
 | Markup | Plain HTML in `src/pages/` + `src/partials/` |
-| Styles | Tailwind v4 (CLI compile), with the engineering-blueprint design tokens defined as CSS variables in `src/styles.css` |
+| Styles | Tailwind v4 (CLI compile), with the Taste two-tone design tokens defined as CSS variables in `src/styles.css` |
 | Content | Markdown in `src/posts/`, rendered via `marked` at build time. Code blocks highlighted by Shiki (build-time, dual light/dark); supports `:::note`/`tip`/`warning`/`danger` admonitions and auto heading anchors. |
-| Interactivity | ~150 LOC of vanilla JS across four files (theme, typing, blog filter, copy-code). No bundler, no client framework. |
+| Interactivity | Vanilla JS across five small files (theme, typing, blog filter, copy-code, scramble-on-hover); the morphing blob and tile-river marquee are CSS only. No bundler, no client framework. |
 | Build | One Node script. ~200ms HTML, ~150ms Tailwind. |
 | Hosting | Cloudflare Pages. Cloudflare's CI runs `npm run build`, then serves `dist/` from their global CDN with automatic HTTPS. |
 
@@ -101,7 +102,7 @@ There is no SSH, no droplet, no compose file. Cloudflare Pages auto-provisions a
 
 ## Design system
 
-Engineering blueprint. The site is styled as a technical drawing sheet: graph-paper grid, double sheet frame with registration marks, dimension-line underlines, title blocks, and spec-sheet post cards. Light theme: vellum drafting paper (#F4F1E8) with blue ink (#1C3A57 body, #1F5FAE accent) and a red revision pen (#BE3D24) for annotations. Dark theme: midnight blueprint field (#0A1524) with white-blue text (#D8E4F2) and cyan linework (#6FD2E8). Fonts: Spline Sans Mono for display, annotations, and code; Spline Sans for body and UI. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
+Taste lab (inspired by [tastelabs.com](https://tastelabs.com)). A quiet two-tone field with a single flame accent. Light theme: warm cream (#EAECE7) with near-black ink text (#1C1C1A). Dark theme: a near-black ink field (#1B1B19) with off-white text (#ECEAE5). Muted text is grey (#747370); the lone accent is flame orange (#FF4C24, slightly brighter in dark). Layout corners are square; imagery is masked into soft squircle tiles; a section can flip to the opposite tone with `.section-ink`. Signature elements: the morphing-blob mark, the squircle tile-river marquee on the home hero, two-tone statement text, mono HUD meta labels, and scramble-on-hover. Fonts: Hanken Grotesk for display, headings, and body; Azeret Mono for nav, labels, meta, and code. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
 
 ## CI / CD
 

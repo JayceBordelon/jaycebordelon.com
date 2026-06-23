@@ -65,9 +65,9 @@ Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the l
 
 ## Design system
 
-Engineering blueprint. The site reads as a technical drawing: a graph-paper grid (minor line every 24px, major every 120px), a double sheet frame with registration crosshairs and grid-zone references, dimension-line underlines with end ticks, and spec-sheet cards with part numbers. Light theme is vellum drafting paper (#F4F1E8) with blue ink (#1C3A57 body, #1F5FAE accent) and a red revision pen (#BE3D24) for small marks. Dark theme is a midnight blueprint field (#0A1524) with white-blue text (#D8E4F2), cyan linework (#6FD2E8), and a warm markup orange (#F37E5A). Corners are square everywhere (`--radius: 0`); hairlines are ink at ~22% alpha via `--border`. It must never read as a CRT terminal: no green-on-black, no scanlines.
+Taste lab (inspired by tastelabs.com). The site is a quiet two-tone field with a single flame accent. Light theme is warm cream (#EAECE7) with near-black ink text (#1C1C1A); dark theme is a near-black ink field (#1B1B19) with off-white text (#ECEAE5). Muted text is grey (#747370). The one accent is flame orange (#FF4C24, slightly brighter #FF5C39 in dark), used sparingly: the brand blob, hover states, the active tag, link underlines. Layout corners are square (`--radius: 0`); imagery is masked into soft squircle tiles (`--radius-tile`); hairlines are ink at ~16% alpha via `--border`. A section can flip to the opposite tone with `.section-ink`. Signature elements: the morphing-blob mark (`.blob`), the squircle tile-river marquee on the home hero, two-tone statement text (`.statement` emphasis plus `.ctx` context), mono HUD meta labels, and scramble-on-hover (`scramble.js`). Motion is CSS plus tiny vanilla JS only: no GSAP, Lenis, or WebGL.
 
-Fonts: Spline Sans Mono for display, annotations, and code; Spline Sans for body and UI. Visual changes should stay consistent with the tokens in `src/styles.css`.
+Fonts: Hanken Grotesk for display, headings, and body; Azeret Mono for nav, labels, meta, and code. Visual changes should stay consistent with the tokens in `src/styles.css`.
 
 ## Hosting
 
