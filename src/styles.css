@@ -3,94 +3,96 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* --- Taste -------------------------------------------------------- *
- * The site is a quiet research-lab field: two tones (warm cream and
- * near-black ink) with a single flame-orange accent used sparingly.
- * Display and body are Hanken Grotesk; labels, meta, and HUD readouts
- * are Azeret Mono. Layout corners are square; imagery is masked into
- * soft squircle tiles. Light = cream field, dark = ink field, and a
- * section can flip to the opposite tone with .section-ink.            */
+/* --- Ocean Breeze -------------------------------------------------- *
+ * A calm, oceanic field: cool blue-white in light, deep navy in dark,
+ * with a single emerald-green accent used sparingly (the brand blob,
+ * links, hover states, the active tag, the caret). Display and body are
+ * DM Sans; labels, meta, and HUD readouts are IBM Plex Mono; long-form
+ * serif is Lora. Imagery is masked into soft squircle tiles. Light =
+ * alice-blue field, dark = navy field, and a section can flip to the
+ * opposite tone with .section-ink. Palette from tweakcn "Ocean Breeze". */
 
 :root {
-  --cream: #eaece7;
-  --ink: #1b1b19;
-  --grey: #747370;
+  --background: oklch(0.9751 0.0127 244.2507);
+  --foreground: oklch(0.3729 0.0306 259.7328);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.3729 0.0306 259.7328);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.3729 0.0306 259.7328);
+  --primary: oklch(0.7227 0.192 149.5793);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9514 0.025 236.8242);
+  --secondary-foreground: oklch(0.4461 0.0263 256.8018);
+  --muted: oklch(0.967 0.0029 264.5419);
+  --muted-foreground: oklch(0.551 0.0234 264.3637);
+  /* The site keeps a single pop color; in Ocean Breeze that's the
+     emerald primary. (The theme's own `accent` is a pale mint surface
+     tint — too washed-out to carry links/blob, so accent == primary.) */
+  --accent: oklch(0.7227 0.192 149.5793);
+  --accent-foreground: oklch(1 0 0);
+  --redline: oklch(0.7227 0.192 149.5793);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9276 0.0058 264.5313);
+  --input: oklch(0.9276 0.0058 264.5313);
+  --ring: oklch(0.7227 0.192 149.5793);
 
-  --background: #eaece7;
-  --foreground: #1c1c1a;
-  --card: #e3e2dd;
-  --card-foreground: #1c1c1a;
-  --popover: #eaece7;
-  --popover-foreground: #1c1c1a;
-  --primary: #1c1c1a;
-  --primary-foreground: #f7f6f2;
-  --secondary: #747370;
-  --secondary-foreground: #f7f6f2;
-  --muted: #dddbd4;
-  --muted-foreground: #6f6e6a;
-  --accent: #ff4c24;
-  --accent-foreground: #fbfbfb;
-  --redline: #ff4c24;
-  --destructive: #cf3a1c;
-  --destructive-foreground: #fbfbfb;
-  --border: color-mix(in srgb, #1c1c1a 16%, transparent);
-  --input: color-mix(in srgb, #1c1c1a 16%, transparent);
-  --ring: #ff4c24;
+  /* A section flipped to the opposite tone (navy island in a light page). */
+  --section-ink-bg: oklch(0.2077 0.0398 265.7549);
+  --section-ink-fg: oklch(0.8717 0.0093 258.3382);
+  --section-ink-muted: oklch(0.551 0.0234 264.3637);
+  --section-ink-border: color-mix(in srgb, oklch(0.8717 0.0093 258.3382) 16%, transparent);
 
-  /* A section flipped to the opposite tone (ink island in a cream page). */
-  --section-ink-bg: #1b1b19;
-  --section-ink-fg: #eceae5;
-  --section-ink-muted: #9a9a96;
-  --section-ink-border: color-mix(in srgb, #eceae5 16%, transparent);
+  --code-bg: oklch(0.967 0.0029 264.5419);
+  --adm-note: oklch(0.7227 0.192 149.5793);
+  --adm-info: oklch(0.551 0.0234 264.3637);
+  --adm-tip: oklch(0.6 0.12 182);
+  --adm-warning: oklch(0.64 0.13 70);
+  --adm-danger: oklch(0.6368 0.2078 25.3313);
 
-  --code-bg: color-mix(in srgb, #1c1c1a 4%, #eaece7);
-  --adm-note: #ff4c24;
-  --adm-info: #747370;
-  --adm-tip: #2e7d4f;
-  --adm-warning: #9a6a12;
-  --adm-danger: #c0392b;
-
-  --font-sans: "Hanken Grotesk", ui-sans-serif, "Helvetica Neue", system-ui, sans-serif;
-  --font-display: "Hanken Grotesk", ui-sans-serif, "Helvetica Neue", system-ui, sans-serif;
-  --font-mono: "Azeret Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --radius: 0rem;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-display: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --radius: 0.5rem;
   --radius-tile: 1.4rem;
+  --tracking-normal: 0em;
 }
 
 .dark {
-  --background: #1b1b19;
-  --foreground: #eceae5;
-  --card: #242422;
-  --card-foreground: #eceae5;
-  --popover: #242422;
-  --popover-foreground: #eceae5;
-  --primary: #eceae5;
-  --primary-foreground: #1b1b19;
-  --secondary: #9a9a96;
-  --secondary-foreground: #1b1b19;
-  --muted: #2a2a27;
-  --muted-foreground: #9a9a96;
-  --accent: #ff5c39;
-  --accent-foreground: #1b1b19;
-  --redline: #ff5c39;
-  --destructive: #ff6a4a;
-  --destructive-foreground: #1b1b19;
-  --border: color-mix(in srgb, #eceae5 15%, transparent);
-  --input: color-mix(in srgb, #eceae5 15%, transparent);
-  --ring: #ff5c39;
+  --background: oklch(0.2077 0.0398 265.7549);
+  --foreground: oklch(0.8717 0.0093 258.3382);
+  --card: oklch(0.2795 0.0368 260.031);
+  --card-foreground: oklch(0.8717 0.0093 258.3382);
+  --popover: oklch(0.2795 0.0368 260.031);
+  --popover-foreground: oklch(0.8717 0.0093 258.3382);
+  --primary: oklch(0.7729 0.1535 163.2231);
+  --primary-foreground: oklch(0.2077 0.0398 265.7549);
+  --secondary: oklch(0.3351 0.0331 260.912);
+  --secondary-foreground: oklch(0.7118 0.0129 286.0665);
+  --muted: oklch(0.2463 0.0275 259.9628);
+  --muted-foreground: oklch(0.551 0.0234 264.3637);
+  --accent: oklch(0.7729 0.1535 163.2231);
+  --accent-foreground: oklch(0.2077 0.0398 265.7549);
+  --redline: oklch(0.7729 0.1535 163.2231);
+  --destructive: oklch(0.7040 0.1900 25.3313);
+  --destructive-foreground: oklch(0.2077 0.0398 265.7549);
+  --border: oklch(0.4461 0.0263 256.8018);
+  --input: oklch(0.4461 0.0263 256.8018);
+  --ring: oklch(0.7729 0.1535 163.2231);
 
-  /* In the ink field, the flipped island is the cream tone. */
-  --section-ink-bg: #eaece7;
-  --section-ink-fg: #1c1c1a;
-  --section-ink-muted: #6f6e6a;
-  --section-ink-border: color-mix(in srgb, #1c1c1a 16%, transparent);
+  /* In the navy field, the flipped island is the light alice-blue tone. */
+  --section-ink-bg: oklch(0.9751 0.0127 244.2507);
+  --section-ink-fg: oklch(0.3729 0.0306 259.7328);
+  --section-ink-muted: oklch(0.551 0.0234 264.3637);
+  --section-ink-border: color-mix(in srgb, oklch(0.3729 0.0306 259.7328) 16%, transparent);
 
-  --code-bg: #161615;
-  --adm-note: #ff5c39;
-  --adm-info: #9a9a96;
-  --adm-tip: #7bd8a0;
-  --adm-warning: #e8c46b;
-  --adm-danger: #f37e5a;
+  --code-bg: oklch(0.2463 0.0275 259.9628);
+  --adm-note: oklch(0.7729 0.1535 163.2231);
+  --adm-info: oklch(0.7118 0.0129 286.0665);
+  --adm-tip: oklch(0.7845 0.1325 181.912);
+  --adm-warning: oklch(0.82 0.13 80);
+  --adm-danger: oklch(0.704 0.19 25.3313);
 }
 
 @theme inline {
@@ -117,12 +119,13 @@
 
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
 
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
@@ -146,6 +149,7 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    letter-spacing: var(--tracking-normal);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }

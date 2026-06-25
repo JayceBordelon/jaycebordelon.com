@@ -34,7 +34,7 @@ scripts/
 | Component | Choice |
 |---|---|
 | Markup | Plain HTML in `src/pages/` + `src/partials/` |
-| Styles | Tailwind v4 (CLI compile), with the Taste two-tone design tokens defined as CSS variables in `src/styles.css` |
+| Styles | Tailwind v4 (CLI compile), with the Ocean Breeze two-tone design tokens defined as CSS variables in `src/styles.css` |
 | Content | Markdown in `src/posts/`, rendered via `marked` at build time. Code blocks highlighted by Shiki (build-time, dual light/dark); supports `:::note`/`tip`/`warning`/`danger` admonitions and auto heading anchors. |
 | Interactivity | Vanilla JS across five small files (theme, typing, blog filter, copy-code, scramble-on-hover); the morphing blob is CSS only. No bundler, no client framework. |
 | Build | One Node script. ~200ms HTML, ~150ms Tailwind. |
@@ -102,7 +102,7 @@ There is no SSH, no droplet, no compose file. Cloudflare Pages auto-provisions a
 
 ## Design system
 
-Taste lab (inspired by [tastelabs.com](https://tastelabs.com)). A quiet two-tone field with a single flame accent. Light theme: warm cream (#EAECE7) with near-black ink text (#1C1C1A). Dark theme: a near-black ink field (#1B1B19) with off-white text (#ECEAE5). Muted text is grey (#747370); the lone accent is flame orange (#FF4C24, slightly brighter in dark). Layout corners are square; imagery is masked into soft squircle tiles; a section can flip to the opposite tone with `.section-ink`. Signature elements: the morphing-blob mark, two-tone statement text, mono HUD meta labels, and scramble-on-hover. Fonts: Hanken Grotesk for display, headings, and body; Azeret Mono for nav, labels, meta, and code. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
+Ocean Breeze (palette from [tweakcn](https://tweakcn.com/r/themes/ocean-breeze.json); layout inspired by [tastelabs.com](https://tastelabs.com)). A calm two-tone field with a single emerald accent. Light theme: cool alice-blue (#F0F8FF) with dark slate-blue text. Dark theme: a deep navy field (#0F172A) with light-grey text. Muted text is slate-grey; the lone accent is emerald green (#22C55E, brighter #34D399 in dark). Corners use a 0.5rem radius; imagery is masked into soft squircle tiles; a section can flip to the opposite tone with `.section-ink`. Signature elements: the morphing-blob mark, two-tone statement text, mono HUD meta labels, and scramble-on-hover. Fonts: DM Sans for display, headings, and body; IBM Plex Mono for nav, labels, meta, and code; Lora as the serif. Tokens are CSS variables in `src/styles.css`, applied through Tailwind utility classes on plain HTML.
 
 ## CI / CD
 
