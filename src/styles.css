@@ -263,6 +263,17 @@
     align-items: center;
     gap: 0.55rem;
   }
+  /* Header logo: the JB monogram, masked so it inherits the brand link's
+     color (foreground, → accent on hover) and flips with the theme. */
+  .brand-mark {
+    display: inline-block;
+    width: 1.7rem;
+    height: 1.7rem;
+    flex: none;
+    background-color: currentColor;
+    -webkit-mask: url("/images/jb-mark.png") center / contain no-repeat;
+    mask: url("/images/jb-mark.png") center / contain no-repeat;
+  }
 }
 
 /* --- Motion: a quiet settle on load --------------------------------- */
@@ -322,6 +333,242 @@
       animation: none;
     }
   }
+}
+
+/* --- Home entrance: "Shutter Split" --------------------------------- *
+ * The name is the hero moment. Each line ("Jayce", "Bordelon") is two
+ * complementary, clipped copies of itself: a TOP band that slides in
+ * from the left edge and a BOTTOM band that slides in from the right.
+ * They lock on the horizontal centerline with a touch of mechanical
+ * overshoot, an accent hairline snaps across the seam, then the rest of
+ * the hero resolves with a crisp upward stagger. Resting state is the
+ * plain, correctly-spaced name — the two bands tile back into one word
+ * with no gap and no doubled glyphs. Scoped to brand-new classes so the
+ * blog's .draft / .draw motion is untouched.                            */
+@layer utilities {
+  .enter-name {
+    position: relative;
+  }
+
+  /* One name line: a shrink-to-text block so the band travel and the
+     seam hairline are sized to the word, not the column. */
+  .enter-split {
+    position: relative;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .enter-split__half {
+    display: block;
+    white-space: nowrap;
+    opacity: 0;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  /* Top band establishes the line height and enters from the left. */
+  .enter-split__half--top {
+    position: relative;
+    clip-path: inset(0 0 calc(50% - 1px) 0);
+    transform: translateX(-115%);
+    animation: shutter-from-left 0.72s cubic-bezier(0.18, 0.86, 0.32, 1.06) forwards;
+    animation-delay: var(--split-delay, 0ms);
+  }
+  /* Bottom band overlays the top exactly and enters from the right. The
+     2px overlap at the seam guarantees no sub-pixel hairline gap. */
+  .enter-split__half--bottom {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(calc(50% - 1px) 0 0 0);
+    transform: translateX(115%);
+    animation: shutter-from-right 0.72s cubic-bezier(0.18, 0.86, 0.32, 1.06) forwards;
+    animation-delay: var(--split-delay, 0ms);
+  }
+  @keyframes shutter-from-left {
+    0% {
+      transform: translateX(-115%);
+      opacity: 0;
+    }
+    14% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  @keyframes shutter-from-right {
+    0% {
+      transform: translateX(115%);
+      opacity: 0;
+    }
+    14% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* The accent seam: a hairline that draws across the centerline at the
+     moment of the lock, then fades — leaving the resting name unmarked. */
+  .enter-split::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: calc(50% - 1px);
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: center;
+    opacity: 0;
+    pointer-events: none;
+    animation: shutter-seam 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--split-delay, 0ms) + 250ms);
+  }
+  @keyframes shutter-seam {
+    0% {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    35% {
+      opacity: 1;
+    }
+    60% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+
+  /* Secondary stagger: eyebrow, statement, typing, socials, portrait
+     resolve with a crisp upward slide once the name has locked. */
+  .enter-rise {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: enter-rise 0.66s cubic-bezier(0.2, 0.72, 0.28, 1.04) forwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+  @keyframes enter-rise {
+    0% {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Render rings: two concentric ink ripples that bloom from centre as
+     the name locks, then fade to nothing — ported from the aperture
+     entrance. Ambient only: they sit behind the content (z-0; the hero
+     column is lifted to z-10) and leave a clean resting state. */
+  .enter-stage::before,
+  .enter-stage::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 96vmin;
+    height: 96vmin;
+    margin: -48vmin 0 0 -48vmin;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--foreground) 28%, transparent);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transform: scale(0.04);
+    will-change: opacity, transform;
+    animation: enter-ring 1.15s cubic-bezier(0.22, 0.7, 0.3, 1) forwards;
+    animation-delay: 120ms;
+  }
+  .enter-stage::after {
+    width: 64vmin;
+    height: 64vmin;
+    margin: -32vmin 0 0 -32vmin;
+    border-color: color-mix(in srgb, var(--foreground) 18%, transparent);
+    animation-delay: 210ms;
+  }
+  @keyframes enter-ring {
+    0% {
+      opacity: 0;
+      transform: scale(0.04);
+    }
+    18% {
+      opacity: 0.8;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+
+  /* Header: the home bar drops in from above and fades, settling in last
+     with the late secondary-stagger content (statement, typing, socials).
+     Home only — scoped to .enter-header on the home header. */
+  .enter-header {
+    opacity: 0;
+    transform: translateY(-100%);
+    will-change: opacity, transform;
+    animation: enter-header 0.7s cubic-bezier(0.2, 0.72, 0.28, 1.04) forwards;
+    animation-delay: 1200ms;
+  }
+  @keyframes enter-header {
+    0% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .enter-rise,
+    .enter-split__half,
+    .enter-header {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+    .enter-split::after {
+      animation: none;
+      opacity: 0;
+    }
+    .enter-stage::before,
+    .enter-stage::after {
+      content: none;
+      animation: none;
+    }
+  }
+}
+
+/* --- Theme toggle: circular wipe via the View Transitions API -------- *
+ * The toggle reveals the new theme with a circle expanding from the
+ * button (driven in scripts/theme.js). Kill the default cross-fade so the
+ * clip-path reveal reads cleanly; old stays underneath while the new is
+ * wiped in on top. Unsupported browsers / reduced-motion switch instantly.
+ * Top-level (not in a layer) so layered rules can't override it.          */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}
+::view-transition-old(root) {
+  z-index: 0;
 }
 
 /* --- Two-tone statement --------------------------------------------- *

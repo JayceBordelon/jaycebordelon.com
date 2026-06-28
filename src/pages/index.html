@@ -12,23 +12,24 @@ pageScripts: |
   <script src="/scripts/scramble.js" defer></script>
   <script src="/scripts/typing.js" defer></script>
 ---
-<section class="relative flex h-dvh flex-col overflow-hidden">
-  <div class="flex flex-1 items-center">
+<section class="enter-stage relative flex h-dvh flex-col overflow-hidden">
+  <div class="relative z-10 flex flex-1 items-center">
     <div class="mx-auto flex w-full max-w-5xl flex-col-reverse items-start gap-8 px-7 pt-16 sm:px-8 md:flex-row md:items-center md:justify-between md:gap-16 lg:px-12">
       <div class="max-w-xl">
-      <p class="draft flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground" style="--draft-delay: 60ms;">
+      <p class="enter-rise flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground" style="--enter-delay: 40ms;">
         coolish nerd
       </p>
 
-      <h1 class="draft mt-5 font-display text-[3.25rem] font-bold leading-[0.95] tracking-[-0.03em] text-foreground sm:text-7xl lg:text-8xl" style="--draft-delay: 160ms;">
-        <span class="block">Jayce</span><span class="block">Bordelon</span>
+      <h1 class="enter-name mt-5 font-display text-[3.25rem] font-bold leading-[0.95] tracking-[-0.03em] text-foreground sm:text-7xl lg:text-8xl">
+        <span class="sr-only">Jayce Bordelon</span>
+        <span class="block enter-split" aria-hidden="true" style="--split-delay: 140ms;"><span class="enter-split__half enter-split__half--top">Jayce</span><span class="enter-split__half enter-split__half--bottom">Jayce</span></span><span class="block enter-split" aria-hidden="true" style="--split-delay: 280ms;"><span class="enter-split__half enter-split__half--top">Bordelon</span><span class="enter-split__half enter-split__half--bottom">Bordelon</span></span>
       </h1>
 
-      <p class="statement draft mt-6 max-w-xl text-xl sm:text-2xl" style="--draft-delay: 280ms;">
+      <p class="statement enter-rise mt-6 max-w-xl text-xl sm:text-2xl" style="--enter-delay: 1040ms;">
         I build systems <span class="ctx">that make AI less stupid.</span>
       </p>
 
-      <div class="draft mt-6 flex h-7 items-center" style="--draft-delay: 360ms;">
+      <div class="enter-rise mt-6 flex h-7 items-center" style="--enter-delay: 1160ms;">
         <span
           id="typing"
           data-words='["Taste Labs - Tech Staff", "WashU - CS Alum"]'
@@ -36,7 +37,7 @@ pageScripts: |
         ></span><span class="typing-caret" aria-hidden="true"></span>
       </div>
 
-      <ul class="draft mt-8 flex flex-wrap items-center gap-2.5" style="--draft-delay: 440ms;">
+      <ul class="enter-rise mt-8 flex flex-wrap items-center gap-2.5" style="--enter-delay: 1300ms;">
         <li>
           <a href="https://tastelabs.com/" target="_blank" rel="noopener noreferrer" title="Taste Labs" aria-label="Taste Labs" class="icon-square h-11 w-11 text-foreground">
             <span class="tl-mark" aria-hidden="true"></span>
@@ -84,7 +85,7 @@ pageScripts: |
       </ul>
       </div>
 
-      <figure class="draft shrink-0" style="--draft-delay: 360ms;">
+      <figure class="enter-rise shrink-0" style="--enter-delay: 1080ms;">
         <div class="overflow-hidden rounded-[1.75rem] border border-border">
           <img
             src="/images/jayce-portrait-bw.jpg"
