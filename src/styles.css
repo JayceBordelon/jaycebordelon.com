@@ -465,9 +465,75 @@
     }
   }
 
+  /* Render rings: two concentric ink ripples that bloom from centre as
+     the name locks, then fade to nothing — ported from the aperture
+     entrance. Ambient only: they sit behind the content (z-0; the hero
+     column is lifted to z-10) and leave a clean resting state. */
+  .enter-stage::before,
+  .enter-stage::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 96vmin;
+    height: 96vmin;
+    margin: -48vmin 0 0 -48vmin;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--foreground) 28%, transparent);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transform: scale(0.04);
+    will-change: opacity, transform;
+    animation: enter-ring 1.15s cubic-bezier(0.22, 0.7, 0.3, 1) forwards;
+    animation-delay: 120ms;
+  }
+  .enter-stage::after {
+    width: 64vmin;
+    height: 64vmin;
+    margin: -32vmin 0 0 -32vmin;
+    border-color: color-mix(in srgb, var(--foreground) 18%, transparent);
+    animation-delay: 210ms;
+  }
+  @keyframes enter-ring {
+    0% {
+      opacity: 0;
+      transform: scale(0.04);
+    }
+    18% {
+      opacity: 0.8;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+
+  /* Header: the home bar drops in from above and fades, settling in last
+     with the late secondary-stagger content (statement, typing, socials).
+     Home only — scoped to .enter-header on the home header. */
+  .enter-header {
+    opacity: 0;
+    transform: translateY(-100%);
+    will-change: opacity, transform;
+    animation: enter-header 0.7s cubic-bezier(0.2, 0.72, 0.28, 1.04) forwards;
+    animation-delay: 1200ms;
+  }
+  @keyframes enter-header {
+    0% {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .enter-rise,
-    .enter-split__half {
+    .enter-split__half,
+    .enter-header {
       animation: none;
       opacity: 1;
       transform: none;
@@ -476,7 +542,33 @@
       animation: none;
       opacity: 0;
     }
+    .enter-stage::before,
+    .enter-stage::after {
+      content: none;
+      animation: none;
+    }
   }
+}
+
+/* --- Theme toggle: circular wipe via the View Transitions API -------- *
+ * The toggle reveals the new theme with a circle expanding from the
+ * button (driven in scripts/theme.js). Kill the default cross-fade so the
+ * clip-path reveal reads cleanly; old stays underneath while the new is
+ * wiped in on top. Unsupported browsers / reduced-motion switch instantly.
+ * Top-level (not in a layer) so layered rules can't override it.          */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}
+::view-transition-old(root) {
+  z-index: 0;
 }
 
 /* --- Two-tone statement --------------------------------------------- *
