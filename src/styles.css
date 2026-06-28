@@ -335,6 +335,150 @@
   }
 }
 
+/* --- Home entrance: "Shutter Split" --------------------------------- *
+ * The name is the hero moment. Each line ("Jayce", "Bordelon") is two
+ * complementary, clipped copies of itself: a TOP band that slides in
+ * from the left edge and a BOTTOM band that slides in from the right.
+ * They lock on the horizontal centerline with a touch of mechanical
+ * overshoot, an accent hairline snaps across the seam, then the rest of
+ * the hero resolves with a crisp upward stagger. Resting state is the
+ * plain, correctly-spaced name — the two bands tile back into one word
+ * with no gap and no doubled glyphs. Scoped to brand-new classes so the
+ * blog's .draft / .draw motion is untouched.                            */
+@layer utilities {
+  .enter-name {
+    position: relative;
+  }
+
+  /* One name line: a shrink-to-text block so the band travel and the
+     seam hairline are sized to the word, not the column. */
+  .enter-split {
+    position: relative;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .enter-split__half {
+    display: block;
+    white-space: nowrap;
+    opacity: 0;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  /* Top band establishes the line height and enters from the left. */
+  .enter-split__half--top {
+    position: relative;
+    clip-path: inset(0 0 calc(50% - 1px) 0);
+    transform: translateX(-115%);
+    animation: shutter-from-left 0.72s cubic-bezier(0.18, 0.86, 0.32, 1.06) forwards;
+    animation-delay: var(--split-delay, 0ms);
+  }
+  /* Bottom band overlays the top exactly and enters from the right. The
+     2px overlap at the seam guarantees no sub-pixel hairline gap. */
+  .enter-split__half--bottom {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(calc(50% - 1px) 0 0 0);
+    transform: translateX(115%);
+    animation: shutter-from-right 0.72s cubic-bezier(0.18, 0.86, 0.32, 1.06) forwards;
+    animation-delay: var(--split-delay, 0ms);
+  }
+  @keyframes shutter-from-left {
+    0% {
+      transform: translateX(-115%);
+      opacity: 0;
+    }
+    14% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  @keyframes shutter-from-right {
+    0% {
+      transform: translateX(115%);
+      opacity: 0;
+    }
+    14% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* The accent seam: a hairline that draws across the centerline at the
+     moment of the lock, then fades — leaving the resting name unmarked. */
+  .enter-split::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: calc(50% - 1px);
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: center;
+    opacity: 0;
+    pointer-events: none;
+    animation: shutter-seam 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--split-delay, 0ms) + 250ms);
+  }
+  @keyframes shutter-seam {
+    0% {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    35% {
+      opacity: 1;
+    }
+    60% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+
+  /* Secondary stagger: eyebrow, statement, typing, socials, portrait
+     resolve with a crisp upward slide once the name has locked. */
+  .enter-rise {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: enter-rise 0.66s cubic-bezier(0.2, 0.72, 0.28, 1.04) forwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+  @keyframes enter-rise {
+    0% {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .enter-rise,
+    .enter-split__half {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+    .enter-split::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}
+
 /* --- Two-tone statement --------------------------------------------- *
  * The signature Taste reveal: an emphasis clause in full ink, the
  * trailing context in muted grey.                                        */
