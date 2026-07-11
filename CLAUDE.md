@@ -86,11 +86,7 @@ Custom domains are set in the Cloudflare Pages dashboard under the project's "Cu
 
 ## No auth here
 
-This site has no signed-in surfaces and no plan to add them. Google OAuth lives in [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) only.
-
-## Related repos
-
-- [vibetradez.com](https://github.com/JayceBordelon/vibetradez.com) — separate stack on a separate droplet.
+This site has no signed-in surfaces and no plan to add them.
 
 ## Local dev
 
