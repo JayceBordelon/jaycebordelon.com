@@ -180,13 +180,6 @@
     inset: 0;
     background: linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--foreground) 5%, transparent));
   }
-  .page-bg canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-  }
   @keyframes field-in {
     to {
       opacity: 1;
@@ -194,28 +187,29 @@
   }
 }
 
-/* --- Listening mode --------------------------------------------------- *
- * The SND control clears the stage: everything but the header fades
- * out, the neural machine takes the background, and a transport bar
- * at the bottom owns the audio. The canvas never renders outside this
- * mode. */
+/* --- The /net stage --------------------------------------------------- *
+ * The listening machine's own page. The canvas fills the viewport
+ * behind the header, the transport bar owns the audio, and leaving
+ * (BACK TO HOME or Escape) fades the bar while the net collapses
+ * before navigation. */
 @layer components {
-  html.listening .page-bg canvas,
-  html.net-out .page-bg canvas {
-    display: block;
-  }
-  main {
-    transition: opacity 0.45s ease;
-  }
-  html.listening main {
-    opacity: 0;
+  .net-stage {
+    position: fixed;
+    inset: 0;
+    z-index: -5;
     pointer-events: none;
   }
-  html.listening {
-    overflow: hidden;
+  .net-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  body.net-leaving .listen-bar {
+    opacity: 0;
   }
 
   .listen-bar {
+    transition: opacity 0.45s ease;
     position: fixed;
     left: 0;
     right: 0;

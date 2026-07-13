@@ -1,18 +1,14 @@
-// Ambient piano for the site, two Gabriel Piano tracks
-// (youtube.com/@GabrielPiano1) served locally at low volume and
-// rotated when one ends. Playback is on by default and starts the
-// moment the browser permits: immediately where autoplay is allowed,
-// otherwise on the visitor's first gesture, with retries on tab
-// focus. The SND control toggles it, the choice persists across
-// pages, and the current track and playhead carry between page loads
-// so navigation never restarts the song. The SND control toggles
-// listening mode: content steps aside, the neural net wakes, and a
-// transport bar owns the audio. While audio plays, the analyser
-// publishes 16 pitch cells plus a loudness signal on window.soundField
-// for the neural renderer.
+// The /net page's player. Only /net carries the audio element, so
+// music exists nowhere else and leaving the page silences it by
+// construction. Two responsibilities: drive the audio (six local
+// Gabriel Piano tracks with a selector, scrubber, and rotation when a
+// track ends, playing the moment the browser permits with a
+// first-gesture fallback and focus retries, track and playhead
+// persisted across visits) and publish 16 pitch cells plus a loudness
+// signal on window.soundField for the neural machine. Leaving via
+// BACK TO HOME or Escape collapses the net first, then navigates.
 (function () {
   var audio = document.getElementById("ambience-track");
-  var chip = document.getElementById("ambience");
   if (!audio) return;
   audio.volume = 0.35;
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -28,25 +24,55 @@
   var trackIdx = 0;
   try { trackIdx = (+localStorage.getItem("ambience-i") || 0) % TRACKS.length; } catch (e) {}
   if (trackIdx !== 0) audio.src = TRACKS[trackIdx].src;
-  if (chip) chip.title = TRACKS[trackIdx].title;
 
   var off = false;
   try { off = localStorage.getItem("ambience") === "off"; } catch (e) {}
 
-  function paint(playing) {
-    if (!chip) return;
-    chip.classList.toggle("amb-on", playing);
+  var bar = document.getElementById("listen-bar");
+  var playBtn = document.getElementById("listen-play");
+  var seek = document.getElementById("listen-seek");
+  var timeEl = document.getElementById("listen-time");
+  var durEl = document.getElementById("listen-dur");
+  var trackSel = document.getElementById("listen-track");
+  var exitLink = document.getElementById("listen-exit");
+  var seeking = false;
+
+  function fmt(sec) {
+    if (!isFinite(sec) || sec < 0) return "0:00";
+    var m = (sec / 60) | 0, r = (sec % 60) | 0;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+  function paintBar() {
+    if (!bar) return;
+    if (playBtn) playBtn.textContent = audio.paused ? "PLAY" : "PAUSE";
+    if (timeEl) timeEl.textContent = fmt(audio.currentTime);
+    if (durEl) durEl.textContent = fmt(audio.duration);
+    if (seek && !seeking && audio.duration) {
+      seek.value = String(((audio.currentTime / audio.duration) * 1000) | 0);
+    }
+  }
+  function setTrack(i, playNow) {
+    trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
+    audio.src = TRACKS[trackIdx].src;
+    if (trackSel) trackSel.value = String(trackIdx);
+    try {
+      localStorage.setItem("ambience-i", String(trackIdx));
+      localStorage.setItem("ambience-t", "0");
+    } catch (e) {}
+    if (playNow && !off) start();
+    paintBar();
   }
 
   // The analyser: pitch mapped to 16 cells, consistently. A 4096-point
   // FFT gives ~11Hz bins. Four piano registers (bass, tenor, alto,
   // treble) each subdivide into four sub-bands, lowest first, and every
-  // cell normalizes against its own rolling peak with fast attack and
-  // slow ring-out, so soft treble reads as fully as heavy bass and the
-  // same note always lands in the same cell. The cells are published
-  // on window.soundField for the neural background renderer. The
-  // element runs at full volume into the graph and a gain node does
-  // the quieting after the tap, so the analyser sees full-scale signal.
+  // cell normalizes against its own rolling peak (slow decay plus a
+  // gamma curve, so mid energy reads mid) with fast attack and quick
+  // release. cells are pitch-normalized (which note), loud is the
+  // absolute level against its own rolling peak (how hard it is being
+  // played), both published on window.soundField. The element runs at
+  // full volume into the graph and a gain node does the quieting after
+  // the tap, so the analyser sees full-scale signal.
   var SUBS = [
     [4, 6, 8, 10, 12],
     [12, 15, 18, 21, 24],
@@ -57,9 +83,6 @@
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
   var loudMax = 30;
-  // cells are pitch-normalized (which note), loud is the absolute level
-  // (how hard it is being played), published separately so the neural
-  // background can recruit more neurons for louder passages.
   window.soundField = { cells: amps, overall: 0, loud: 0 };
   var loud = 0;
   var ctx, analyser, data, looping = false;
@@ -100,8 +123,6 @@
             var avg = sum / width;
             rawSum += sum;
             rawBins += width;
-            /* Slow-decaying peak reference plus a gamma curve keeps
-               dynamic range: mid energy reads mid, not pinned at 1. */
             subMax[idx] = Math.max(subMax[idx] * 0.9992, avg, 25);
             var ratio = Math.min(1, Math.max(0, avg - 6) / (subMax[idx] - 6));
             target = Math.pow(ratio, 1.7);
@@ -134,95 +155,24 @@
         var t = +localStorage.getItem("ambience-t") || 0;
         if (t > 0 && t < audio.duration && Math.abs(audio.currentTime - t) > 2) audio.currentTime = t;
       } catch (e) {}
-      paint(true);
       analyse();
+      paintBar();
       removeEventListener("pointerdown", gesture);
       removeEventListener("keydown", gesture);
     }).catch(function () {});
   }
   function gesture(e) {
     if (off) return;
-    if (e.target && e.target.closest && e.target.closest(".amb")) return;
+    if (e.target && e.target.closest && e.target.closest(".listen-play, .listen-track, .listen-exit")) return;
     start();
   }
 
-  // Listening mode: the SND control clears the stage. Everything but
-  // the header fades out, the neural net wakes, and the transport bar
-  // at the bottom owns the audio (play, pause, scrub). Escape leaves.
-  var bar = document.getElementById("listen-bar");
-  var playBtn = document.getElementById("listen-play");
-  var seek = document.getElementById("listen-seek");
-  var timeEl = document.getElementById("listen-time");
-  var durEl = document.getElementById("listen-dur");
-  var trackSel = document.getElementById("listen-track");
-  var exitBtn = document.getElementById("listen-exit");
-  var listening = false, seeking = false;
-
-  function setTrack(i, playNow) {
-    trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
-    audio.src = TRACKS[trackIdx].src;
-    if (chip) chip.title = TRACKS[trackIdx].title;
-    if (trackSel) trackSel.value = String(trackIdx);
-    try {
-      localStorage.setItem("ambience-i", String(trackIdx));
-      localStorage.setItem("ambience-t", "0");
-    } catch (e) {}
-    if (playNow && !off) start();
-    paintBar();
-  }
-
-  function fmt(sec) {
-    if (!isFinite(sec) || sec < 0) return "0:00";
-    var m = (sec / 60) | 0, r = (sec % 60) | 0;
-    return m + ":" + (r < 10 ? "0" : "") + r;
-  }
-  function paintBar() {
-    if (!bar || bar.hidden) return;
-    if (playBtn) playBtn.textContent = audio.paused ? "PLAY" : "PAUSE";
-    if (timeEl) timeEl.textContent = fmt(audio.currentTime);
-    if (durEl) durEl.textContent = fmt(audio.duration);
-    if (seek && !seeking && audio.duration) {
-      seek.value = String(((audio.currentTime / audio.duration) * 1000) | 0);
-    }
-  }
-  function setListening(on) {
-    listening = on;
-    document.documentElement.classList.toggle("listening", on);
-    if (bar) bar.hidden = !on;
-    if (chip) chip.setAttribute("aria-pressed", on ? "true" : "false");
-    if (window.neuralField) {
-      if (on) window.neuralField.start();
-      else window.neuralField.stop();
-    }
-    if (on) {
-      off = false;
-      try { localStorage.setItem("ambience", "on"); } catch (e) {}
-      if (audio.paused) start();
-      paintBar();
-    } else {
-      // Keep the canvas visible long enough for the collapse to play.
-      document.documentElement.classList.add("net-out");
-      setTimeout(function () {
-        document.documentElement.classList.remove("net-out");
-      }, 900);
-    }
-  }
-
-  if (chip) {
-    chip.addEventListener("click", function () {
-      setListening(!listening);
-    });
-  }
   if (playBtn) {
     playBtn.addEventListener("click", function () {
       off = !audio.paused;
       try { localStorage.setItem("ambience", off ? "off" : "on"); } catch (e) {}
-      if (off) {
-        audio.pause();
-        paint(false);
-      } else {
-        start();
-      }
+      if (off) audio.pause();
+      else start();
       paintBar();
     });
   }
@@ -247,23 +197,30 @@
       setTrack(+trackSel.value, true);
     });
   }
-  if (exitBtn) {
-    exitBtn.addEventListener("click", function () {
-      setListening(false);
-    });
+
+  // Leaving: collapse the machine, fade the bar, then go home.
+  var leaving = false;
+  function leave(e) {
+    if (e) e.preventDefault();
+    if (leaving) return;
+    leaving = true;
+    if (window.neuralField) window.neuralField.stop();
+    document.body.classList.add("net-leaving");
+    setTimeout(function () { location.href = "/"; }, 650);
   }
-  audio.addEventListener("timeupdate", paintBar);
-  audio.addEventListener("play", paintBar);
-  audio.addEventListener("pause", paintBar);
-  audio.addEventListener("durationchange", paintBar);
+  if (exitLink) exitLink.addEventListener("click", leave);
   addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && listening) setListening(false);
+    if (e.key === "Escape") leave();
   });
 
   // When a track finishes, rotate to the next and keep playing.
   audio.addEventListener("ended", function () {
     setTrack(trackIdx + 1, true);
   });
+  audio.addEventListener("timeupdate", paintBar);
+  audio.addEventListener("play", paintBar);
+  audio.addEventListener("pause", paintBar);
+  audio.addEventListener("durationchange", paintBar);
 
   addEventListener("pagehide", function () {
     try {
@@ -273,13 +230,14 @@
   });
 
   function retry() {
-    if (!off && audio.paused) start();
+    if (!off && audio.paused && !leaving) start();
   }
   addEventListener("focus", retry);
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) retry();
   });
 
+  paintBar();
   if (off) {
     audio.pause();
   } else {

@@ -79,16 +79,36 @@
   nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
 
   // Palette from the live theme tokens, re-read when the theme flips.
-  // Activation climbs a thermal ramp: resting slate, then emerald,
-  // then gold, then white hot (inverted to dark hot on the light
-  // theme), so how lit a neuron is reads as color, not just weight.
+  // Activation climbs an eight-stop spectral ramp: resting slate,
+  // indigo, azure, emerald, chartreuse, amber, ember, white hot (a
+  // darker mirror on the light theme). The input is gamma-lifted so
+  // the colorful middle of the ramp lives where activations actually
+  // sit, and full recruitment reads as heat.
   var ink = "#808080";
-  var DARK_STOPS = [[125, 135, 148], [52, 211, 153], [250, 204, 21], [255, 250, 240]];
-  var LIGHT_STOPS = [[100, 110, 122], [5, 150, 105], [176, 118, 8], [40, 26, 8]];
-  var POS = [0, 0.45, 0.8, 1];
+  var DARK_STOPS = [
+    [110, 120, 135],
+    [86, 108, 220],
+    [56, 172, 255],
+    [52, 211, 153],
+    [196, 222, 60],
+    [255, 186, 34],
+    [255, 100, 54],
+    [255, 248, 235],
+  ];
+  var LIGHT_STOPS = [
+    [105, 115, 128],
+    [70, 88, 186],
+    [16, 128, 196],
+    [5, 150, 105],
+    [130, 144, 10],
+    [186, 116, 8],
+    [188, 62, 28],
+    [56, 28, 8],
+  ];
+  var POS = [0, 0.14, 0.28, 0.42, 0.58, 0.72, 0.86, 1];
   var stops = DARK_STOPS;
   function ramp(a) {
-    a = Math.max(0, Math.min(1, a));
+    a = Math.pow(Math.max(0, Math.min(1, a)), 0.75);
     var i = 1;
     while (i < POS.length - 1 && a > POS[i]) i++;
     var t2 = Math.max(0, Math.min(1, (a - POS[i - 1]) / (POS[i] - POS[i - 1])));
@@ -228,7 +248,7 @@
       if (knit <= 0.02) continue;
       var act = Math.min(nodes[a].act, nodes[d2].act);
       var depth = (pz[a] + pz[d2]) * 0.5;
-      g.strokeStyle = act > 0.04 ? ramp(act * 1.05) : ink;
+      g.strokeStyle = act > 0.03 ? ramp(act) : ink;
       g.globalAlpha = (0.11 + loud * 0.05 + act * 0.42) * depth * knit * knit;
       g.lineWidth = (0.6 + act * 1.2) * depth;
       g.beginPath();
@@ -271,7 +291,7 @@
       var per2 = pz[w2];
       var born = prog[w2];
       if (born <= 0) continue;
-      g.fillStyle = nn.act > 0.04 ? ramp(nn.act) : ink;
+      g.fillStyle = nn.act > 0.03 ? ramp(nn.act) : ink;
       if (nn.act > 0.2) {
         g.globalAlpha = nn.act * 0.18 * per2 * born;
         g.beginPath();
@@ -317,4 +337,8 @@
       }
     },
   };
+
+  // The canvas only exists on /net, and that page IS the machine, so
+  // spawn in the moment it loads.
+  window.neuralField.start();
 })();
