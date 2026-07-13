@@ -20,6 +20,12 @@
     { slug: "can-you-hear-the-music", src: "/audio/can-you-hear-the-music.m4a", name: "Can You Hear The Music", title: "Can You Hear The Music, Oppenheimer piano version by Patrik Pietschmann" },
     { slug: "je-te-laisserai-des-mots", src: "/audio/je-te-laisserai-des-mots.m4a", name: "Je te laisserai des mots", title: "Je te laisserai des mots, Patrick Watson cover by Gabriel Piano" },
     { slug: "let-down", src: "/audio/let-down.m4a", name: "Let down", title: "Let down, Radiohead cover by Gabriel Piano" },
+    { slug: "fake-plastic-trees", src: "/audio/fake-plastic-trees.m4a", name: "Fake plastic trees", title: "Fake plastic trees, Radiohead cover by Gabriel Piano" },
+    { slug: "comptine", src: "/audio/comptine.m4a", name: "Comptine d'un autre \u00e9t\u00e9", title: "Comptine d'un autre \u00e9t\u00e9 from Am\u00e9lie, Yann Tiersen, played by Rousseau" },
+    { slug: "the-night-we-met", src: "/audio/the-night-we-met.m4a", name: "The Night We Met", title: "The Night We Met, Lord Huron cover by The Theorist" },
+    { slug: "clair-de-lune", src: "/audio/clair-de-lune.m4a", name: "Clair de Lune", title: "Clair de Lune, Debussy, played by Rousseau" },
+    { slug: "experience", src: "/audio/experience.m4a", name: "Experience", title: "Experience, Ludovico Einaudi, played by Rousseau" },
+    { slug: "swan-lake", src: "/audio/swan-lake.m4a", name: "Swan Lake", title: "Swan Lake, Tchaikovsky, played by Kassia" },
     { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
   ];
   // The song in the url wins and always starts from the top, so a

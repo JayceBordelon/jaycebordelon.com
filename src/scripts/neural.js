@@ -19,6 +19,7 @@
   var g = cv.getContext("2d");
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
+  var pulses = [];
 
   // A fresh seed every visit: the brain is never the same twice.
   var seed = (Math.random() * 4294967296) | 0;
@@ -30,73 +31,83 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Motifs in one quadrant, stamped 8x by D4, then heavily
-  // de-symmetrized: every copy lands with loose organic jitter and a
-  // large population of free neurons ignores the symmetry group
-  // entirely, so only a ghost of the order survives inside real
-  // chaos. Cell comes from where a neuron lives: register by height,
-  // sub-band by radius.
-  function cellAt(rad2, my2) {
-    var reg = my2 > 0.31 ? 0 : my2 > 0 ? 1 : my2 > -0.31 ? 2 : 3;
+  // Every generation rolls its own creature: a random symmetry order
+  // (2, 3, or 4 fold, mirrored), its own motif count, jitter, vertical
+  // spread, and radial density, then stamps motifs through that group
+  // and pours in a big free population that ignores symmetry entirely.
+  // Cell comes from where a neuron lives: register by height, sub-band
+  // by radius, so pitch geography survives every regeneration.
+  var nodes, edges, incident, cellNodes;
+  function cellAt(rad2, my2, ys) {
+    var t2 = my2 / (ys * 2);
+    var reg = t2 > 0.25 ? 0 : t2 > 0 ? 1 : t2 > -0.25 ? 2 : 3;
     var sub = rad2 > 0.85 ? 0 : rad2 > 0.65 ? 1 : rad2 > 0.45 ? 2 : 3;
     return reg * 4 + sub;
   }
-  var MOTIFS = 46, FREE = 150;
-  var nodes = [], edges = [];
-  for (var m0 = 0; m0 < MOTIFS; m0++) {
-    var ang = (rnd() * TAU) / 4;
-    var rad = 0.25 + Math.pow(rnd(), 0.7) * 0.75;
-    var mx = Math.cos(ang) * rad;
-    var mz = Math.sin(ang) * rad;
-    var my = (rnd() * 2 - 1) * 0.62;
-    var cell = cellAt(rad, my);
-    var bias = 0.12 + rnd() * 0.5;
-    for (var cpy = 0; cpy < 8; cpy++) {
-      var rot = (cpy & 3) * (TAU / 4);
-      var mir = cpy & 4 ? -1 : 1;
-      var ca = Math.cos(rot), sa = Math.sin(rot);
+  function generate() {
+    var rotN = 2 + ((rnd() * 3) | 0);
+    var copies = rotN * 2;
+    var MOTIFS = ((190 + rnd() * 160) / copies) | 0;
+    var FREE = (90 + rnd() * 140) | 0;
+    var JIT = 0.18 + rnd() * 0.34;
+    var YS = 0.5 + rnd() * 0.32;
+    var RPOW = 0.5 + rnd() * 0.5;
+    nodes = [];
+    edges = [];
+    for (var m0 = 0; m0 < MOTIFS; m0++) {
+      var ang = (rnd() * TAU) / rotN;
+      var rad = 0.22 + Math.pow(rnd(), RPOW) * 0.78;
+      var mx = Math.cos(ang) * rad;
+      var mz = Math.sin(ang) * rad;
+      var my = (rnd() * 2 - 1) * YS;
+      var cell = cellAt(rad, my, YS);
+      var bias = 0.12 + rnd() * 0.5;
+      for (var cpy = 0; cpy < copies; cpy++) {
+        var rot = (cpy % rotN) * (TAU / rotN);
+        var mir = cpy >= rotN ? -1 : 1;
+        var ca = Math.cos(rot), sa = Math.sin(rot);
+        nodes.push({
+          x: (mx * ca - mz * sa) * mir + (rnd() - 0.5) * JIT,
+          y: my + (rnd() - 0.5) * JIT * 0.8,
+          z: mx * sa + mz * ca + (rnd() - 0.5) * JIT,
+          cell: cell,
+          bias: bias,
+          act: 0,
+        });
+      }
+    }
+    for (var f0 = 0; f0 < FREE; f0++) {
+      var fa = rnd() * TAU;
+      var fr = 0.15 + Math.pow(rnd(), 0.6) * 0.85;
+      var fy = (rnd() * 2 - 1) * (YS + 0.06);
       nodes.push({
-        x: (mx * ca - mz * sa) * mir + (rnd() - 0.5) * 0.3,
-        y: my + (rnd() - 0.5) * 0.24,
-        z: mx * sa + mz * ca + (rnd() - 0.5) * 0.3,
-        cell: cell,
-        bias: bias,
+        x: Math.cos(fa) * fr,
+        y: fy,
+        z: Math.sin(fa) * fr,
+        cell: cellAt(fr, fy, YS),
+        bias: 0.12 + rnd() * 0.5,
         act: 0,
       });
     }
-  }
-  for (var f0 = 0; f0 < FREE; f0++) {
-    var fa = rnd() * TAU;
-    var fr = 0.15 + Math.pow(rnd(), 0.6) * 0.85;
-    var fy = (rnd() * 2 - 1) * 0.66;
-    nodes.push({
-      x: Math.cos(fa) * fr,
-      y: fy,
-      z: Math.sin(fa) * fr,
-      cell: cellAt(fr, fy),
-      bias: 0.12 + rnd() * 0.5,
-      act: 0,
+    // Wiring: each neuron to its three nearest neighbors, deduped.
+    var seen = {};
+    nodes.forEach(function (n, ai) {
+      var ds = nodes.map(function (q, bi) {
+        var dx = n.x - q.x, dy = n.y - q.y, dz = n.z - q.z;
+        return { d: dx * dx + dy * dy + dz * dz, i: bi };
+      }).sort(function (p1, q1) { return p1.d - q1.d; });
+      for (var k = 1; k <= 3; k++) {
+        var key = Math.min(ai, ds[k].i) + ":" + Math.max(ai, ds[k].i);
+        if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
+      }
     });
+    incident = nodes.map(function () { return []; });
+    edges.forEach(function (e, ei) { incident[e[0]].push(ei); incident[e[1]].push(ei); });
+    cellNodes = [];
+    for (var c = 0; c < 16; c++) cellNodes.push([]);
+    nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
+    pulses.length = 0;
   }
-
-  // Wiring: each neuron to its three nearest neighbors, deduped. The
-  // cloud is symmetric, so the loom it weaves is too.
-  var seen = {};
-  nodes.forEach(function (n, ai) {
-    var ds = nodes.map(function (q, bi) {
-      var dx = n.x - q.x, dy = n.y - q.y, dz = n.z - q.z;
-      return { d: dx * dx + dy * dy + dz * dz, i: bi };
-    }).sort(function (p1, q1) { return p1.d - q1.d; });
-    for (var k = 1; k <= 3; k++) {
-      var key = Math.min(ai, ds[k].i) + ":" + Math.max(ai, ds[k].i);
-      if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
-    }
-  });
-  var incident = nodes.map(function () { return []; });
-  edges.forEach(function (e, ei) { incident[e[0]].push(ei); incident[e[1]].push(ei); });
-  var cellNodes = [];
-  for (var c = 0; c < 16; c++) cellNodes.push([]);
-  nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
 
   // Palette from the live theme tokens, re-read when the theme flips.
   // Activation climbs a cold-to-warm thermal ramp: resting cool slate
@@ -157,7 +168,6 @@
   }
   addEventListener("resize", size);
 
-  var pulses = [];
   var prevCells = [], cellBase = [];
   for (var p = 0; p < 16; p++) { prevCells.push(0); cellBase.push(0); }
   var px = [], py = [], pz = [];
@@ -358,7 +368,25 @@
     },
   };
 
+  window.neuralField.regenerate = function () {
+    generate();
+    if (still) {
+      draw(0);
+    } else {
+      intro = 0;
+      mode = 1;
+      window.neuralField.start();
+    }
+  };
+  var regenBtn = document.getElementById("listen-regen");
+  if (regenBtn) {
+    regenBtn.addEventListener("click", function () {
+      window.neuralField.regenerate();
+    });
+  }
+
   // The canvas only exists on /music, and that page IS the machine, so
-  // spawn in the moment it loads.
+  // generate a creature and spawn it the moment the page loads.
+  generate();
   window.neuralField.start();
 })();
