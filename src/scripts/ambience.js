@@ -218,7 +218,12 @@
   if (pickBtn && pickList) {
     // Grouped by category, each entry verbose: the song on one line,
     // its credit on the next.
-    var CATS = ["Originals", "Piano Covers", "Film Scores", "Classical", "Pop", "Hip Hop"];
+    // Categories come from the manifest in first-appearance order, so
+    // a new category can never silently vanish from the picker.
+    var CATS = [];
+    TRACKS.forEach(function (tr) {
+      if (CATS.indexOf(tr.cat) < 0) CATS.push(tr.cat);
+    });
     CATS.forEach(function (cat) {
       var members = [];
       TRACKS.forEach(function (tr, ti) {

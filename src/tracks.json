@@ -96,6 +96,14 @@
     "title": "Halley's Comet by Billie Eilish"
   },
   {
+    "slug": "wildflower",
+    "src": "/audio/wildflower.m4a",
+    "name": "WILDFLOWER",
+    "cat": "Pop",
+    "sub": "Billie Eilish",
+    "title": "WILDFLOWER by Billie Eilish"
+  },
+  {
     "slug": "chicago-freestyle",
     "src": "/audio/chicago-freestyle.m4a",
     "name": "Chicago Freestyle",
@@ -120,19 +128,35 @@
     "title": "Look Back At It by A Boogie Wit Da Hoodie"
   },
   {
-    "slug": "wildflower",
-    "src": "/audio/wildflower.m4a",
-    "name": "WILDFLOWER",
-    "cat": "Piano Covers",
-    "sub": "Billie Eilish, by Gabriel Piano",
-    "title": "WILDFLOWER, Billie Eilish cover by Gabriel Piano"
-  },
-  {
     "slug": "fantaisie-impromptu",
     "src": "/audio/fantaisie-impromptu.m4a",
     "name": "Fantaisie-Impromptu",
     "cat": "Classical",
     "sub": "Chopin, played by Rousseau",
     "title": "Fantaisie-Impromptu, Chopin, played by Rousseau"
+  },
+  {
+    "slug": "let-it-happen",
+    "src": "/audio/let-it-happen.m4a",
+    "name": "Let It Happen",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "Let It Happen by Tame Impala"
+  },
+  {
+    "slug": "eventually",
+    "src": "/audio/eventually.m4a",
+    "name": "Eventually",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "Eventually by Tame Impala"
+  },
+  {
+    "slug": "sweet-heat-lightning",
+    "src": "/audio/sweet-heat-lightning.m4a",
+    "name": "Sweet Heat Lightning",
+    "cat": "Folk",
+    "sub": "Gregory Alan Isakov",
+    "title": "Sweet Heat Lightning by Gregory Alan Isakov"
   }
 ]
