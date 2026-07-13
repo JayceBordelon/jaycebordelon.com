@@ -155,13 +155,13 @@
   }
 }
 
-/* --- The background: a brain listening to the music ------------------ *
- * A fixed canvas behind the page where neural.js renders a 3d network
- * of neurons on a slowly turning axis. Four lobes own the four piano
- * registers and every neuron is tuned to one of the 16 pitch cells
- * published by ambience.js, so each note lights its neurons and fires
- * signal pulses down the edges to their neighbors. neural.js owns
- * every frame, this owns the shell. */
+/* --- The background: a neural machine listening to the music --------- *
+ * A fixed canvas behind the page where neural.js renders a symmetric
+ * 3d network: four layers, one per piano register, each layer rings of
+ * neurons tuned to the 16 pitch cells published by ambience.js. Notes
+ * light their neurons and fire signal pulses down the wiring. The
+ * canvas renders only in listening mode. neural.js owns every frame,
+ * this owns the shell. */
 @layer components {
   .page-bg {
     position: fixed;
@@ -173,22 +173,118 @@
     opacity: 0;
     animation: field-in 1.1s ease-out forwards;
   }
-  /* A quiet vignette gives the chamber depth on either tone. */
+  /* A quiet floor shade gives the chamber depth on either tone. */
   .page-bg::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(120% 90% at 50% 30%, transparent 55%, color-mix(in srgb, var(--foreground) 6%, transparent));
+    background: linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--foreground) 5%, transparent));
   }
   .page-bg canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    display: none;
   }
   @keyframes field-in {
     to {
       opacity: 1;
+    }
+  }
+}
+
+/* --- Listening mode --------------------------------------------------- *
+ * The SND control clears the stage: everything but the header fades
+ * out, the neural machine takes the background, and a transport bar
+ * at the bottom owns the audio. The canvas never renders outside this
+ * mode. */
+@layer components {
+  html.listening .page-bg canvas {
+    display: block;
+  }
+  main {
+    transition: opacity 0.45s ease;
+  }
+  html.listening main {
+    opacity: 0;
+    pointer-events: none;
+  }
+  html.listening {
+    overflow: hidden;
+  }
+
+  .listen-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--background) 86%, transparent);
+    backdrop-filter: blur(6px);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  .listen-bar[hidden] {
+    display: none;
+  }
+  .listen-play {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--foreground);
+    letter-spacing: 0.18em;
+    transition: border-color 0.2s ease;
+  }
+  .listen-play:hover {
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .listen-clock {
+    color: var(--muted-foreground);
+    min-width: 4ch;
+    text-align: center;
+  }
+  .listen-title {
+    color: var(--muted-foreground);
+    max-width: 34ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .listen-seek {
+    flex: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 2px;
+    border-radius: 1px;
+    background: color-mix(in srgb, var(--foreground) 25%, transparent);
+    outline-offset: 6px;
+  }
+  .listen-seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+  .listen-seek::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+  @media (max-width: 560px) {
+    .listen-title {
+      display: none;
     }
   }
 }

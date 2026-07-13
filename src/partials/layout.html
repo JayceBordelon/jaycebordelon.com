@@ -60,6 +60,13 @@
     <main>{{ content }}</main>
     {{ background }}
     <audio id="ambience-track" src="/audio/first-dance.m4a" autoplay preload="auto"></audio>
+    <div id="listen-bar" class="listen-bar" hidden>
+      <button type="button" id="listen-play" class="listen-play">PAUSE</button>
+      <span id="listen-time" class="listen-clock">0:00</span>
+      <input id="listen-seek" class="listen-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek through the track" />
+      <span id="listen-dur" class="listen-clock">0:00</span>
+      <span id="listen-title" class="listen-title"></span>
+    </div>
     <script src="/scripts/theme.js" defer></script>
     <script src="/scripts/cursor.js" defer></script>
     <script src="/scripts/ambience.js" defer></script>

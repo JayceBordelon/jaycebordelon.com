@@ -1,21 +1,25 @@
-// The background as a listening brain. A 3d network of neurons turns
-// slowly on its axis, rendered on the fixed canvas behind the page.
-// Four lobes own the four piano registers (bass at the stem, tenor
-// west, alto east, treble at the crown) and every neuron is tuned to
-// one of the 16 pitch cells ambience.js publishes on window.soundField,
-// with its own sensitivity bias: quiet notes clear only the most
-// sensitive neurons, louder playing recruits more of the population,
-// so activation density tracks loudness the way real tissue recruits.
-// Attacks fire signal pulses down the edges, more and chattier when
-// loud, and arrivals can chain-fire in climaxes. Canvas 2d and vanilla
-// JS only. Reduced motion gets one static frame.
+// The background as a listening neural machine. Four flat layers turn
+// slowly in 3d, one per piano register (bass on the west face, treble
+// east), each layer four concentric rings of neurons, one ring per
+// pitch sub-band with pitch rising toward the ring core. Rings close
+// into circles, parallel struts link matching rings across layers,
+// and radial spokes tie neighboring rings inside each layer, so the
+// architecture reads deliberate and symmetric. Every neuron keeps its
+// own sensitivity bias: quiet notes clear only the most sensitive,
+// louder playing recruits deeper into the population. Attacks fire
+// signal pulses down the wiring, more and chattier when loud, and
+// arrivals can chain-fire in climaxes. The machine only exists in
+// listening mode: ambience.js calls window.neuralField.start/stop
+// with the mode toggle, and nothing renders outside it. Canvas 2d and
+// vanilla JS only. Reduced motion gets one static frame.
 (function () {
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
   var g = cv.getContext("2d");
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var TAU = Math.PI * 2;
 
-  // Seeded layout: the same brain on every page and every visit.
+  // Seeded biases: the same temperament on every page and every visit.
   var seed = 0x5eed;
   function rnd() {
     seed |= 0;
@@ -24,46 +28,50 @@
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
-  function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
 
-  var LOBES = [
-    { x: 0.02, y: 0.58, z: 0.1, r: 0.4 },
-    { x: -0.74, y: -0.04, z: -0.16, r: 0.5 },
-    { x: 0.72, y: -0.02, z: 0.18, r: 0.5 },
-    { x: 0.0, y: -0.6, z: -0.06, r: 0.46 },
+  var LAYER_X = [-0.9, -0.3, 0.3, 0.9];
+  var RINGS = [
+    { n: 20, r: 0.68 },
+    { n: 16, r: 0.5 },
+    { n: 12, r: 0.32 },
+    { n: 6, r: 0.14 },
   ];
-  // The bias is each neuron's firing threshold: low-bias neurons wake
-  // for whispers, high-bias ones only join when the music leans in.
   var nodes = [];
+  var ringStart = [];
   for (var L = 0; L < 4; L++) {
-    for (var i = 0; i < 48; i++) {
-      nodes.push({
-        x: LOBES[L].x + gauss() * LOBES[L].r,
-        y: LOBES[L].y + gauss() * LOBES[L].r * 0.85,
-        z: LOBES[L].z + gauss() * LOBES[L].r,
-        cell: L * 4 + ((rnd() * 4) | 0),
-        bias: 0.12 + rnd() * 0.5,
-        act: 0,
-      });
+    ringStart.push([]);
+    for (var k = 0; k < 4; k++) {
+      ringStart[L].push(nodes.length);
+      for (var j = 0; j < RINGS[k].n; j++) {
+        var th = (TAU * j) / RINGS[k].n + k * 0.13;
+        nodes.push({
+          x: LAYER_X[L],
+          y: Math.cos(th) * RINGS[k].r * 0.95,
+          z: Math.sin(th) * RINGS[k].r,
+          cell: L * 4 + k,
+          bias: 0.12 + rnd() * 0.5,
+          act: 0,
+        });
+      }
     }
-  }
-  // Bridge neurons near the center stitch the lobes into one organ.
-  for (var b = 0; b < 24; b++) {
-    nodes.push({ x: gauss() * 0.34, y: gauss() * 0.32, z: gauss() * 0.34, cell: (rnd() * 16) | 0, bias: 0.12 + rnd() * 0.5, act: 0 });
   }
 
-  // Edges: each neuron to its four nearest neighbors, deduped.
-  var edges = [], seen = {};
-  nodes.forEach(function (n, ai) {
-    var ds = nodes.map(function (m, bi) {
-      var dx = n.x - m.x, dy = n.y - m.y, dz = n.z - m.z;
-      return { d: dx * dx + dy * dy + dz * dz, i: bi };
-    }).sort(function (p, q) { return p.d - q.d; });
-    for (var k = 1; k <= 4; k++) {
-      var key = Math.min(ai, ds[k].i) + ":" + Math.max(ai, ds[k].i);
-      if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
+  // Wiring: ring circles, inter-layer struts, intra-layer spokes.
+  var edges = [];
+  for (var L2 = 0; L2 < 4; L2++) {
+    for (var k2 = 0; k2 < 4; k2++) {
+      var n0 = RINGS[k2].n;
+      var s0 = ringStart[L2][k2];
+      for (var j2 = 0; j2 < n0; j2++) {
+        edges.push([s0 + j2, s0 + ((j2 + 1) % n0)]);
+        if (L2 < 3) edges.push([s0 + j2, ringStart[L2 + 1][k2] + j2]);
+        if (k2 < 3) {
+          var n1 = RINGS[k2 + 1].n;
+          edges.push([s0 + j2, ringStart[L2][k2 + 1] + (Math.round((j2 * n1) / n0) % n1)]);
+        }
+      }
     }
-  });
+  }
   var incident = nodes.map(function () { return []; });
   edges.forEach(function (e, ei) { incident[e[0]].push(ei); incident[e[1]].push(ei); });
   var cellNodes = [];
@@ -89,13 +97,13 @@
     cv.width = W * dpr;
     cv.height = H * dpr;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (still) draw(0);
+    if (still && active) draw(0);
   }
   addEventListener("resize", size);
 
   var pulses = [];
-  var prevCells = [];
-  for (var p = 0; p < 16; p++) prevCells.push(0);
+  var prevCells = [], cellBase = [];
+  for (var p = 0; p < 16; p++) { prevCells.push(0); cellBase.push(0); }
   var px = [], py = [], pz = [];
 
   function firePulse(ni) {
@@ -111,12 +119,29 @@
     var cs = field && field.cells ? field.cells : null;
     var loud = field ? field.loud || 0 : 0;
 
-    // Drive each neuron with its pitch cell scaled by loudness, then
-    // gate through its bias: louder playing recruits deeper into the
-    // population, so activation density follows the dynamics.
+    // Two separators keep loud polyphony granular. Lateral inhibition:
+    // a neuron's drive is its cell's energy above the mean of all
+    // cells, so a dense wash suppresses itself and struck notes stand
+    // out of it. Transient weighting: each cell also tracks its own
+    // slow baseline, and energy above it (a fresh strike) multiplies
+    // the drive, so every note in a loud chord pops its own neurons at
+    // its own strike and then settles. Loudness still scales
+    // recruitment depth through each neuron's bias.
+    var mean = 0;
+    if (cs) {
+      for (var mc = 0; mc < 16; mc++) {
+        var cv2 = cs[mc] || 0;
+        mean += cv2;
+        cellBase[mc] += (cv2 - cellBase[mc]) * 0.06;
+      }
+      mean /= 16;
+    }
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
-      var drive = cs ? (cs[n.cell] || 0) * (0.15 + 1.05 * loud) : 0;
+      var raw = cs ? cs[n.cell] || 0 : 0;
+      var rel = Math.max(0, raw - mean * 0.45);
+      var atk = Math.max(0, raw - cellBase[n.cell]);
+      var drive = rel * (0.45 + 1.6 * atk) * (0.4 + 0.9 * loud) * 1.5;
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.4) : 0;
       n.act += (target - n.act) * (target > n.act ? 0.3 : 0.09);
     }
@@ -182,8 +207,8 @@
       pu.t += pu.sp;
       var ea = edges[pu.e][pu.from], eb = edges[pu.e][1 - pu.from];
       if (pu.t >= 1) {
-        nodes[eb].act = Math.min(1, nodes[eb].act + 0.22);
-        if (Math.random() < loud * 0.35) firePulse(eb);
+        nodes[eb].act = Math.min(1, nodes[eb].act + 0.15);
+        if (Math.random() < loud * 0.25) firePulse(eb);
         pulses.splice(u, 1);
         continue;
       }
@@ -218,13 +243,24 @@
     g.globalAlpha = 1;
   }
 
-  size();
-  if (still) {
-    draw(0);
-  } else {
-    (function loop(ts) {
-      draw(ts || 0);
-      requestAnimationFrame(loop);
-    })(0);
+  // The brain exists only in listening mode: ambience.js starts and
+  // stops it with the mode toggle. No frame is ever drawn outside it.
+  var active = false, rafId = 0;
+  function loop(ts) {
+    draw(ts || 0);
+    if (active && !still) rafId = requestAnimationFrame(loop);
   }
+  window.neuralField = {
+    start: function () {
+      if (active) return;
+      active = true;
+      size();
+      if (still) draw(0);
+      else rafId = requestAnimationFrame(loop);
+    },
+    stop: function () {
+      active = false;
+      cancelAnimationFrame(rafId);
+    },
+  };
 })();
