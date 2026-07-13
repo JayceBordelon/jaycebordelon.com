@@ -621,6 +621,7 @@
   }
   .listen-picker {
     position: relative;
+    margin-left: auto;
   }
   .listen-track {
     display: flex;
@@ -695,21 +696,6 @@
   .listen-tracklist li[aria-selected="true"] {
     color: var(--accent);
   }
-  .listen-exit {
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) - 2px);
-    color: var(--foreground);
-    letter-spacing: 0.18em;
-    white-space: nowrap;
-    transition: border-color 0.2s ease;
-  }
-  .listen-exit:hover {
-    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
-  }
-  .listen-exit-short {
-    display: none;
-  }
   .listen-seek {
     flex: 1;
     appearance: none;
@@ -750,17 +736,6 @@
     }
     .listen-track {
       max-width: 34vw;
-    }
-    .listen-exit {
-      margin-left: auto;
-      padding: 7px 10px;
-      letter-spacing: 0.12em;
-    }
-    .listen-exit-full {
-      display: none;
-    }
-    .listen-exit-short {
-      display: inline;
     }
     #listen-dur {
       display: none;
