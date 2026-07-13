@@ -117,7 +117,7 @@
     edges = [];
     for (var p0 = 0; p0 < pts.length; p0++) {
       var px0 = pts[p0][0], py0 = pts[p0][1], pz0 = pts[p0][2];
-      var bias = 0.12 + rnd() * 0.5;
+      var bias = 0.2 + rnd() * 0.5;
       for (var cpy = 0; cpy < copies; cpy++) {
         var rot = (cpy % rotN) * (TAU / rotN);
         var mir = mirrored && cpy >= rotN ? -1 : 1;
@@ -161,8 +161,8 @@
   // Activation climbs a cold-to-warm thermal ramp: resting cool slate
   // through indigo, violet, magenta, crimson, orange, and gold to warm
   // white at full recruitment (deepened variants on the light theme).
-  // The input is gamma-lifted so the ramp's middle lives where
-  // activations actually sit.
+  // The input maps linearly, so color is earned by real activation
+  // and near-silence stays slate.
   var ink = "#808080";
   var DARK_STOPS = [
     [70, 85, 120],
@@ -187,7 +187,7 @@
   var POS = [0, 0.14, 0.28, 0.42, 0.58, 0.72, 0.86, 1];
   var stops = DARK_STOPS;
   function ramp(a) {
-    a = Math.pow(Math.max(0, Math.min(1, a)), 0.75);
+    a = Math.max(0, Math.min(1, a));
     var i = 1;
     while (i < POS.length - 1 && a > POS[i]) i++;
     var t2 = Math.max(0, Math.min(1, (a - POS[i - 1]) / (POS[i] - POS[i - 1])));
@@ -300,9 +300,9 @@
       var raw = cs ? cs[n.cell] || 0 : 0;
       var rel = Math.max(0, raw - mean * 0.45);
       var atk = Math.max(0, raw - cellBase[n.cell]);
-      var drive = rel * (0.45 + 1.6 * atk) * (0.4 + 0.9 * loud) * 1.5;
-      var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.4) : 0;
-      n.act += (target - n.act) * (target > n.act ? 0.3 : 0.09);
+      var drive = rel * (0.45 + 1.6 * atk) * (0.25 + 1.05 * loud) * 1.5;
+      var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
+      n.act += (target - n.act) * (target > n.act ? 0.3 : 0.13);
     }
 
     // A rising cell is a struck note: fire pulses from its neurons,
