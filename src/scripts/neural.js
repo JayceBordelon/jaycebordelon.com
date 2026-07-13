@@ -31,10 +31,9 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Every generation rolls its own creature: a random low symmetry
-  // order (often just a mirror, sometimes none), lumpy cluster blobs,
-  // per-axis squash, off-center drift, and a big free population, so
-  // the machine is chaotic and uneven on purpose and never the same
+  // Every generation grows its own creature with no symmetry group at
+  // all: lumpy uneven blobs, straggling dendrites, loose scatter, and
+  // long chords, squashed and drifted off center, never the same
   // twice. Cell comes from where a neuron lives: register by height,
   // sub-band by radius, so pitch geography survives every roll.
   var nodes, edges, incident, cellNodes;
@@ -45,32 +44,18 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // Low symmetry orders dominate, sometimes none at all, and the
-    // cloud is built from a few lumpy cluster blobs under a random
-    // per-axis squash and off-center drift, so every creature comes
-    // out uneven on purpose.
+    // No symmetry group at all anymore: the creature grows like
+    // tissue. A handful of unevenly weighted cluster blobs (some
+    // dense, some sparse), random-walk dendrites straggling off them,
+    // a loose scatter around everything, and a few long chords through
+    // the middle, all under a random per-axis squash and off-center
+    // drift.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var rotN = [1, 1, 2, 2, 3][(rnd() * 5) | 0];
-    var mirrored = rnd() < 0.7;
-    var copies = rotN * (mirrored ? 2 : 1);
-    var MOTIFS = ((200 + rnd() * 150) / copies) | 0;
-    var FREE = (120 + rnd() * 160) | 0;
-    var JIT = 0.25 + rnd() * 0.4;
     var YS = 0.5 + rnd() * 0.32;
-    var SX = 0.72 + rnd() * 0.55;
-    var SZ = 0.72 + rnd() * 0.55;
-    var OX = (rnd() - 0.5) * 0.24;
-    var OZ = (rnd() - 0.5) * 0.24;
-    var K = 3 + ((rnd() * 4) | 0);
-    var blobs = [];
-    for (var b0 = 0; b0 < K; b0++) {
-      blobs.push({
-        x: (rnd() - 0.5) * 1.3,
-        y: (rnd() * 2 - 1) * YS * 0.8,
-        z: (rnd() - 0.5) * 1.3,
-        r: 0.16 + rnd() * 0.24,
-      });
-    }
+    var SX = 0.7 + rnd() * 0.6;
+    var SZ = 0.7 + rnd() * 0.6;
+    var OX = (rnd() - 0.5) * 0.3;
+    var OZ = (rnd() - 0.5) * 0.3;
     nodes = [];
     edges = [];
     function push(x, y, z, bias) {
@@ -79,30 +64,67 @@
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
     }
-    for (var m0 = 0; m0 < MOTIFS; m0++) {
-      var bl = blobs[(rnd() * K) | 0];
-      var mx = bl.x + gauss() * bl.r;
-      var my = bl.y + gauss() * bl.r * 0.8;
-      var mz = bl.z + gauss() * bl.r;
-      var bias = 0.12 + rnd() * 0.5;
-      for (var cpy = 0; cpy < copies; cpy++) {
-        var rot = (cpy % rotN) * (TAU / rotN);
-        var mir = mirrored && cpy >= rotN ? -1 : 1;
-        var ca = Math.cos(rot), sa = Math.sin(rot);
-        push(
-          (mx * ca - mz * sa) * mir + (rnd() - 0.5) * JIT,
-          my + (rnd() - 0.5) * JIT * 0.8,
-          mx * sa + mz * ca + (rnd() - 0.5) * JIT,
-          bias
-        );
+
+    // Lumpy blobs with uneven populations.
+    var K = 4 + ((rnd() * 5) | 0);
+    var blobs = [];
+    var weights = [];
+    var wsum = 0;
+    for (var b0 = 0; b0 < K; b0++) {
+      blobs.push({
+        x: (rnd() - 0.5) * 1.5,
+        y: (rnd() * 2 - 1) * YS * 0.85,
+        z: (rnd() - 0.5) * 1.5,
+        r: 0.12 + rnd() * 0.3,
+      });
+      var w = 0.2 + rnd() * rnd() * 2.2;
+      weights.push(w);
+      wsum += w;
+    }
+    var BUDGET = 340 + ((rnd() * 140) | 0);
+    for (var b1 = 0; b1 < K; b1++) {
+      var count = Math.round((weights[b1] / wsum) * BUDGET);
+      var bl = blobs[b1];
+      for (var i1 = 0; i1 < count; i1++) {
+        push(bl.x + gauss() * bl.r, bl.y + gauss() * bl.r * 0.8, bl.z + gauss() * bl.r, 0.12 + rnd() * 0.5);
       }
     }
+
+    // Dendrites: random walks straggling out of the mass.
+    var DEND = 9 + ((rnd() * 8) | 0);
+    for (var d0 = 0; d0 < DEND; d0++) {
+      var seed0 = blobs[(rnd() * K) | 0];
+      var wx = seed0.x + gauss() * seed0.r;
+      var wy = seed0.y + gauss() * seed0.r * 0.8;
+      var wz = seed0.z + gauss() * seed0.r;
+      var dirx = gauss(), diry = gauss() * 0.6, dirz = gauss();
+      var dl = Math.hypot(dirx, diry, dirz) || 1;
+      dirx /= dl; diry /= dl; dirz /= dl;
+      var steps = 4 + ((rnd() * 7) | 0);
+      for (var st0 = 0; st0 < steps; st0++) {
+        var step = 0.09 + rnd() * 0.08;
+        wx += dirx * step;
+        wy += diry * step;
+        wz += dirz * step;
+        dirx += gauss() * 0.35;
+        diry += gauss() * 0.22;
+        dirz += gauss() * 0.35;
+        dl = Math.hypot(dirx, diry, dirz) || 1;
+        dirx /= dl; diry /= dl; dirz /= dl;
+        push(wx, wy, wz, 0.12 + rnd() * 0.5);
+      }
+    }
+
+    // Loose scatter around everything.
+    var FREE = 60 + ((rnd() * 50) | 0);
     for (var f0 = 0; f0 < FREE; f0++) {
       var fa = rnd() * TAU;
-      var fr = 0.12 + Math.pow(rnd(), 0.55) * 0.9;
-      push(Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.06), Math.sin(fa) * fr, 0.12 + rnd() * 0.5);
+      var fr = 0.12 + Math.pow(rnd(), 0.55) * 0.95;
+      push(Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.08), Math.sin(fa) * fr, 0.12 + rnd() * 0.5);
     }
-    // Wiring: each neuron to its three nearest neighbors, deduped.
+
+    // Wiring: three nearest neighbors each, deduped, plus a few long
+    // chords straight through the tangle.
     var seen = {};
     nodes.forEach(function (n, ai) {
       var ds = nodes.map(function (q, bi) {
@@ -114,6 +136,12 @@
         if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
       }
     });
+    var CHORDS = 6 + ((rnd() * 8) | 0);
+    for (var c0 = 0; c0 < CHORDS; c0++) {
+      var a0 = (rnd() * nodes.length) | 0;
+      var b2 = (rnd() * nodes.length) | 0;
+      if (a0 !== b2) edges.push([Math.min(a0, b2), Math.max(a0, b2)]);
+    }
     incident = nodes.map(function () { return []; });
     edges.forEach(function (e, ei) { incident[e[0]].push(ei); incident[e[1]].push(ei); });
     cellNodes = [];
