@@ -51,7 +51,11 @@
   var subMax = [];
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
-  window.soundField = { cells: amps, overall: 0 };
+  // cells are pitch-normalized (which note), loud is the absolute level
+  // (how hard it is being played), published separately so the neural
+  // background can recruit more neurons for louder passages.
+  window.soundField = { cells: amps, overall: 0, loud: 0 };
+  var loud = 0;
   var ctx, analyser, data, looping = false;
   function analyse() {
     if (still) return;
@@ -78,6 +82,7 @@
       var playing = !audio.paused && analyser;
       if (playing) analyser.getByteFrequencyData(data);
       var overall = 0;
+      var rawSum = 0, rawBins = 0;
       for (var z = 0; z < 4; z++) {
         for (var s = 0; s < 4; s++) {
           var idx = z * 4 + s;
@@ -85,7 +90,10 @@
           if (playing) {
             var sum = 0;
             for (var i = SUBS[z][s]; i < SUBS[z][s + 1]; i++) sum += data[i];
-            var avg = sum / (SUBS[z][s + 1] - SUBS[z][s]);
+            var width = SUBS[z][s + 1] - SUBS[z][s];
+            var avg = sum / width;
+            rawSum += sum;
+            rawBins += width;
             subMax[idx] = Math.max(subMax[idx] * 0.9985, avg, 25);
             target = Math.min(1, Math.max(0, avg - 6) / (subMax[idx] - 6));
           }
@@ -93,11 +101,16 @@
           overall = Math.max(overall, amps[idx]);
         }
       }
+      var loudTarget = rawBins ? Math.min(1, rawSum / rawBins / 55) : 0;
+      loud += (loudTarget - loud) * (loudTarget > loud ? 0.25 : 0.06);
       window.soundField.overall = overall;
+      window.soundField.loud = loud;
       if (audio.paused && overall < 0.005) {
         looping = false;
         for (var r2 = 0; r2 < 16; r2++) amps[r2] = 0;
+        loud = 0;
         window.soundField.overall = 0;
+        window.soundField.loud = 0;
         return;
       }
       requestAnimationFrame(frame);
