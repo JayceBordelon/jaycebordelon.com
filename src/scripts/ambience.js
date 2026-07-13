@@ -153,7 +153,7 @@
             var ratio = Math.min(1, Math.max(0, avg - 6) / (subMax[idx] - 6));
             target = Math.pow(ratio, 1.7);
           }
-          amps[idx] += (target - amps[idx]) * (target > amps[idx] ? 0.35 : 0.12);
+          amps[idx] += (target - amps[idx]) * (target > amps[idx] ? 0.35 : 0.16);
           overall = Math.max(overall, amps[idx]);
         }
       }
