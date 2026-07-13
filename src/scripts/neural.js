@@ -17,6 +17,7 @@
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
   var g = cv.getContext("2d");
+  var labelEl = document.getElementById("net-label");
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
   var pulses = [];
@@ -57,6 +58,7 @@
     var YS = 0.5 + rnd() * 0.3;
     var N = 380 + ((rnd() * 90) | 0);
     var pts = [];
+    var label = "";
     var shape = (rnd() * 5) | 0;
 
     if (shape === 0) {
@@ -65,10 +67,10 @@
       var sys = (rnd() * 4) | 0;
       var x = 0.1, y = 0.12, z = 0.05, dt, every, dx, dy, dz;
       var p1 = 0, p2 = 0, p3 = 0;
-      if (sys === 0) { p1 = 10; p2 = 24 + rnd() * 8; p3 = 8 / 3; dt = 0.006; every = 3; }
-      else if (sys === 1) { p1 = 1.3 + rnd() * 0.4; dt = 0.006; every = 3; }
-      else if (sys === 2) { p1 = 0.17 + rnd() * 0.05; dt = 0.05; every = 4; }
-      else { p1 = 0.95; p2 = 0.7; p3 = 3.5 + rnd() * 0.4; dt = 0.01; every = 3; }
+      if (sys === 0) { p1 = 10; p2 = 24 + rnd() * 8; p3 = 8 / 3; dt = 0.006; every = 3; label = "LORENZ ATTRACTOR \u00b7 \u03c3=10 \u03c1=" + p2.toFixed(1) + " \u03b2=8/3"; }
+      else if (sys === 1) { p1 = 1.3 + rnd() * 0.4; dt = 0.006; every = 3; label = "HALVORSEN ATTRACTOR \u00b7 a=" + p1.toFixed(2); }
+      else if (sys === 2) { p1 = 0.17 + rnd() * 0.05; dt = 0.05; every = 4; label = "THOMAS ATTRACTOR \u00b7 b=" + p1.toFixed(3); }
+      else { p1 = 0.95; p2 = 0.7; p3 = 3.5 + rnd() * 0.4; dt = 0.01; every = 3; label = "AIZAWA ATTRACTOR \u00b7 d=" + p3.toFixed(2); }
       var steps = 400 + N * every;
       for (var s0 = 0; s0 < steps; s0++) {
         if (sys === 0) {
@@ -107,6 +109,7 @@
       // A random Fourier knot: decaying random harmonics per axis
       // close into a smooth tangled loop, different every time.
       var K = 3 + ((rnd() * 4) | 0);
+      label = "RANDOM FOURIER KNOT \u00b7 " + K + " HARMONICS PER AXIS";
       var coef = [];
       for (var a1 = 0; a1 < 3; a1++) {
         var row = [];
@@ -130,6 +133,7 @@
       // random superposition of standing waves, the shapes of
       // resonance itself.
       var M = 3 + ((rnd() * 3) | 0);
+      label = "CHLADNI NODAL FIELD \u00b7 " + M + " STANDING WAVES";
       var waves = [];
       for (var w0 = 0; w0 < M; w0++) {
         var kx = gauss(), ky = gauss(), kz = gauss();
@@ -153,6 +157,7 @@
       // filaments.
       var pa = (rnd() * 2 - 1) * 2.4, pb = (rnd() * 2 - 1) * 2.4;
       var pc = (rnd() * 2 - 1) * 2.4, pd = (rnd() * 2 - 1) * 2.4;
+      label = "PICKOVER MAP \u00b7 a=" + pa.toFixed(2) + " b=" + pb.toFixed(2) + " c=" + pc.toFixed(2) + " d=" + pd.toFixed(2);
       var mx = 0.1, my = 0.1, mz = 0;
       for (var m0 = 0; m0 < N + 120; m0++) {
         var nx = Math.sin(pa * my) - mz * Math.cos(pb * mx);
@@ -207,6 +212,7 @@
         }
       }
       pts = cluster;
+      label = "DIFFUSION LIMITED AGGREGATION \u00b7 " + cluster.length + " PARTICLES";
     }
 
     // A breath of scatter around the form.
@@ -262,6 +268,7 @@
     for (var c = 0; c < 16; c++) cellNodes.push([]);
     nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
     pulses.length = 0;
+    if (labelEl) labelEl.textContent = label;
   }
 
   // Palette from the live theme tokens, re-read when the theme flips.

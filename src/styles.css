@@ -567,6 +567,29 @@
   body.net-leaving .listen-bar {
     opacity: 0;
   }
+  /* The specimen label: which mathematics grew this creature. */
+  .net-label {
+    position: fixed;
+    left: 24px;
+    bottom: 74px;
+    z-index: 55;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: color-mix(in srgb, var(--foreground) 45%, transparent);
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+  }
+  body.net-leaving .net-label {
+    opacity: 0;
+  }
+  @media (max-width: 640px) {
+    .net-label {
+      left: 16px;
+      bottom: 118px;
+      letter-spacing: 0.16em;
+    }
+  }
 
   .listen-bar {
     transition: opacity 0.45s ease;
