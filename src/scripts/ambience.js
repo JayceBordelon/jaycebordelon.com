@@ -24,19 +24,21 @@
     chip.setAttribute("aria-pressed", playing ? "true" : "false");
   }
 
-  // The analyser: note-by-note spotlight rotation. Onsets are detected
-  // by spectral flux (the frame-to-frame rise in spectral energy, the
-  // signature of a piano attack) against a rolling flux average, and
-  // every detected note hops the light to the next summit slot with a
-  // short refractory so fast runs dance across the terrain. Slots are
-  // written to --amp0 through --amp3 (the active slot punches up with
-  // the attack and the rest decay, so each note visibly lands on a new
-  // summit), and --amp carries the overall energy for the comet bloom.
-  // The element runs at full volume into the graph and a gain node does
-  // the quieting after the tap, so the analyser sees full-scale signal.
-  var ctx, analyser, data, prevData, looping = false;
+  // The analyser: pitch registers mapped to summits, consistently. A
+  // 4096-point FFT gives ~11Hz bins, fine enough to separate piano
+  // registers: bass under ~130Hz is slot 0 (the convergence summit),
+  // tenor 130-260Hz slot 1, alto 260-520Hz slot 2, treble above slot 3.
+  // The same note always lands on the same summit, chords light their
+  // component summits together. Each register normalizes against its
+  // own rolling peak so soft treble lights as fully as heavy bass, with
+  // a fast attack and slow decay so notes strike and ring out. --amp
+  // carries the overall energy for the comet bloom. The element runs at
+  // full volume into the graph and a gain node does the quieting after
+  // the tap, so the analyser sees full-scale signal.
+  var REG = [[4, 12], [12, 24], [24, 48], [48, 130]];
+  var regMax = [40, 40, 40, 40];
+  var ctx, analyser, data, looping = false;
   var amps = [0, 0, 0, 0];
-  var active = 0, lastHop = 0, energy = 0, fluxAvg = 0;
   function analyse() {
     if (still) return;
     if (!ctx) {
@@ -44,8 +46,8 @@
         ctx = new (window.AudioContext || window.webkitAudioContext)();
         var srcNode = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.6;
+        analyser.fftSize = 4096;
+        analyser.smoothingTimeConstant = 0.65;
         var gain = ctx.createGain();
         gain.gain.value = 0.35;
         srcNode.connect(analyser);
@@ -53,39 +55,28 @@
         gain.connect(ctx.destination);
         audio.volume = 1;
         data = new Uint8Array(analyser.frequencyBinCount);
-        prevData = new Uint8Array(analyser.frequencyBinCount);
       } catch (e) { return; }
     }
     if (ctx.state === "suspended") ctx.resume();
     if (looping) return;
     looping = true;
-    (function frame(now) {
+    (function frame() {
       var style = document.documentElement.style;
-      var e = 0, flux = 0;
-      if (!audio.paused && analyser) {
-        analyser.getByteFrequencyData(data);
-        var sum = 0, f = 0;
-        for (var i = 1; i < 41; i++) {
-          if (i < 25) sum += data[i];
-          var d = data[i] - prevData[i];
-          if (d > 0) f += d;
-          prevData[i] = data[i];
-        }
-        e = Math.min(1, sum / 24 / 75);
-        flux = f / 40 / 20;
-      }
-      energy += (e - energy) * 0.25;
-      fluxAvg += (flux - fluxAvg) * 0.04;
-      if (flux > fluxAvg * 1.7 + 0.06 && now - lastHop > 130) {
-        active = (active + 1) % 4;
-        lastHop = now;
-      }
+      var playing = !audio.paused && analyser;
+      if (playing) analyser.getByteFrequencyData(data);
       var overall = 0;
-      for (var s = 0; s < 4; s++) {
-        var target = s === active ? Math.min(1, energy + flux * 0.5) : 0;
-        amps[s] += (target - amps[s]) * (target > amps[s] ? 0.4 : 0.06);
-        style.setProperty("--amp" + s, amps[s].toFixed(3));
-        overall = Math.max(overall, amps[s]);
+      for (var z = 0; z < 4; z++) {
+        var target = 0;
+        if (playing) {
+          var sum = 0;
+          for (var i = REG[z][0]; i < REG[z][1]; i++) sum += data[i];
+          var avg = sum / (REG[z][1] - REG[z][0]);
+          regMax[z] = Math.max(regMax[z] * 0.9985, avg, 30);
+          target = Math.min(1, Math.max(0, avg - 6) / (regMax[z] - 6));
+        }
+        amps[z] += (target - amps[z]) * (target > amps[z] ? 0.35 : 0.07);
+        style.setProperty("--amp" + z, amps[z].toFixed(3));
+        overall = Math.max(overall, amps[z]);
       }
       style.setProperty("--amp", overall.toFixed(3));
       if (audio.paused && overall < 0.005) {
@@ -95,7 +86,7 @@
         return;
       }
       requestAnimationFrame(frame);
-    })(performance.now());
+    })();
   }
 
   function start() {
