@@ -1,4 +1,32 @@
-<!-- The page field: a calm two-tone ground with a quiet floor shade.
-     The listening machine lives on its own page at /net, not here.
-     Styling lives in the .page-bg block of styles.css. -->
-<div class="page-bg" aria-hidden="true"></div>
+<!-- The reward surface: a post-training tableau plotted as nested
+     isolines of reward, one emerald policy rollout exploring its way
+     to the highest peak, mono reward readings scattered across the
+     terrain. Two compositions share one story: a landscape field for
+     wide viewports and a purpose-built vertical field for portrait
+     ones, since a phone slice of the landscape chart kept nothing
+     interesting on screen. The geometry is generated per build by
+     scripts/contours.mjs (seeded, so builds stay byte-identical) and
+     injected into the placeholders below. Styling and motion live in
+     the .page-bg block of styles.css. -->
+<div class="page-bg" aria-hidden="true">
+  <svg class="chart-field chart-field--landscape" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" focusable="false">
+    {{ chartBands }}
+    <path class="chart-route" d="{{ traceD }}" />
+    <path class="chart-current-glow" d="{{ traceD }}" pathLength="1000" />
+    <path class="chart-current" d="{{ traceD }}" pathLength="1000" />
+    {{ rolloutNodes }}
+    <g class="chart-soundings">
+      {{ rewardReadings }}
+    </g>
+  </svg>
+  <svg class="chart-field chart-field--portrait" viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" focusable="false">
+    {{ chartBandsP }}
+    <path class="chart-route" d="{{ traceDP }}" />
+    <path class="chart-current-glow" d="{{ traceDP }}" pathLength="1000" />
+    <path class="chart-current" d="{{ traceDP }}" pathLength="1000" />
+    {{ rolloutNodesP }}
+    <g class="chart-soundings">
+      {{ rewardReadingsP }}
+    </g>
+  </svg>
+</div>

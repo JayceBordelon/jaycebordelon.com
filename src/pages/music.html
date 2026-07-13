@@ -1,11 +1,12 @@
 ---
-title: net | Jayce Bordelon
-ogTitle: net | Jayce Bordelon
-description: A neural machine that listens to piano.
+title: music | Jayce Bordelon
+ogTitle: music | Jayce Bordelon
+description: A neural machine that listens. Piano runs through a live FFT and lights a synaptic web of five hundred neurons, note by note and chord by chord. Pick a song and watch it think.
 ogType: website
-ogImage: /images/dawg.jpg
-canonical: https://jaycebordelon.com/net
+ogImage: /images/music-og.png
+canonical: https://jaycebordelon.com/music
 header: home
+bodyClass: "music-page"
 ---
 <!-- The listening machine's own page. The canvas fills the viewport
      behind the header, neural.js spawns the net on load, ambience.js
@@ -19,7 +20,10 @@ header: home
   <span id="listen-time" class="listen-clock">0:00</span>
   <input id="listen-seek" class="listen-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek through the track" />
   <span id="listen-dur" class="listen-clock">0:00</span>
-  <select id="listen-track" class="listen-track" aria-label="Choose a song"></select>
-  <a id="listen-exit" class="listen-exit" href="/">BACK TO HOME</a>
+  <div class="listen-picker">
+    <button type="button" id="listen-track-btn" class="listen-track" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose a song"><span id="listen-track-name"></span></button>
+    <ul id="listen-track-list" class="listen-tracklist" role="listbox" hidden></ul>
+  </div>
+  <a id="listen-exit" class="listen-exit" href="/"><span class="listen-exit-full">BACK TO HOME</span><span class="listen-exit-short">HOME</span></a>
 </div>
 <audio id="ambience-track" src="/audio/first-dance.m4a" autoplay preload="auto"></audio>

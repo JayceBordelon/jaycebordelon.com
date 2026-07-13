@@ -30,9 +30,18 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Motifs in one quadrant, stamped 8x by D4. Cell comes from where
-  // the motif lives: register by height, sub-band by radius.
-  var MOTIFS = 68;
+  // Motifs in one quadrant, stamped 8x by D4, then heavily
+  // de-symmetrized: every copy lands with loose organic jitter and a
+  // large population of free neurons ignores the symmetry group
+  // entirely, so only a ghost of the order survives inside real
+  // chaos. Cell comes from where a neuron lives: register by height,
+  // sub-band by radius.
+  function cellAt(rad2, my2) {
+    var reg = my2 > 0.31 ? 0 : my2 > 0 ? 1 : my2 > -0.31 ? 2 : 3;
+    var sub = rad2 > 0.85 ? 0 : rad2 > 0.65 ? 1 : rad2 > 0.45 ? 2 : 3;
+    return reg * 4 + sub;
+  }
+  var MOTIFS = 46, FREE = 150;
   var nodes = [], edges = [];
   for (var m0 = 0; m0 < MOTIFS; m0++) {
     var ang = (rnd() * TAU) / 4;
@@ -40,23 +49,34 @@
     var mx = Math.cos(ang) * rad;
     var mz = Math.sin(ang) * rad;
     var my = (rnd() * 2 - 1) * 0.62;
-    var reg = my > 0.31 ? 0 : my > 0 ? 1 : my > -0.31 ? 2 : 3;
-    var sub = rad > 0.85 ? 0 : rad > 0.65 ? 1 : rad > 0.45 ? 2 : 3;
-    var cell = reg * 4 + sub;
+    var cell = cellAt(rad, my);
     var bias = 0.12 + rnd() * 0.5;
     for (var cpy = 0; cpy < 8; cpy++) {
       var rot = (cpy & 3) * (TAU / 4);
       var mir = cpy & 4 ? -1 : 1;
       var ca = Math.cos(rot), sa = Math.sin(rot);
       nodes.push({
-        x: (mx * ca - mz * sa) * mir,
-        y: my,
-        z: mx * sa + mz * ca,
+        x: (mx * ca - mz * sa) * mir + (rnd() - 0.5) * 0.3,
+        y: my + (rnd() - 0.5) * 0.24,
+        z: mx * sa + mz * ca + (rnd() - 0.5) * 0.3,
         cell: cell,
         bias: bias,
         act: 0,
       });
     }
+  }
+  for (var f0 = 0; f0 < FREE; f0++) {
+    var fa = rnd() * TAU;
+    var fr = 0.15 + Math.pow(rnd(), 0.6) * 0.85;
+    var fy = (rnd() * 2 - 1) * 0.66;
+    nodes.push({
+      x: Math.cos(fa) * fr,
+      y: fy,
+      z: Math.sin(fa) * fr,
+      cell: cellAt(fr, fy),
+      bias: 0.12 + rnd() * 0.5,
+      act: 0,
+    });
   }
 
   // Wiring: each neuron to its three nearest neighbors, deduped. The
@@ -79,33 +99,27 @@
   nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
 
   // Palette from the live theme tokens, re-read when the theme flips.
-  // Activation climbs an eight-stop spectral ramp: resting slate,
-  // indigo, azure, emerald, chartreuse, amber, ember, white hot (a
-  // darker mirror on the light theme). The input is gamma-lifted so
-  // the colorful middle of the ramp lives where activations actually
-  // sit, and full recruitment reads as heat.
+  // Activation climbs a single-hue ramp: emerald in lighter and darker
+  // variants only. Dark theme runs dim moss up to pale mint, the light
+  // theme mirrors it downward from soft sage to near-black green. The
+  // input is gamma-lifted so the ramp's middle lives where activations
+  // actually sit.
   var ink = "#808080";
   var DARK_STOPS = [
-    [110, 120, 135],
-    [86, 108, 220],
-    [56, 172, 255],
+    [58, 84, 74],
+    [22, 140, 100],
     [52, 211, 153],
-    [196, 222, 60],
-    [255, 186, 34],
-    [255, 100, 54],
-    [255, 248, 235],
+    [150, 240, 205],
+    [225, 255, 242],
   ];
   var LIGHT_STOPS = [
-    [105, 115, 128],
-    [70, 88, 186],
-    [16, 128, 196],
+    [148, 186, 170],
+    [52, 168, 124],
     [5, 150, 105],
-    [130, 144, 10],
-    [186, 116, 8],
-    [188, 62, 28],
-    [56, 28, 8],
+    [4, 100, 70],
+    [2, 52, 37],
   ];
-  var POS = [0, 0.14, 0.28, 0.42, 0.58, 0.72, 0.86, 1];
+  var POS = [0, 0.25, 0.5, 0.75, 1];
   var stops = DARK_STOPS;
   function ramp(a) {
     a = Math.pow(Math.max(0, Math.min(1, a)), 0.75);
@@ -219,7 +233,7 @@
     var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
     var cx1 = Math.cos(0.32), sx1 = Math.sin(0.32);
-    var S = Math.min(W, H) * 0.36;
+    var S = Math.min(W, H) * (W < H ? 0.46 : 0.36);
     var CX = W * 0.5, CY = H * 0.47;
     var prog = [];
     for (var j = 0; j < nodes.length; j++) {
@@ -338,7 +352,7 @@
     },
   };
 
-  // The canvas only exists on /net, and that page IS the machine, so
+  // The canvas only exists on /music, and that page IS the machine, so
   // spawn in the moment it loads.
   window.neuralField.start();
 })();

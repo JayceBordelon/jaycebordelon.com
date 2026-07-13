@@ -1,8 +1,8 @@
-// The /net page's player. Only /net carries the audio element, so
+// The /music page's player. Only /music carries the audio element, so
 // music exists nowhere else and leaving the page silences it by
-// construction. Two responsibilities: drive the audio (six local
-// Gabriel Piano tracks with a selector, scrubber, and rotation when a
-// track ends, playing the moment the browser permits with a
+// construction. Two responsibilities: drive the audio (five local
+// piano tracks with a picker, scrubber, and rotation when a track
+// ends, playing the moment the browser permits with a
 // first-gesture fallback and focus retries, track and playhead
 // persisted across visits) and publish 16 pitch cells plus a loudness
 // signal on window.soundField for the neural machine. Leaving via
@@ -13,17 +13,32 @@
   audio.volume = 0.35;
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // name is what the picker shows, title carries the full credit,
+  // slug is the song's ?song= url identity.
   var TRACKS = [
-    { src: "/audio/first-dance.m4a", title: "the feeling of a first dance by Gabriel Piano" },
-    { src: "/audio/interstellar.m4a", title: "Interstellar Main Theme (Hans Zimmer) by Gabriel Piano" },
-    { src: "/audio/wildflower.m4a", title: "WILDFLOWER (Billie Eilish) by Gabriel Piano" },
-    { src: "/audio/creep.m4a", title: "Creep (Radiohead) by Gabriel Piano" },
-    { src: "/audio/sparks.m4a", title: "Sparks (Coldplay) by Gabriel Piano" },
-    { src: "/audio/let-down.m4a", title: "Let down (Radiohead) by Gabriel Piano" },
+    { slug: "first-dance", src: "/audio/first-dance.m4a", name: "the feeling of a first dance", title: "the feeling of a first dance by Gabriel Piano" },
+    { slug: "can-you-hear-the-music", src: "/audio/can-you-hear-the-music.m4a", name: "Can You Hear The Music", title: "Can You Hear The Music, Oppenheimer piano version by Patrik Pietschmann" },
+    { slug: "je-te-laisserai-des-mots", src: "/audio/je-te-laisserai-des-mots.m4a", name: "Je te laisserai des mots", title: "Je te laisserai des mots, Patrick Watson cover by Gabriel Piano" },
+    { slug: "let-down", src: "/audio/let-down.m4a", name: "Let down", title: "Let down, Radiohead cover by Gabriel Piano" },
+    { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
   ];
+  // The song in the url wins and always starts from the top, so a
+  // shared /music?song=let-down link renders with that song cued.
   var trackIdx = 0;
   try { trackIdx = (+localStorage.getItem("ambience-i") || 0) % TRACKS.length; } catch (e) {}
+  try {
+    var wanted = new URLSearchParams(location.search).get("song");
+    for (var wi = 0; wi < TRACKS.length; wi++) {
+      if (TRACKS[wi].slug === wanted) {
+        trackIdx = wi;
+        localStorage.setItem("ambience-t", "0");
+        localStorage.setItem("ambience-i", String(wi));
+        break;
+      }
+    }
+  } catch (e) {}
   if (trackIdx !== 0) audio.src = TRACKS[trackIdx].src;
+  try { history.replaceState(null, "", "?song=" + TRACKS[trackIdx].slug); } catch (e) {}
 
   var off = false;
   try { off = localStorage.getItem("ambience") === "off"; } catch (e) {}
@@ -33,7 +48,8 @@
   var seek = document.getElementById("listen-seek");
   var timeEl = document.getElementById("listen-time");
   var durEl = document.getElementById("listen-dur");
-  var trackSel = document.getElementById("listen-track");
+  var pickBtn = document.getElementById("listen-track-btn");
+  var pickList = document.getElementById("listen-track-list");
   var exitLink = document.getElementById("listen-exit");
   var seeking = false;
 
@@ -51,13 +67,24 @@
       seek.value = String(((audio.currentTime / audio.duration) * 1000) | 0);
     }
   }
+  var pickName = document.getElementById("listen-track-name");
+  function paintPicker() {
+    if (pickName) pickName.textContent = TRACKS[trackIdx].name;
+    else if (pickBtn) pickBtn.textContent = TRACKS[trackIdx].name;
+    if (pickList) {
+      for (var li = 0; li < pickList.children.length; li++) {
+        pickList.children[li].setAttribute("aria-selected", li === trackIdx ? "true" : "false");
+      }
+    }
+  }
   function setTrack(i, playNow) {
     trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
     audio.src = TRACKS[trackIdx].src;
-    if (trackSel) trackSel.value = String(trackIdx);
+    paintPicker();
     try {
       localStorage.setItem("ambience-i", String(trackIdx));
       localStorage.setItem("ambience-t", "0");
+      history.replaceState(null, "", "?song=" + TRACKS[trackIdx].slug);
     } catch (e) {}
     if (playNow && !off) start();
     paintBar();
@@ -163,7 +190,7 @@
   }
   function gesture(e) {
     if (off) return;
-    if (e.target && e.target.closest && e.target.closest(".listen-play, .listen-track, .listen-exit")) return;
+    if (e.target && e.target.closest && e.target.closest(".listen-play, .listen-picker, .listen-exit")) return;
     start();
   }
 
@@ -183,19 +210,34 @@
       seeking = false;
     });
   }
-  if (trackSel) {
-    for (var ti = 0; ti < TRACKS.length; ti++) {
-      var opt = document.createElement("option");
-      opt.value = String(ti);
-      opt.textContent = TRACKS[ti].title.replace(" by Gabriel Piano", "");
-      trackSel.appendChild(opt);
-    }
-    trackSel.value = String(trackIdx);
-    trackSel.addEventListener("change", function () {
-      off = false;
-      try { localStorage.setItem("ambience", "on"); } catch (e) {}
-      setTrack(+trackSel.value, true);
+  // The song picker: a themed dropdown that opens upward over the bar.
+  function togglePick(open) {
+    if (!pickList || !pickBtn) return;
+    pickList.hidden = !open;
+    pickBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  if (pickBtn && pickList) {
+    TRACKS.forEach(function (tr, ti) {
+      var li = document.createElement("li");
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", "false");
+      li.textContent = tr.name;
+      li.title = tr.title;
+      li.addEventListener("click", function () {
+        off = false;
+        try { localStorage.setItem("ambience", "on"); } catch (e) {}
+        setTrack(ti, true);
+        togglePick(false);
+      });
+      pickList.appendChild(li);
     });
+    pickBtn.addEventListener("click", function () {
+      togglePick(pickList.hidden);
+    });
+    document.addEventListener("pointerdown", function (e) {
+      if (!pickList.hidden && e.target && e.target.closest && !e.target.closest(".listen-picker")) togglePick(false);
+    });
+    paintPicker();
   }
 
   // Leaving: collapse the machine, fade the bar, then go home.
@@ -210,7 +252,13 @@
   }
   if (exitLink) exitLink.addEventListener("click", leave);
   addEventListener("keydown", function (e) {
-    if (e.key === "Escape") leave();
+    if (e.key === "Escape") {
+      if (pickList && !pickList.hidden) {
+        togglePick(false);
+        return;
+      }
+      leave();
+    }
   });
 
   // When a track finishes, rotate to the next and keep playing.
