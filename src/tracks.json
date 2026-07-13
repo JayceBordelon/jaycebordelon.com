@@ -118,5 +118,21 @@
     "cat": "Hip Hop",
     "sub": "A Boogie Wit Da Hoodie",
     "title": "Look Back At It by A Boogie Wit Da Hoodie"
+  },
+  {
+    "slug": "wildflower",
+    "src": "/audio/wildflower.m4a",
+    "name": "WILDFLOWER",
+    "cat": "Piano Covers",
+    "sub": "Billie Eilish, by Gabriel Piano",
+    "title": "WILDFLOWER, Billie Eilish cover by Gabriel Piano"
+  },
+  {
+    "slug": "fantaisie-impromptu",
+    "src": "/audio/fantaisie-impromptu.m4a",
+    "name": "Fantaisie-Impromptu",
+    "cat": "Classical",
+    "sub": "Chopin, played by Rousseau",
+    "title": "Fantaisie-Impromptu, Chopin, played by Rousseau"
   }
 ]
