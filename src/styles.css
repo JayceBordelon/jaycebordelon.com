@@ -550,9 +550,14 @@
     z-index: -5;
     pointer-events: none;
   }
-  /* The machine's page: the reward-surface field stays home. */
+  /* The machine's page: the reward-surface field stays home, and
+     touch drags spin the net instead of scrolling a page that has
+     nothing to scroll. */
   body.music-page .chart-field {
     display: none;
+  }
+  body.music-page {
+    touch-action: none;
   }
   .net-stage canvas {
     display: block;

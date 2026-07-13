@@ -31,12 +31,12 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Every generation rolls its own creature: a random symmetry order
-  // (2, 3, or 4 fold, mirrored), its own motif count, jitter, vertical
-  // spread, and radial density, then stamps motifs through that group
-  // and pours in a big free population that ignores symmetry entirely.
-  // Cell comes from where a neuron lives: register by height, sub-band
-  // by radius, so pitch geography survives every regeneration.
+  // Every generation rolls its own creature: a random low symmetry
+  // order (often just a mirror, sometimes none), lumpy cluster blobs,
+  // per-axis squash, off-center drift, and a big free population, so
+  // the machine is chaotic and uneven on purpose and never the same
+  // twice. Cell comes from where a neuron lives: register by height,
+  // sub-band by radius, so pitch geography survives every roll.
   var nodes, edges, incident, cellNodes;
   function cellAt(rad2, my2, ys) {
     var t2 = my2 / (ys * 2);
@@ -45,49 +45,62 @@
     return reg * 4 + sub;
   }
   function generate() {
-    var rotN = 2 + ((rnd() * 3) | 0);
-    var copies = rotN * 2;
-    var MOTIFS = ((190 + rnd() * 160) / copies) | 0;
-    var FREE = (90 + rnd() * 140) | 0;
-    var JIT = 0.18 + rnd() * 0.34;
+    // Low symmetry orders dominate, sometimes none at all, and the
+    // cloud is built from a few lumpy cluster blobs under a random
+    // per-axis squash and off-center drift, so every creature comes
+    // out uneven on purpose.
+    function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
+    var rotN = [1, 1, 2, 2, 3][(rnd() * 5) | 0];
+    var mirrored = rnd() < 0.7;
+    var copies = rotN * (mirrored ? 2 : 1);
+    var MOTIFS = ((200 + rnd() * 150) / copies) | 0;
+    var FREE = (120 + rnd() * 160) | 0;
+    var JIT = 0.25 + rnd() * 0.4;
     var YS = 0.5 + rnd() * 0.32;
-    var RPOW = 0.5 + rnd() * 0.5;
+    var SX = 0.72 + rnd() * 0.55;
+    var SZ = 0.72 + rnd() * 0.55;
+    var OX = (rnd() - 0.5) * 0.24;
+    var OZ = (rnd() - 0.5) * 0.24;
+    var K = 3 + ((rnd() * 4) | 0);
+    var blobs = [];
+    for (var b0 = 0; b0 < K; b0++) {
+      blobs.push({
+        x: (rnd() - 0.5) * 1.3,
+        y: (rnd() * 2 - 1) * YS * 0.8,
+        z: (rnd() - 0.5) * 1.3,
+        r: 0.16 + rnd() * 0.24,
+      });
+    }
     nodes = [];
     edges = [];
+    function push(x, y, z, bias) {
+      x = x * SX + OX;
+      z = z * SZ + OZ;
+      var rad = Math.hypot(x, z);
+      nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
+    }
     for (var m0 = 0; m0 < MOTIFS; m0++) {
-      var ang = (rnd() * TAU) / rotN;
-      var rad = 0.22 + Math.pow(rnd(), RPOW) * 0.78;
-      var mx = Math.cos(ang) * rad;
-      var mz = Math.sin(ang) * rad;
-      var my = (rnd() * 2 - 1) * YS;
-      var cell = cellAt(rad, my, YS);
+      var bl = blobs[(rnd() * K) | 0];
+      var mx = bl.x + gauss() * bl.r;
+      var my = bl.y + gauss() * bl.r * 0.8;
+      var mz = bl.z + gauss() * bl.r;
       var bias = 0.12 + rnd() * 0.5;
       for (var cpy = 0; cpy < copies; cpy++) {
         var rot = (cpy % rotN) * (TAU / rotN);
-        var mir = cpy >= rotN ? -1 : 1;
+        var mir = mirrored && cpy >= rotN ? -1 : 1;
         var ca = Math.cos(rot), sa = Math.sin(rot);
-        nodes.push({
-          x: (mx * ca - mz * sa) * mir + (rnd() - 0.5) * JIT,
-          y: my + (rnd() - 0.5) * JIT * 0.8,
-          z: mx * sa + mz * ca + (rnd() - 0.5) * JIT,
-          cell: cell,
-          bias: bias,
-          act: 0,
-        });
+        push(
+          (mx * ca - mz * sa) * mir + (rnd() - 0.5) * JIT,
+          my + (rnd() - 0.5) * JIT * 0.8,
+          mx * sa + mz * ca + (rnd() - 0.5) * JIT,
+          bias
+        );
       }
     }
     for (var f0 = 0; f0 < FREE; f0++) {
       var fa = rnd() * TAU;
-      var fr = 0.15 + Math.pow(rnd(), 0.6) * 0.85;
-      var fy = (rnd() * 2 - 1) * (YS + 0.06);
-      nodes.push({
-        x: Math.cos(fa) * fr,
-        y: fy,
-        z: Math.sin(fa) * fr,
-        cell: cellAt(fr, fy, YS),
-        bias: 0.12 + rnd() * 0.5,
-        act: 0,
-      });
+      var fr = 0.12 + Math.pow(rnd(), 0.55) * 0.9;
+      push(Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.06), Math.sin(fa) * fr, 0.12 + rnd() * 0.5);
     }
     // Wiring: each neuron to its three nearest neighbors, deduped.
     var seen = {};
@@ -154,6 +167,29 @@
   palette();
   if (window.MutationObserver) {
     new MutationObserver(palette).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  // Grab and spin: dragging anywhere off the controls throws the net,
+  // momentum carries it and decays, and the slow automatic turn never
+  // stops underneath.
+  var userYaw = 0, yawVel = 0, dragging = false, dragX = 0;
+  if (!still) {
+    addEventListener("pointerdown", function (e) {
+      if (e.target && e.target.closest && e.target.closest(".listen-bar, header, a, button, input, select")) return;
+      dragging = true;
+      dragX = e.clientX;
+      yawVel = 0;
+    });
+    addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - dragX;
+      dragX = e.clientX;
+      var d = dx * 0.005;
+      userYaw += d;
+      yawVel = d;
+    });
+    addEventListener("pointerup", function () { dragging = false; });
+    addEventListener("pointercancel", function () { dragging = false; });
   }
 
   var W = 0, H = 0;
@@ -246,7 +282,11 @@
     // Turn the cloud: a slow yaw under a fixed tilt, sped up into a
     // decelerating birth-spin while the machine forms, then
     // perspective.
-    var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5;
+    if (!dragging) {
+      userYaw += yawVel;
+      yawVel *= 0.95;
+    }
+    var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5 + userYaw;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
     var cx1 = Math.cos(0.32), sx1 = Math.sin(0.32);
     var S = Math.min(W, H) * (W < H ? 0.46 : 0.36);
