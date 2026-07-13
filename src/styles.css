@@ -181,7 +181,7 @@
     animation: field-in 1.1s ease-out forwards;
     /* --amp is the music's smoothed energy, written by ambience.js
        (0 when silent). The whole field inhales with the piano. */
-    transform: scale(calc(1 + var(--amp, 0) * 0.012));
+    transform: scale(calc(1 + var(--amp, 0) * 0.03));
 
     /* Chart ink per depth band, brightened a touch on the sonar side. */
     --band-ink-0: 8%;
@@ -244,7 +244,7 @@
   .chart-band {
     fill: none;
     /* Louder passages ink the isolines a touch heavier. */
-    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--amp, 0) * 7%), transparent);
+    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--amp, 0) * 12%), transparent);
     stroke-width: var(--band-w);
     transform-box: view-box;
     transform-origin: 50% 50%;
@@ -326,7 +326,7 @@
   }
   .dark .chart-current-glow {
     /* The sonar bloom brightens with the music. */
-    opacity: calc(0.16 + var(--amp, 0) * 0.22);
+    opacity: calc(0.16 + var(--amp, 0) * 0.34);
   }
 
   /* Step nodes: the rollout's footprints along the route, spacing
@@ -357,7 +357,7 @@
   .chart-min-ring {
     transform-box: fill-box;
     transform-origin: center;
-    transform: scale(calc(1 + var(--amp, 0) * 0.35));
+    transform: scale(calc(1 + var(--amp, 0) * 0.5));
   }
   /* The halo fires once per lap, timed to the comet head reaching the
      path end at 92% of the 36s trace cycle (offset 78 of 1000). */

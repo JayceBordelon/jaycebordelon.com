@@ -26,6 +26,8 @@
 
   // The analyser: low-band energy, lerped so piano swells read as slow
   // breaths, written to --amp on the root for styles.css to consume.
+  // The element runs at full volume into the graph and a gain node does
+  // the quieting after the tap, so the analyser sees full-scale signal.
   var ctx, analyser, data, amp = 0, looping = false;
   function analyse() {
     if (still) return;
@@ -35,8 +37,13 @@
         var srcNode = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.85;
+        var gain = ctx.createGain();
+        gain.gain.value = 0.35;
         srcNode.connect(analyser);
-        analyser.connect(ctx.destination);
+        analyser.connect(gain);
+        gain.connect(ctx.destination);
+        audio.volume = 1;
         data = new Uint8Array(analyser.frequencyBinCount);
       } catch (e) { return; }
     }
@@ -48,11 +55,11 @@
       if (!audio.paused && analyser) {
         analyser.getByteFrequencyData(data);
         var sum = 0;
-        var n = data.length >> 1;
+        var n = data.length >> 2;
         for (var i = 0; i < n; i++) sum += data[i];
-        target = Math.min(1, sum / n / 150);
+        target = Math.min(1, sum / n / 70);
       }
-      amp += (target - amp) * 0.06;
+      amp += (target - amp) * 0.1;
       document.documentElement.style.setProperty("--amp", amp.toFixed(3));
       if (audio.paused && amp < 0.005) {
         looping = false;
