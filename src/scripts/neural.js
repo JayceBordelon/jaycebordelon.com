@@ -49,7 +49,7 @@
     // stamped with its reflection through the vertical plane. Twins
     // share a pitch cell and light together.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.5 + rnd() * 0.25;
+    var YS = 0.72 + rnd() * 0.28;
     nodes = [];
     edges = [];
     function pushMirrored(x, y, z, bias) {
@@ -70,29 +70,29 @@
     var K = 4 + ((rnd() * 5) | 0);
     for (var c1 = 0; c1 < K; c1++) {
       var cx1 = (rnd() - 0.5) * 1.7;
-      var cy1 = (rnd() * 2 - 1) * YS * 0.9;
+      var cy1 = (rnd() * 2 - 1) * YS;
       var cz1 = (rnd() - 0.5) * 1.7;
       var cr1 = 0.07 + rnd() * 0.2;
       var cn1 = 8 + ((rnd() * rnd() * 40) | 0);
       for (var c2 = 0; c2 < cn1; c2++) {
-        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1 * 0.85, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
+        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
       }
     }
 
     // Random-walk wisps.
     var WISPS = 4 + ((rnd() * 5) | 0);
     for (var w0 = 0; w0 < WISPS; w0++) {
-      var wx = (rnd() - 0.5) * 1.2, wy = (rnd() * 2 - 1) * YS * 0.7, wz = (rnd() - 0.5) * 1.2;
-      var dirx = gauss(), diry = gauss() * 0.6, dirz = gauss();
+      var wx = (rnd() - 0.5) * 1.2, wy = (rnd() * 2 - 1) * YS * 0.9, wz = (rnd() - 0.5) * 1.2;
+      var dirx = gauss(), diry = gauss() * 0.95, dirz = gauss();
       var dl = Math.hypot(dirx, diry, dirz) || 1;
       dirx /= dl; diry /= dl; dirz /= dl;
       var steps = 5 + ((rnd() * 8) | 0);
       for (var st0 = 0; st0 < steps; st0++) {
         wx += dirx * (0.08 + rnd() * 0.07);
-        wy += diry * (0.06 + rnd() * 0.05);
+        wy += diry * (0.09 + rnd() * 0.07);
         wz += dirz * (0.08 + rnd() * 0.07);
         dirx += gauss() * 0.4;
-        diry += gauss() * 0.25;
+        diry += gauss() * 0.38;
         dirz += gauss() * 0.4;
         dl = Math.hypot(dirx, diry, dirz) || 1;
         dirx /= dl; diry /= dl; dirz /= dl;
