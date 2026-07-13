@@ -16,18 +16,18 @@
   // name is what the picker shows, title carries the full credit,
   // slug is the song's ?song= url identity.
   var TRACKS = [
-    { slug: "first-dance", src: "/audio/first-dance.m4a", name: "the feeling of a first dance", title: "the feeling of a first dance by Gabriel Piano" },
-    { slug: "can-you-hear-the-music", src: "/audio/can-you-hear-the-music.m4a", name: "Can You Hear The Music", title: "Can You Hear The Music, Oppenheimer piano version by Patrik Pietschmann" },
-    { slug: "je-te-laisserai-des-mots", src: "/audio/je-te-laisserai-des-mots.m4a", name: "Je te laisserai des mots", title: "Je te laisserai des mots, Patrick Watson cover by Gabriel Piano" },
-    { slug: "let-down", src: "/audio/let-down.m4a", name: "Let down", title: "Let down, Radiohead cover by Gabriel Piano" },
-    { slug: "fake-plastic-trees", src: "/audio/fake-plastic-trees.m4a", name: "Fake plastic trees", title: "Fake plastic trees, Radiohead cover by Gabriel Piano" },
-    { slug: "comptine", src: "/audio/comptine.m4a", name: "Comptine d'un autre \u00e9t\u00e9", title: "Comptine d'un autre \u00e9t\u00e9 from Am\u00e9lie, Yann Tiersen, played by Rousseau" },
-    { slug: "the-night-we-met", src: "/audio/the-night-we-met.m4a", name: "The Night We Met", title: "The Night We Met, Lord Huron cover by The Theorist" },
-    { slug: "clair-de-lune", src: "/audio/clair-de-lune.m4a", name: "Clair de Lune", title: "Clair de Lune, Debussy, played by Rousseau" },
-    { slug: "experience", src: "/audio/experience.m4a", name: "Experience", title: "Experience, Ludovico Einaudi, played by Rousseau" },
-    { slug: "swan-lake", src: "/audio/swan-lake.m4a", name: "Swan Lake", title: "Swan Lake, Tchaikovsky, played by Kassia" },
-    { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
-    { slug: "chicago-freestyle", src: "/audio/chicago-freestyle.m4a", name: "Chicago Freestyle", title: "Chicago Freestyle by Drake and Giveon" },
+    { slug: "first-dance", src: "/audio/first-dance.m4a", name: "the feeling of a first dance", cat: "Originals", sub: "Gabriel Piano", title: "the feeling of a first dance by Gabriel Piano" },
+    { slug: "je-te-laisserai-des-mots", src: "/audio/je-te-laisserai-des-mots.m4a", name: "Je te laisserai des mots", cat: "Piano Covers", sub: "Patrick Watson, by Gabriel Piano", title: "Je te laisserai des mots, Patrick Watson cover by Gabriel Piano" },
+    { slug: "let-down", src: "/audio/let-down.m4a", name: "Let down", cat: "Piano Covers", sub: "Radiohead, by Gabriel Piano", title: "Let down, Radiohead cover by Gabriel Piano" },
+    { slug: "fake-plastic-trees", src: "/audio/fake-plastic-trees.m4a", name: "Fake plastic trees", cat: "Piano Covers", sub: "Radiohead, by Gabriel Piano", title: "Fake plastic trees, Radiohead cover by Gabriel Piano" },
+    { slug: "the-night-we-met", src: "/audio/the-night-we-met.m4a", name: "The Night We Met", cat: "Piano Covers", sub: "Lord Huron, by The Theorist", title: "The Night We Met, Lord Huron cover by The Theorist" },
+    { slug: "can-you-hear-the-music", src: "/audio/can-you-hear-the-music.m4a", name: "Can You Hear The Music", cat: "Film Scores", sub: "Oppenheimer, by Patrik Pietschmann", title: "Can You Hear The Music, Oppenheimer piano version by Patrik Pietschmann" },
+    { slug: "comptine", src: "/audio/comptine.m4a", name: "Comptine d'un autre \u00e9t\u00e9", cat: "Film Scores", sub: "Am\u00e9lie, Yann Tiersen, by Rousseau", title: "Comptine d'un autre \u00e9t\u00e9 from Am\u00e9lie, Yann Tiersen, played by Rousseau" },
+    { slug: "clair-de-lune", src: "/audio/clair-de-lune.m4a", name: "Clair de Lune", cat: "Classical", sub: "Debussy, played by Rousseau", title: "Clair de Lune, Debussy, played by Rousseau" },
+    { slug: "experience", src: "/audio/experience.m4a", name: "Experience", cat: "Classical", sub: "Ludovico Einaudi, played by Rousseau", title: "Experience, Ludovico Einaudi, played by Rousseau" },
+    { slug: "swan-lake", src: "/audio/swan-lake.m4a", name: "Swan Lake", cat: "Classical", sub: "Tchaikovsky, played by Kassia", title: "Swan Lake, Tchaikovsky, played by Kassia" },
+    { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", cat: "Classical", sub: "Handel and Halvorsen, by Kassia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
+    { slug: "chicago-freestyle", src: "/audio/chicago-freestyle.m4a", name: "Chicago Freestyle", cat: "Hip Hop", sub: "Drake and Giveon", title: "Chicago Freestyle by Drake and Giveon" },
   ];
   // The song in the url wins and always starts from the top, so a
   // shared /music?song=let-down link renders with that song cued.
@@ -78,13 +78,12 @@
     }
   }
   var pickName = document.getElementById("listen-track-name");
+  var optionEls = [];
   function paintPicker() {
     if (pickName) pickName.textContent = TRACKS[trackIdx].name;
     else if (pickBtn) pickBtn.textContent = TRACKS[trackIdx].name;
-    if (pickList) {
-      for (var li = 0; li < pickList.children.length; li++) {
-        pickList.children[li].setAttribute("aria-selected", li === trackIdx ? "true" : "false");
-      }
+    for (var li = 0; li < optionEls.length; li++) {
+      if (optionEls[li]) optionEls[li].setAttribute("aria-selected", li === trackIdx ? "true" : "false");
     }
   }
   function setTrack(i, playNow) {
@@ -227,19 +226,43 @@
     pickBtn.setAttribute("aria-expanded", open ? "true" : "false");
   }
   if (pickBtn && pickList) {
-    TRACKS.forEach(function (tr, ti) {
-      var li = document.createElement("li");
-      li.setAttribute("role", "option");
-      li.setAttribute("aria-selected", "false");
-      li.textContent = tr.name;
-      li.title = tr.title;
-      li.addEventListener("click", function () {
-        off = false;
-        try { localStorage.setItem("ambience", "on"); } catch (e) {}
-        setTrack(ti, true);
-        togglePick(false);
+    // Grouped by category, each entry verbose: the song on one line,
+    // its credit on the next.
+    var CATS = ["Originals", "Piano Covers", "Film Scores", "Classical", "Hip Hop"];
+    CATS.forEach(function (cat) {
+      var members = [];
+      TRACKS.forEach(function (tr, ti) {
+        if (tr.cat === cat) members.push(ti);
       });
-      pickList.appendChild(li);
+      if (!members.length) return;
+      var head = document.createElement("li");
+      head.className = "listen-cat";
+      head.setAttribute("role", "presentation");
+      head.textContent = cat.toUpperCase();
+      pickList.appendChild(head);
+      members.forEach(function (ti) {
+        var tr = TRACKS[ti];
+        var li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", "false");
+        li.title = tr.title;
+        var nm = document.createElement("span");
+        nm.className = "lt-name";
+        nm.textContent = tr.name;
+        var sb = document.createElement("span");
+        sb.className = "lt-sub";
+        sb.textContent = tr.sub;
+        li.appendChild(nm);
+        li.appendChild(sb);
+        li.addEventListener("click", function () {
+          off = false;
+          try { localStorage.setItem("ambience", "on"); } catch (e) {}
+          setTrack(ti, true);
+          togglePick(false);
+        });
+        pickList.appendChild(li);
+        optionEls[ti] = li;
+      });
     });
     pickBtn.addEventListener("click", function () {
       togglePick(pickList.hidden);

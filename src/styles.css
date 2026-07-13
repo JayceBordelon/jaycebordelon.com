@@ -696,6 +696,23 @@
   .listen-tracklist li[aria-selected="true"] {
     color: var(--accent);
   }
+  .listen-tracklist .listen-cat {
+    padding: 12px 12px 4px;
+    font-size: 9px;
+    letter-spacing: 0.26em;
+    color: color-mix(in srgb, var(--foreground) 42%, transparent);
+    pointer-events: none;
+  }
+  .listen-tracklist li[role="option"] {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .listen-tracklist .lt-sub {
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--foreground) 48%, transparent);
+  }
   .listen-seek {
     flex: 1;
     appearance: none;
