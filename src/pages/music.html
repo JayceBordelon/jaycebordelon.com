@@ -16,7 +16,10 @@ bodyClass: "music-page"
   <canvas id="bg-net"></canvas>
 </div>
 <div id="listen-bar" class="listen-bar">
-  <button type="button" id="listen-play" class="listen-play">PAUSE</button>
+  <button type="button" id="listen-play" class="listen-play" aria-label="Pause">
+    <svg class="lp-play" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+    <svg class="lp-pause" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+  </button>
   <button type="button" id="listen-regen" class="listen-play" aria-label="Regenerate the neural net">REGENERATE</button>
   <span id="listen-time" class="listen-clock">0:00</span>
   <input id="listen-seek" class="listen-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek through the track" />
