@@ -15,13 +15,16 @@ bodyClass: "music-page"
 <div class="net-stage" aria-hidden="true">
   <canvas id="bg-net"></canvas>
 </div>
-<div class="net-mathtip">
-  <button type="button" class="net-mathtip-btn" aria-describedby="net-label" aria-label="The function that grew this shape">&#402;</button>
-  <div id="net-label" class="net-label" role="tooltip">
-    <span id="net-label-name" class="net-label-name"></span>
-    <div id="net-label-eqn" class="net-label-eqn"></div>
-    <span id="net-label-params" class="net-label-params"></span>
+<div class="net-tools">
+  <div class="net-mathtip">
+    <button type="button" class="net-mathtip-btn" aria-describedby="net-label" aria-label="The function that grew this shape">&#402;</button>
+    <div id="net-label" class="net-label" role="tooltip">
+      <span id="net-label-name" class="net-label-name"></span>
+      <div id="net-label-eqn" class="net-label-eqn"></div>
+      <span id="net-label-params" class="net-label-params"></span>
+    </div>
   </div>
+  <button type="button" id="net-scramble" class="net-mathtip-btn net-scramble" aria-label="Scramble a new shape">&#8635;</button>
 </div>
 <div id="listen-bar" class="listen-bar">
   <button type="button" id="listen-play" class="listen-play" aria-label="Pause">
