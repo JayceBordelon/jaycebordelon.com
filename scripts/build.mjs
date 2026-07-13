@@ -5,8 +5,8 @@
  * Output: dist/ tree (plain HTML + CSS + images), drop-in for nginx.
  *
  * Pipeline:
- *   1. Render the reward-surface background once (seeded generator, so
- *      the geometry is deterministic across builds).
+ *   1. Read the background partial (a canvas shell; the neural-net
+ *      renderer in src/scripts/neural.js draws into it at runtime).
  *   2. Render each src/pages/**.html through the layout partial.
  *   3. Render each src/posts/*.md to a blog post HTML via the post partial.
  *   4. Render the blog index with the list of post cards.
@@ -22,7 +22,6 @@ import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
 import { createHighlighter } from "shiki";
-import { renderRewardField } from "./contours.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -219,11 +218,10 @@ const layoutTemplate = read(join(SRC, "partials/layout.html"));
 const headerHome = read(join(SRC, "partials/header-home.html"));
 const headerBlog = read(join(SRC, "partials/header-blog.html"));
 const postTemplate = read(join(SRC, "partials/post.html"));
-// The background is the reward surface: isolines of reward, the emerald
-// policy rollout, and mono reward readings, in landscape and portrait
-// compositions. The geometry comes from the seeded generator in
-// contours.mjs, so it is organic yet identical every build.
-const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")), renderRewardField());
+// The background is the listening brain: a canvas shell that
+// src/scripts/neural.js fills at runtime with a 3d neuron network
+// driven by the music's pitch cells.
+const backgroundSVG = read(join(SRC, "partials/background.html"));
 
 function renderPage({ frontmatter, body, slug }) {
   const header = frontmatter.header === "blog" ? headerBlog : headerHome;

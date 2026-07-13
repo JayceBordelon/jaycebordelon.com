@@ -13,12 +13,13 @@ src/
 │   ├── layout.html       <head> + body shell with {{ placeholders }}
 │   ├── header-home.html  Fixed header used on /
 │   ├── header-blog.html  Sticky header used on /blog and post pages
-│   ├── background.html   Reward surface: contour field + policy rollout trace
+│   ├── background.html   The listening brain: canvas shell for the 3d neural net
 │   └── post.html         Per-post article wrapper
 ├── posts/         Blog posts in markdown with YAML frontmatter
 ├── scripts/       Vanilla JS shipped to the browser (theme toggle,
 │                  typing animation, blog filter, copy-code button,
-│                  scramble-on-hover)
+│                  scramble-on-hover, cursor reticle, ambient piano,
+│                  neural-net background renderer)
 └── styles.css     Tailwind v4 input — design tokens + motion and component styles
 
 scripts/
