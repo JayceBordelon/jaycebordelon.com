@@ -27,6 +27,7 @@
     { slug: "experience", src: "/audio/experience.m4a", name: "Experience", title: "Experience, Ludovico Einaudi, played by Rousseau" },
     { slug: "swan-lake", src: "/audio/swan-lake.m4a", name: "Swan Lake", title: "Swan Lake, Tchaikovsky, played by Kassia" },
     { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
+    { slug: "chicago-freestyle", src: "/audio/chicago-freestyle.m4a", name: "Chicago Freestyle", title: "Chicago Freestyle by Drake and Giveon" },
   ];
   // The song in the url wins and always starts from the top, so a
   // shared /music?song=let-down link renders with that song cued.
