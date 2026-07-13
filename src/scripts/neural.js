@@ -99,27 +99,33 @@
   nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
 
   // Palette from the live theme tokens, re-read when the theme flips.
-  // Activation climbs a single-hue ramp: emerald in lighter and darker
-  // variants only. Dark theme runs dim moss up to pale mint, the light
-  // theme mirrors it downward from soft sage to near-black green. The
-  // input is gamma-lifted so the ramp's middle lives where activations
-  // actually sit.
+  // Activation climbs a cold-to-warm thermal ramp: resting cool slate
+  // through indigo, violet, magenta, crimson, orange, and gold to warm
+  // white at full recruitment (deepened variants on the light theme).
+  // The input is gamma-lifted so the ramp's middle lives where
+  // activations actually sit.
   var ink = "#808080";
   var DARK_STOPS = [
-    [58, 84, 74],
-    [22, 140, 100],
-    [52, 211, 153],
-    [150, 240, 205],
-    [225, 255, 242],
+    [70, 85, 120],
+    [64, 80, 210],
+    [130, 60, 220],
+    [200, 60, 180],
+    [240, 80, 100],
+    [255, 140, 50],
+    [255, 200, 80],
+    [255, 245, 225],
   ];
   var LIGHT_STOPS = [
-    [148, 186, 170],
-    [52, 168, 124],
-    [5, 150, 105],
-    [4, 100, 70],
-    [2, 52, 37],
+    [100, 112, 132],
+    [58, 70, 180],
+    [110, 45, 185],
+    [168, 38, 140],
+    [196, 50, 70],
+    [205, 105, 20],
+    [170, 120, 10],
+    [80, 40, 5],
   ];
-  var POS = [0, 0.25, 0.5, 0.75, 1];
+  var POS = [0, 0.14, 0.28, 0.42, 0.58, 0.72, 0.86, 1];
   var stops = DARK_STOPS;
   function ramp(a) {
     a = Math.pow(Math.max(0, Math.min(1, a)), 0.75);
