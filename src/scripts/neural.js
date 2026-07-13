@@ -31,11 +31,11 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Every generation rolls a symmetry group and feeds it wild seed
-  // points from blobs, dendrite walks, and scatter, so the silhouette
-  // reads ordered while the texture inside never repeats. Cell comes
-  // from where a neuron lives: register by height, sub-band by radius,
-  // so pitch geography survives every roll.
+  // Every generation renders a mathematically iconic form with fresh
+  // parameters: torus knots, Lissajous curves, supershapes, lobed
+  // Fibonacci spheres, and Mobius bands. Cell comes from where a
+  // neuron lives: register by height, sub-band by radius, so pitch
+  // geography survives every roll.
   var nodes, edges, incident, cellNodes;
   function cellAt(rad2, my2, ys) {
     var t2 = my2 / (ys * 2);
@@ -44,94 +44,125 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // Symmetry is back, but the points feeding it are wild: seeds come
-    // from unevenly weighted blobs, random-walk dendrites, and loose
-    // scatter, then every seed is stamped through this creature's
-    // rotational group (sometimes mirrored) with a whisper of per-copy
-    // jitter. The silhouette reads ordered, the texture inside never
-    // repeats.
+    // A gallery of mathematically beautiful forms, one rolled per
+    // generation with fresh parameters: torus knots, 3d Lissajous
+    // curves, Gielis supershapes, harmonically lobed Fibonacci
+    // spheres, and Mobius bands. Points are sampled on the form with a
+    // little tube jitter, a breath of free scatter around it, then
+    // normalized to frame so pitch geography (register by height,
+    // sub-band by radius) always covers the whole shape.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.5 + rnd() * 0.32;
-    var SQ = 0.86 + rnd() * 0.26;
-    var rotN = [2, 2, 3, 4][(rnd() * 4) | 0];
-    var mirrored = rnd() < 0.5;
-    var copies = rotN * (mirrored ? 2 : 1);
-    var JIT = 0.03 + rnd() * 0.05;
-
-    // Super random seed points from the organic samplers.
-    var seedsWanted = ((430 + rnd() * 120) / copies) | 0;
+    var YS = 0.5 + rnd() * 0.3;
+    var N = 400 + ((rnd() * 90) | 0);
     var pts = [];
-    var K = 3 + ((rnd() * 4) | 0);
-    var blobs = [];
-    var weights = [];
-    var wsum = 0;
-    for (var b0 = 0; b0 < K; b0++) {
-      blobs.push({
-        x: (rnd() - 0.5) * 1.4,
-        y: (rnd() * 2 - 1) * YS * 0.85,
-        z: (rnd() - 0.5) * 1.4,
-        r: 0.12 + rnd() * 0.28,
-      });
-      var w = 0.2 + rnd() * rnd() * 2.2;
-      weights.push(w);
-      wsum += w;
-    }
-    var blobShare = (seedsWanted * 0.62) | 0;
-    for (var b1 = 0; b1 < K; b1++) {
-      var count = Math.round((weights[b1] / wsum) * blobShare);
-      var bl = blobs[b1];
-      for (var i1 = 0; i1 < count; i1++) {
-        pts.push([bl.x + gauss() * bl.r, bl.y + gauss() * bl.r * 0.8, bl.z + gauss() * bl.r]);
+    var shape = (rnd() * 5) | 0;
+
+    if (shape === 0) {
+      // (p, q) torus knot: a closed braid around an invisible torus.
+      var pq = [[2, 3], [3, 4], [2, 5], [3, 5], [4, 5]][(rnd() * 5) | 0];
+      var P = pq[0], Q = pq[1];
+      var R = 0.62, r0 = 0.2 + rnd() * 0.16;
+      for (var i0 = 0; i0 < N; i0++) {
+        var t0 = (i0 / N) * TAU;
+        var w0 = R + r0 * Math.cos(Q * t0);
+        pts.push([
+          w0 * Math.cos(P * t0) + gauss() * 0.05,
+          r0 * Math.sin(Q * t0) * 1.6 + gauss() * 0.05,
+          w0 * Math.sin(P * t0) + gauss() * 0.05,
+        ]);
       }
-    }
-    while (pts.length < seedsWanted * 0.85) {
-      var seed0 = blobs[(rnd() * K) | 0];
-      var wx = seed0.x + gauss() * seed0.r;
-      var wy = seed0.y + gauss() * seed0.r * 0.8;
-      var wz = seed0.z + gauss() * seed0.r;
-      var dirx = gauss(), diry = gauss() * 0.6, dirz = gauss();
-      var dl = Math.hypot(dirx, diry, dirz) || 1;
-      dirx /= dl; diry /= dl; dirz /= dl;
-      var steps = 4 + ((rnd() * 6) | 0);
-      for (var st0 = 0; st0 < steps && pts.length < seedsWanted; st0++) {
-        var step = 0.09 + rnd() * 0.08;
-        wx += dirx * step;
-        wy += diry * step;
-        wz += dirz * step;
-        dirx += gauss() * 0.35;
-        diry += gauss() * 0.22;
-        dirz += gauss() * 0.35;
-        dl = Math.hypot(dirx, diry, dirz) || 1;
-        dirx /= dl; diry /= dl; dirz /= dl;
-        pts.push([wx, wy, wz]);
+    } else if (shape === 1) {
+      // 3d Lissajous: three incommensurate sines braiding a ribbon.
+      var A = 1 + ((rnd() * 3) | 0), B = 2 + ((rnd() * 3) | 0), C = 3 + ((rnd() * 3) | 0);
+      var p1 = rnd() * TAU, p2 = rnd() * TAU;
+      for (var i1 = 0; i1 < N; i1++) {
+        var t1 = (i1 / N) * TAU;
+        pts.push([
+          Math.sin(A * t1 + p1) + gauss() * 0.05,
+          Math.sin(B * t1 + p2) + gauss() * 0.05,
+          Math.sin(C * t1) + gauss() * 0.05,
+        ]);
       }
-    }
-    while (pts.length < seedsWanted) {
-      var fa = rnd() * TAU;
-      var fr = 0.12 + Math.pow(rnd(), 0.55) * 0.95;
-      pts.push([Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.08), Math.sin(fa) * fr]);
+    } else if (shape === 2) {
+      // Gielis supershape: the superformula that draws flowers and
+      // starfish, spun into 3d by the spherical product.
+      function superR(ang, m, n1, n2, n3) {
+        var a = Math.abs(Math.cos((m * ang) / 4));
+        var b = Math.abs(Math.sin((m * ang) / 4));
+        return Math.pow(Math.pow(a, n2) + Math.pow(b, n3), -1 / n1);
+      }
+      var m1 = 3 + ((rnd() * 6) | 0), m2 = 2 + ((rnd() * 5) | 0);
+      var n1a = 0.3 + rnd() * 2.2, n2a = 0.4 + rnd() * 2.4, n3a = 0.4 + rnd() * 2.4;
+      var n1b = 0.3 + rnd() * 2.2, n2b = 0.4 + rnd() * 2.4, n3b = 0.4 + rnd() * 2.4;
+      var GA = Math.PI * (3 - Math.sqrt(5));
+      for (var i2 = 0; i2 < N; i2++) {
+        var yy = 1 - (2 * (i2 + 0.5)) / N;
+        var phi = Math.asin(yy);
+        var th = (i2 * GA) % TAU - Math.PI;
+        var r1v = superR(th, m1, n1a, n2a, n3a);
+        var r2v = superR(phi, m2, n1b, n2b, n3b);
+        pts.push([
+          r1v * Math.cos(th) * r2v * Math.cos(phi) + gauss() * 0.03,
+          r2v * Math.sin(phi) + gauss() * 0.03,
+          r1v * Math.sin(th) * r2v * Math.cos(phi) + gauss() * 0.03,
+        ]);
+      }
+    } else if (shape === 3) {
+      // Fibonacci sphere breathing through spherical-harmonic lobes.
+      var GA2 = Math.PI * (3 - Math.sqrt(5));
+      var lm = 2 + ((rnd() * 5) | 0), lk = 1 + ((rnd() * 4) | 0);
+      var depth = 0.2 + rnd() * 0.3;
+      for (var i3 = 0; i3 < N; i3++) {
+        var y3 = 1 - (2 * (i3 + 0.5)) / N;
+        var rr = Math.sqrt(Math.max(0, 1 - y3 * y3));
+        var th3 = i3 * GA2;
+        var mod = 1 - depth + depth * Math.sin(lm * th3) * Math.sin(lk * Math.acos(y3) * 2);
+        pts.push([
+          Math.cos(th3) * rr * mod + gauss() * 0.03,
+          y3 * mod + gauss() * 0.03,
+          Math.sin(th3) * rr * mod + gauss() * 0.03,
+        ]);
+      }
+    } else {
+      // Mobius band: the one-sided ribbon.
+      var W = 0.3 + rnd() * 0.25;
+      for (var i4 = 0; i4 < N; i4++) {
+        var u = rnd() * TAU;
+        var v = (rnd() * 2 - 1) * W;
+        var q4 = 1 + (v / 2) * Math.cos(u / 2);
+        pts.push([
+          q4 * Math.cos(u) + gauss() * 0.03,
+          (v / 2) * Math.sin(u / 2) * 2.2 + gauss() * 0.03,
+          q4 * Math.sin(u) + gauss() * 0.03,
+        ]);
+      }
     }
 
-    // Stamp every seed through the group.
+    // A breath of scatter around the form.
+    var FREE = 30 + ((rnd() * 30) | 0);
+    for (var f0 = 0; f0 < FREE; f0++) {
+      var fa = rnd() * TAU;
+      var fr = 0.2 + Math.pow(rnd(), 0.55) * 0.9;
+      pts.push([Math.cos(fa) * fr, gauss() * 0.8, Math.sin(fa) * fr]);
+    }
+
+    // Normalize to frame: radius to ~0.95, height to the register span.
+    var maxR = 0.001, maxY = 0.001;
+    for (var n0 = 0; n0 < pts.length; n0++) {
+      maxR = Math.max(maxR, Math.hypot(pts[n0][0], pts[n0][2]));
+      maxY = Math.max(maxY, Math.abs(pts[n0][1]));
+    }
     nodes = [];
     edges = [];
-    for (var p0 = 0; p0 < pts.length; p0++) {
-      var px0 = pts[p0][0], py0 = pts[p0][1], pz0 = pts[p0][2];
-      var bias = 0.2 + rnd() * 0.5;
-      for (var cpy = 0; cpy < copies; cpy++) {
-        var rot = (cpy % rotN) * (TAU / rotN);
-        var mir = mirrored && cpy >= rotN ? -1 : 1;
-        var ca = Math.cos(rot), sa = Math.sin(rot);
-        var x = ((px0 * ca - pz0 * sa) * mir + (rnd() - 0.5) * JIT) * SQ;
-        var y = py0 + (rnd() - 0.5) * JIT * 0.8;
-        var z = px0 * sa + pz0 * ca + (rnd() - 0.5) * JIT;
-        var rad = Math.hypot(x, z);
-        nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
-      }
+    for (var n1 = 0; n1 < pts.length; n1++) {
+      var x = (pts[n1][0] / maxR) * 0.95;
+      var y = (pts[n1][1] / maxY) * YS;
+      var z = (pts[n1][2] / maxR) * 0.95;
+      nodes.push({ x: x, y: y, z: z, cell: cellAt(Math.hypot(x, z), y, YS), bias: 0.2 + rnd() * 0.5, act: 0 });
     }
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
-    // chords straight through the tangle.
+    // chords straight through the form.
     var seen = {};
     nodes.forEach(function (n, ai) {
       var ds = nodes.map(function (q, bi) {
