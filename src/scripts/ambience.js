@@ -28,6 +28,7 @@
     { slug: "swan-lake", src: "/audio/swan-lake.m4a", name: "Swan Lake", cat: "Classical", sub: "Tchaikovsky, played by Kassia", title: "Swan Lake, Tchaikovsky, played by Kassia" },
     { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", cat: "Classical", sub: "Handel and Halvorsen, by Kassia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
     { slug: "chicago-freestyle", src: "/audio/chicago-freestyle.m4a", name: "Chicago Freestyle", cat: "Hip Hop", sub: "Drake and Giveon", title: "Chicago Freestyle by Drake and Giveon" },
+    { slug: "halleys-comet", src: "/audio/halleys-comet.m4a", name: "Halley's Comet", cat: "Pop", sub: "Billie Eilish", title: "Halley's Comet by Billie Eilish" },
   ];
   // The song in the url wins and always starts from the top, so a
   // shared /music?song=let-down link renders with that song cued.
@@ -228,7 +229,7 @@
   if (pickBtn && pickList) {
     // Grouped by category, each entry verbose: the song on one line,
     // its credit on the next.
-    var CATS = ["Originals", "Piano Covers", "Film Scores", "Classical", "Hip Hop"];
+    var CATS = ["Originals", "Piano Covers", "Film Scores", "Classical", "Pop", "Hip Hop"];
     CATS.forEach(function (cat) {
       var members = [];
       TRACKS.forEach(function (tr, ti) {
