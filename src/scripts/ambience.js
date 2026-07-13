@@ -19,6 +19,10 @@
 
   var TRACKS = [
     { src: "/audio/first-dance.m4a", title: "the feeling of a first dance by Gabriel Piano" },
+    { src: "/audio/interstellar.m4a", title: "Interstellar Main Theme (Hans Zimmer) by Gabriel Piano" },
+    { src: "/audio/wildflower.m4a", title: "WILDFLOWER (Billie Eilish) by Gabriel Piano" },
+    { src: "/audio/creep.m4a", title: "Creep (Radiohead) by Gabriel Piano" },
+    { src: "/audio/sparks.m4a", title: "Sparks (Coldplay) by Gabriel Piano" },
     { src: "/audio/let-down.m4a", title: "Let down (Radiohead) by Gabriel Piano" },
   ];
   var trackIdx = 0;
@@ -150,8 +154,22 @@
   var seek = document.getElementById("listen-seek");
   var timeEl = document.getElementById("listen-time");
   var durEl = document.getElementById("listen-dur");
-  var titleEl = document.getElementById("listen-title");
+  var trackSel = document.getElementById("listen-track");
+  var exitBtn = document.getElementById("listen-exit");
   var listening = false, seeking = false;
+
+  function setTrack(i, playNow) {
+    trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
+    audio.src = TRACKS[trackIdx].src;
+    if (chip) chip.title = TRACKS[trackIdx].title;
+    if (trackSel) trackSel.value = String(trackIdx);
+    try {
+      localStorage.setItem("ambience-i", String(trackIdx));
+      localStorage.setItem("ambience-t", "0");
+    } catch (e) {}
+    if (playNow && !off) start();
+    paintBar();
+  }
 
   function fmt(sec) {
     if (!isFinite(sec) || sec < 0) return "0:00";
@@ -163,7 +181,6 @@
     if (playBtn) playBtn.textContent = audio.paused ? "PLAY" : "PAUSE";
     if (timeEl) timeEl.textContent = fmt(audio.currentTime);
     if (durEl) durEl.textContent = fmt(audio.duration);
-    if (titleEl) titleEl.textContent = TRACKS[trackIdx].title;
     if (seek && !seeking && audio.duration) {
       seek.value = String(((audio.currentTime / audio.duration) * 1000) | 0);
     }
@@ -182,6 +199,12 @@
       try { localStorage.setItem("ambience", "on"); } catch (e) {}
       if (audio.paused) start();
       paintBar();
+    } else {
+      // Keep the canvas visible long enough for the collapse to play.
+      document.documentElement.classList.add("net-out");
+      setTimeout(function () {
+        document.documentElement.classList.remove("net-out");
+      }, 900);
     }
   }
 
@@ -210,6 +233,25 @@
       seeking = false;
     });
   }
+  if (trackSel) {
+    for (var ti = 0; ti < TRACKS.length; ti++) {
+      var opt = document.createElement("option");
+      opt.value = String(ti);
+      opt.textContent = TRACKS[ti].title.replace(" by Gabriel Piano", "");
+      trackSel.appendChild(opt);
+    }
+    trackSel.value = String(trackIdx);
+    trackSel.addEventListener("change", function () {
+      off = false;
+      try { localStorage.setItem("ambience", "on"); } catch (e) {}
+      setTrack(+trackSel.value, true);
+    });
+  }
+  if (exitBtn) {
+    exitBtn.addEventListener("click", function () {
+      setListening(false);
+    });
+  }
   audio.addEventListener("timeupdate", paintBar);
   audio.addEventListener("play", paintBar);
   audio.addEventListener("pause", paintBar);
@@ -220,14 +262,7 @@
 
   // When a track finishes, rotate to the next and keep playing.
   audio.addEventListener("ended", function () {
-    trackIdx = (trackIdx + 1) % TRACKS.length;
-    audio.src = TRACKS[trackIdx].src;
-    if (chip) chip.title = TRACKS[trackIdx].title;
-    try {
-      localStorage.setItem("ambience-i", String(trackIdx));
-      localStorage.setItem("ambience-t", "0");
-    } catch (e) {}
-    if (!off) start();
+    setTrack(trackIdx + 1, true);
   });
 
   addEventListener("pagehide", function () {

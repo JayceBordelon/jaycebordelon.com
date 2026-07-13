@@ -1,18 +1,18 @@
-// The background as a listening neural machine shaped as a tesseract.
-// A hypercube has sixteen vertices and the analyser publishes sixteen
-// pitch cells, so every 4d vertex IS a note cell, hosting a wheel of
-// neurons around a hub. Registers pick the xy quadrant, sub-bands the
-// zw pair, and hypercube edges join cells that differ by one bit, so
-// the wiring is the geometry of the pitch space itself. The whole
-// structure double-rotates through the fourth dimension while slowly
-// yawing in 3d, cubes turning inside out through one another. Every
-// neuron keeps its own sensitivity bias: quiet notes clear only the
-// most sensitive, louder playing recruits deeper. Attacks fire signal
-// pulses down the wiring, more and chattier when loud, and arrivals
-// can chain-fire in climaxes. The machine only exists in listening
-// mode: ambience.js calls window.neuralField.start/stop with the mode
-// toggle, and nothing renders outside it. Canvas 2d and vanilla JS
-// only. Reduced motion gets one static frame.
+// The background as a listening neural machine, symmetrically random.
+// Every load seeds a fresh cloud of motif neurons and stamps each one
+// eight times through the D4 symmetry group (four rotations about the
+// vertical axis, then the mirror of each), so the machine is different
+// on every visit yet always reads deliberate. Pitch maps onto the
+// symmetric field itself: registers stack bottom (bass) to top
+// (treble), sub-bands ring from the rim (low) to the core (high), and
+// all eight copies of a motif share a pitch cell, so every note lights
+// a symmetric constellation. Neurons keep sensitivity biases (quiet
+// notes wake the sensitive few, loud playing recruits deeper), attacks
+// fire pulses down the wiring, and arrivals chain-fire in climaxes.
+// The machine exists only in listening mode: ambience.js calls
+// window.neuralField.start/stop, spawn-in erupts from a singularity
+// with a decelerating spin, stop collapses it back. Canvas 2d and
+// vanilla JS only. Reduced motion gets one static frame.
 (function () {
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
@@ -20,8 +20,8 @@
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
 
-  // Seeded biases: the same temperament on every page and every visit.
-  var seed = 0x5eed;
+  // A fresh seed every visit: the brain is never the same twice.
+  var seed = (Math.random() * 4294967296) | 0;
   function rnd() {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;
@@ -30,55 +30,48 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Geometry: 16 hypercube vertices at (±1, ±1, ±1, ±1) scaled, each
-  // a neuron wheel: a hub at the vertex plus a ring of 13 around it,
-  // the ring lying in a seeded 2-plane of 4d space so every wheel
-  // deforms differently as the structure turns through w.
-  var VS = 0.5, RN = 13, RR = 0.15, P4 = 3.2;
-  var nodes = [], edges = [], centers = [];
-  function rv() {
-    var v = [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5, rnd() - 0.5];
-    var l = Math.hypot(v[0], v[1], v[2], v[3]);
-    return [v[0] / l, v[1] / l, v[2] / l, v[3] / l];
-  }
-  for (var c = 0; c < 16; c++) {
-    var r = c >> 2, s = c & 3;
-    var vert = [
-      (r & 1 ? 1 : -1) * VS,
-      (r & 2 ? 1 : -1) * VS,
-      (s & 1 ? 1 : -1) * VS,
-      (s & 2 ? 1 : -1) * VS,
-    ];
-    var U = rv();
-    var V0 = rv();
-    var d0 = U[0] * V0[0] + U[1] * V0[1] + U[2] * V0[2] + U[3] * V0[3];
-    var V = [V0[0] - d0 * U[0], V0[1] - d0 * U[1], V0[2] - d0 * U[2], V0[3] - d0 * U[3]];
-    var vl = Math.hypot(V[0], V[1], V[2], V[3]);
-    V = [V[0] / vl, V[1] / vl, V[2] / vl, V[3] / vl];
-
-    var base = nodes.length;
-    centers.push(base);
-    nodes.push({ p: vert, cell: c, bias: 0.1 + rnd() * 0.35, act: 0 });
-    for (var j = 0; j < RN; j++) {
-      var th = (TAU * j) / RN;
-      var cu = Math.cos(th) * RR, sv = Math.sin(th) * RR;
+  // Motifs in one quadrant, stamped 8x by D4. Cell comes from where
+  // the motif lives: register by height, sub-band by radius.
+  var MOTIFS = 68;
+  var nodes = [], edges = [];
+  for (var m0 = 0; m0 < MOTIFS; m0++) {
+    var ang = (rnd() * TAU) / 4;
+    var rad = 0.25 + Math.pow(rnd(), 0.7) * 0.75;
+    var mx = Math.cos(ang) * rad;
+    var mz = Math.sin(ang) * rad;
+    var my = (rnd() * 2 - 1) * 0.62;
+    var reg = my > 0.31 ? 0 : my > 0 ? 1 : my > -0.31 ? 2 : 3;
+    var sub = rad > 0.85 ? 0 : rad > 0.65 ? 1 : rad > 0.45 ? 2 : 3;
+    var cell = reg * 4 + sub;
+    var bias = 0.12 + rnd() * 0.5;
+    for (var cpy = 0; cpy < 8; cpy++) {
+      var rot = (cpy & 3) * (TAU / 4);
+      var mir = cpy & 4 ? -1 : 1;
+      var ca = Math.cos(rot), sa = Math.sin(rot);
       nodes.push({
-        p: [vert[0] + cu * U[0] + sv * V[0], vert[1] + cu * U[1] + sv * V[1], vert[2] + cu * U[2] + sv * V[2], vert[3] + cu * U[3] + sv * V[3]],
-        cell: c,
-        bias: 0.12 + rnd() * 0.5,
+        x: (mx * ca - mz * sa) * mir,
+        y: my,
+        z: mx * sa + mz * ca,
+        cell: cell,
+        bias: bias,
         act: 0,
       });
-      edges.push([base + 1 + j, base + 1 + ((j + 1) % RN)]);
-      if (j % 2 === 0) edges.push([base, base + 1 + j]);
     }
   }
-  // Hypercube wiring: an edge wherever two cells differ by one bit.
-  for (var a2 = 0; a2 < 16; a2++) {
-    for (var b2 = a2 + 1; b2 < 16; b2++) {
-      var x2 = a2 ^ b2;
-      if (!(x2 & (x2 - 1))) edges.push([centers[a2], centers[b2]]);
+
+  // Wiring: each neuron to its three nearest neighbors, deduped. The
+  // cloud is symmetric, so the loom it weaves is too.
+  var seen = {};
+  nodes.forEach(function (n, ai) {
+    var ds = nodes.map(function (q, bi) {
+      var dx = n.x - q.x, dy = n.y - q.y, dz = n.z - q.z;
+      return { d: dx * dx + dy * dy + dz * dz, i: bi };
+    }).sort(function (p1, q1) { return p1.d - q1.d; });
+    for (var k = 1; k <= 3; k++) {
+      var key = Math.min(ai, ds[k].i) + ":" + Math.max(ai, ds[k].i);
+      if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
     }
-  }
+  });
   var incident = nodes.map(function () { return []; });
   edges.forEach(function (e, ei) { incident[e[0]].push(ei); incident[e[1]].push(ei); });
   var cellNodes = [];
@@ -86,10 +79,26 @@
   nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
 
   // Palette from the live theme tokens, re-read when the theme flips.
+  // Activation climbs a thermal ramp: resting slate, then emerald,
+  // then gold, then white hot (inverted to dark hot on the light
+  // theme), so how lit a neuron is reads as color, not just weight.
   var ink = "#808080";
+  var DARK_STOPS = [[125, 135, 148], [52, 211, 153], [250, 204, 21], [255, 250, 240]];
+  var LIGHT_STOPS = [[100, 110, 122], [5, 150, 105], [176, 118, 8], [40, 26, 8]];
+  var POS = [0, 0.45, 0.8, 1];
+  var stops = DARK_STOPS;
+  function ramp(a) {
+    a = Math.max(0, Math.min(1, a));
+    var i = 1;
+    while (i < POS.length - 1 && a > POS[i]) i++;
+    var t2 = Math.max(0, Math.min(1, (a - POS[i - 1]) / (POS[i] - POS[i - 1])));
+    var s0 = stops[i - 1], s1 = stops[i];
+    return "rgb(" + ((s0[0] + (s1[0] - s0[0]) * t2) | 0) + "," + ((s0[1] + (s1[1] - s0[1]) * t2) | 0) + "," + ((s0[2] + (s1[2] - s0[2]) * t2) | 0) + ")";
+  }
   function palette() {
     var v = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim();
     if (v) ink = v;
+    stops = document.documentElement.classList.contains("dark") ? DARK_STOPS : LIGHT_STOPS;
   }
   palette();
   if (window.MutationObserver) {
@@ -120,8 +129,22 @@
     pulses.push({ e: ei, t: 0, sp: 0.02 + Math.random() * 0.025, from: edges[ei][0] === ni ? 0 : 1 });
   }
 
+  // Spawn choreography: intro runs 0..1. Each neuron gets a staggered
+  // start and eases out from the singularity with a little overshoot,
+  // the whole structure spinning down as it forms. Leaving reverses it.
+  var active = false, rafId = 0;
+  var mode = 0, intro = 0;
+  function easeBack(t2) {
+    var u = t2 - 1;
+    return 1 + 2.7 * u * u * u + 1.7 * u * u;
+  }
+  function stagger(i) {
+    return ((i * 0.61803) % 1) * 0.35;
+  }
+
   function draw(t) {
     g.clearRect(0, 0, W, H);
+    var eff = still ? 1 : intro;
     var field = window.soundField;
     var cs = field && field.cells ? field.cells : null;
     var loud = field ? field.loud || 0 : 0;
@@ -154,62 +177,59 @@
     }
 
     // A rising cell is a struck note: fire pulses from its neurons,
-    // more of them the louder the passage.
-    if (cs && !still) {
+    // more of them the louder the passage. Not during the spawn.
+    if (cs && !still && eff > 0.85) {
       var burst = 1 + Math.round(loud * 4);
       var thresh = Math.max(0.07, 0.16 - loud * 0.08);
-      for (var c = 0; c < 16; c++) {
-        var v = cs[c] || 0;
-        if (v - prevCells[c] > thresh) {
-          var members = cellNodes[c];
+      for (var c2 = 0; c2 < 16; c2++) {
+        var v = cs[c2] || 0;
+        if (v - prevCells[c2] > thresh) {
+          var members = cellNodes[c2];
           for (var q = 0; q < burst && members.length; q++) {
             firePulse(members[(Math.random() * members.length) | 0]);
           }
         }
-        prevCells[c] = v;
+        prevCells[c2] = v;
       }
     }
 
-    // Turn the tesseract: a double rotation through the xw and yz
-    // planes (the genuinely 4d motion), then a slow 3d yaw under a
-    // fixed tilt, then perspective. Depth cues blend both projections
-    // so near-in-w wheels read larger and brighter.
-    var a4 = still ? 0.5 : t * 0.00009;
-    var b4 = still ? 0.3 : t * 0.000063;
-    var ca4 = Math.cos(a4), sa4 = Math.sin(a4);
-    var cb4 = Math.cos(b4), sb4 = Math.sin(b4);
-    var yaw = still ? 0.6 : t * 0.00005;
+    // Turn the cloud: a slow yaw under a fixed tilt, sped up into a
+    // decelerating birth-spin while the machine forms, then
+    // perspective.
+    var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
-    var cx1 = Math.cos(0.3), sx1 = Math.sin(0.3);
-    var S = Math.min(W, H) * 0.3;
+    var cx1 = Math.cos(0.32), sx1 = Math.sin(0.32);
+    var S = Math.min(W, H) * 0.36;
     var CX = W * 0.5, CY = H * 0.47;
+    var prog = [];
     for (var j = 0; j < nodes.length; j++) {
-      var p = nodes[j].p;
-      var X4 = p[0] * ca4 - p[3] * sa4;
-      var W4 = p[0] * sa4 + p[3] * ca4;
-      var Y4 = p[1] * cb4 - p[2] * sb4;
-      var Z4 = p[1] * sb4 + p[2] * cb4;
-      var s3 = P4 / (P4 - W4);
-      var X = X4 * s3, Y = Y4 * s3, Z = Z4 * s3;
-      var xr = X * cy1 + Z * sy1;
-      var zr = -X * sy1 + Z * cy1;
-      var yr = Y * cx1 - zr * sx1;
-      var z2 = Y * sx1 + zr * cx1;
+      var m = nodes[j];
+      var st = stagger(j);
+      var np = Math.min(1, Math.max(0, (eff * 1.35 - st) / 0.65));
+      prog[j] = np;
+      var sc = easeBack(np);
+      var xr = m.x * sc * cy1 + m.z * sc * sy1;
+      var zr = -m.x * sc * sy1 + m.z * sc * cy1;
+      var yr = m.y * sc * cx1 - zr * sx1;
+      var z2 = m.y * sc * sx1 + zr * cx1;
       var per = 3.4 / (3.4 + z2);
       px[j] = CX + xr * S * per;
       py[j] = CY + yr * S * per;
-      pz[j] = per * (0.55 + 0.45 * Math.min(1, Math.max(0, (s3 - 0.82) / 0.47)));
+      pz[j] = per;
     }
 
-    // Edges: quiet wiring that brightens when both ends are lit, with
-    // the whole loom lifting slightly in loud passages.
-    g.strokeStyle = ink;
+    // Edges: quiet wiring that brightens and heats up when both ends
+    // are lit, with the whole loom lifting slightly in loud passages.
+    // Threads only exist once both endpoints have arrived.
     g.lineCap = "round";
     for (var e2 = 0; e2 < edges.length; e2++) {
       var a = edges[e2][0], d2 = edges[e2][1];
+      var knit = Math.min(prog[a], prog[d2]);
+      if (knit <= 0.02) continue;
       var act = Math.min(nodes[a].act, nodes[d2].act);
       var depth = (pz[a] + pz[d2]) * 0.5;
-      g.globalAlpha = (0.11 + loud * 0.05 + act * 0.42) * depth;
+      g.strokeStyle = act > 0.04 ? ramp(act * 1.05) : ink;
+      g.globalAlpha = (0.11 + loud * 0.05 + act * 0.42) * depth * knit * knit;
       g.lineWidth = (0.6 + act * 1.2) * depth;
       g.beginPath();
       g.moveTo(px[a], py[a]);
@@ -220,7 +240,7 @@
     // Signal pulses race along the wiring and excite their targets.
     // In loud passages an arrival can chain-fire onward, so climaxes
     // cascade through the whole organ.
-    g.fillStyle = ink;
+    g.fillStyle = ramp(0.75);
     for (var u = pulses.length - 1; u >= 0; u--) {
       var pu = pulses[u];
       pu.t += pu.sp;
@@ -244,17 +264,21 @@
       g.fill();
     }
 
-    // Neurons: a soft halo when excited, a firm core always.
+    // Neurons: a soft halo when excited, a firm core always, both
+    // climbing the thermal ramp with activation.
     for (var w2 = 0; w2 < nodes.length; w2++) {
       var nn = nodes[w2];
       var per2 = pz[w2];
+      var born = prog[w2];
+      if (born <= 0) continue;
+      g.fillStyle = nn.act > 0.04 ? ramp(nn.act) : ink;
       if (nn.act > 0.2) {
-        g.globalAlpha = nn.act * 0.16 * per2;
+        g.globalAlpha = nn.act * 0.18 * per2 * born;
         g.beginPath();
         g.arc(px[w2], py[w2], (5 + nn.act * 9) * per2, 0, 6.2832);
         g.fill();
       }
-      g.globalAlpha = (0.34 + nn.act * 0.6) * per2;
+      g.globalAlpha = (0.34 + nn.act * 0.6) * per2 * born;
       g.beginPath();
       g.arc(px[w2], py[w2], (1.15 + nn.act * 1.9) * per2, 0, 6.2832);
       g.fill();
@@ -262,15 +286,22 @@
     g.globalAlpha = 1;
   }
 
-  // The brain exists only in listening mode: ambience.js starts and
-  // stops it with the mode toggle. No frame is ever drawn outside it.
-  var active = false, rafId = 0;
   function loop(ts) {
+    intro += ((mode === 1 ? 1 : 0) - intro) * (mode === 1 ? 0.03 : 0.08);
+    if (mode === 1 && intro > 0.999) intro = 1;
+    if (mode !== 1 && intro < 0.005) {
+      intro = 0;
+      active = false;
+      g.clearRect(0, 0, W, H);
+      return;
+    }
     draw(ts || 0);
     if (active && !still) rafId = requestAnimationFrame(loop);
   }
+
   window.neuralField = {
     start: function () {
+      mode = 1;
       if (active) return;
       active = true;
       size();
@@ -278,8 +309,12 @@
       else rafId = requestAnimationFrame(loop);
     },
     stop: function () {
-      active = false;
-      cancelAnimationFrame(rafId);
+      mode = 0;
+      if (still) {
+        active = false;
+        cancelAnimationFrame(rafId);
+        g.clearRect(0, 0, W, H);
+      }
     },
   };
 })();

@@ -200,7 +200,8 @@
  * at the bottom owns the audio. The canvas never renders outside this
  * mode. */
 @layer components {
-  html.listening .page-bg canvas {
+  html.listening .page-bg canvas,
+  html.net-out .page-bg canvas {
     display: block;
   }
   main {
@@ -248,12 +249,39 @@
     min-width: 4ch;
     text-align: center;
   }
-  .listen-title {
+  .listen-track {
+    appearance: none;
+    -webkit-appearance: none;
+    max-width: 30ch;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: transparent;
     color: var(--muted-foreground);
-    max-width: 34ch;
+    font: inherit;
+    letter-spacing: inherit;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .listen-track:hover {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .listen-exit {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--foreground);
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+    transition: border-color 0.2s ease;
+  }
+  .listen-exit:hover {
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
   }
   .listen-seek {
     flex: 1;
@@ -281,7 +309,7 @@
     border: none;
   }
   @media (max-width: 560px) {
-    .listen-title {
+    .listen-track {
       display: none;
     }
   }
@@ -494,10 +522,40 @@
       transform: scaleY(1);
     }
   }
+
+  /* The suspicious question mark: the hero's unmarked door into
+     listening mode. It side-eyes every few seconds. */
+  .amb-q {
+    font-family: var(--font-mono);
+    font-size: 19px;
+    line-height: 1;
+    color: var(--accent);
+    transform: rotate(8deg);
+    animation: amb-sus 5.2s ease-in-out infinite;
+  }
+  @keyframes amb-sus {
+    0%,
+    72%,
+    100% {
+      transform: rotate(8deg) translateY(0);
+    }
+    78% {
+      transform: rotate(-10deg) translateY(-1px);
+    }
+    85% {
+      transform: rotate(12deg) translateY(0.5px);
+    }
+    92% {
+      transform: rotate(-3deg);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .amb-on .amb-bars i {
       animation: none;
       transform: scaleY(0.7);
+    }
+    .amb-q {
+      animation: none;
     }
   }
 }
