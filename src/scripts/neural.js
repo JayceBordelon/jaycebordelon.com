@@ -156,6 +156,29 @@
     new MutationObserver(palette).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   }
 
+  // Grab and spin: dragging anywhere off the controls throws the net,
+  // momentum carries it and decays, and the slow automatic turn never
+  // stops underneath.
+  var userYaw = 0, yawVel = 0, dragging = false, dragX = 0;
+  if (!still) {
+    addEventListener("pointerdown", function (e) {
+      if (e.target && e.target.closest && e.target.closest(".listen-bar, header, a, button, input, select")) return;
+      dragging = true;
+      dragX = e.clientX;
+      yawVel = 0;
+    });
+    addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - dragX;
+      dragX = e.clientX;
+      var d = dx * 0.005;
+      userYaw += d;
+      yawVel = d;
+    });
+    addEventListener("pointerup", function () { dragging = false; });
+    addEventListener("pointercancel", function () { dragging = false; });
+  }
+
   var W = 0, H = 0;
   function size() {
     var dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -246,7 +269,11 @@
     // Turn the cloud: a slow yaw under a fixed tilt, sped up into a
     // decelerating birth-spin while the machine forms, then
     // perspective.
-    var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5;
+    if (!dragging) {
+      userYaw += yawVel;
+      yawVel *= 0.95;
+    }
+    var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5 + userYaw;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
     var cx1 = Math.cos(0.32), sx1 = Math.sin(0.32);
     var S = Math.min(W, H) * (W < H ? 0.46 : 0.36);
