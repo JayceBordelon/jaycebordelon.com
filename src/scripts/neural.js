@@ -184,7 +184,7 @@
       if (!dragging) return;
       var dx = e.clientX - dragX;
       dragX = e.clientX;
-      var d = dx * 0.005;
+      var d = -dx * 0.005;
       userYaw += d;
       yawVel = d;
     });
