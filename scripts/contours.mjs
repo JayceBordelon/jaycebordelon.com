@@ -116,14 +116,17 @@ function bandFor(i, rings) {
  * Landscape, viewBox 0 0 1440 900: A upper left and B lower right are
  * high-reward local peaks the policy explores past, C upper right
  * bleeds off the edge, D bottom center is the global maximum, placed
- * clear of the hero portrait card so convergence is never hidden.
+ * clear of the hero portrait card so convergence is never hidden. The
+ * slice-fit crops top and bottom on short wide windows, so the
+ * convergence marker sits at y 715, inside the band that survives
+ * aspect ratios out to roughly 2.4:1.
  */
 const LANDSCAPE = {
   summits: [
     { cx: 350, cy: 260, r0: 46, gap: 30, rings: 8, driftX: -7, driftY: 5, squash: 0.8 },
     { cx: 1085, cy: 640, r0: 40, gap: 30, rings: 6, driftX: 6, driftY: -4, squash: 0.85 },
     { cx: 1300, cy: 150, r0: 34, gap: 26, rings: 5, driftX: -5, driftY: 6, squash: 0.9 },
-    { cx: 660, cy: 770, r0: 36, gap: 26, rings: 6, driftX: 5, driftY: -6, squash: 0.78 },
+    { cx: 660, cy: 715, r0: 36, gap: 26, rings: 6, driftX: 5, driftY: -6, squash: 0.78 },
   ],
   waypoints: [
     [-60, 380],
@@ -132,11 +135,11 @@ const LANDSCAPE = {
     [480, 430],
     [640, 500],
     [800, 560],
-    [900, 680],
-    [760, 735],
-    [630, 795],
-    [700, 788],
-    [660, 770],
+    [900, 660],
+    [755, 705],
+    [640, 742],
+    [700, 733],
+    [660, 715],
   ],
   readings: [
     { x: 322, y: 252, v: "0.47" },
@@ -146,7 +149,7 @@ const LANDSCAPE = {
     { x: 1210, y: 760, v: "0.22" },
     { x: 1296, y: 148, v: "0.51" },
     { x: 1380, y: 288, v: "0.29" },
-    { x: 578, y: 752, v: "0.94" },
+    { x: 572, y: 698, v: "0.94" },
     { x: 790, y: 892, v: "0.36" },
     { x: 905, y: 210, v: "0.09" },
     { x: 150, y: 640, v: "0.11" },
