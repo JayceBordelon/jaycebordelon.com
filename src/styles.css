@@ -179,6 +179,9 @@
     background-color: var(--background);
     opacity: 0;
     animation: field-in 1.1s ease-out forwards;
+    /* --amp0..3 are the music's smoothed spectral zones, written by
+       ambience.js (0 when silent). Each summit is a zone and lights
+       with its own frequency band, mapped below. */
 
     /* Chart ink per depth band, brightened a touch on the sonar side. */
     --band-ink-0: 8%;
@@ -240,17 +243,86 @@
      never move in lockstep and the terrain seems to shift internally. */
   .chart-band {
     fill: none;
-    stroke: color-mix(in srgb, var(--foreground) var(--band-ink), transparent);
-    stroke-width: var(--band-w);
+    /* Each ring band's ink is its resting weight plus its own pitch
+       cell's energy (--bamp, falling back to the summit aggregate),
+       scaled by depth so lit core rings read hardest. The stroke also
+       thickens as the light lands. */
+    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--bamp, var(--samp, 0)) * var(--band-gain, 8%)), transparent);
+    stroke-width: calc(var(--band-w) + var(--bamp, var(--samp, 0)) * var(--band-wgain, 0.5px));
     transform-box: view-box;
     transform-origin: 50% 50%;
     will-change: transform;
     animation: band-drift var(--band-t) ease-in-out infinite alternate;
     animation-delay: var(--band-delay);
   }
+  /* A lit summit also emits: the halo scales with its slot energy. */
+  .chart-summit {
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) calc(var(--samp, 0) * 55%), transparent));
+  }
+
+  /* The pitch map: ambience.js assigns each summit a piano register
+     (--ampZ aggregates drive the summit halos via --samp) and each of
+     its ring depths one sub-band of that register (--ampZS drives the
+     rings via --bamp), lowest pitch at the outer rings, so the same
+     note always lights the same ring and ascending lines climb the
+     summit. Slot 0 is bass on the convergence summit (bass also pulses
+     the pi ring), 1 tenor, 2 alto, 3 the treble melody. Portrait folds
+     the four registers onto its three summits. */
+  .chart-field--landscape .chart-summit--0 {
+    --samp: var(--amp1, 0);
+  }
+  .chart-field--landscape .chart-summit--0 .chart-band--0 { --bamp: var(--amp10, 0); }
+  .chart-field--landscape .chart-summit--0 .chart-band--1 { --bamp: var(--amp11, 0); }
+  .chart-field--landscape .chart-summit--0 .chart-band--2 { --bamp: var(--amp12, 0); }
+  .chart-field--landscape .chart-summit--0 .chart-band--3 { --bamp: var(--amp13, 0); }
+  .chart-field--landscape .chart-summit--1 {
+    --samp: var(--amp2, 0);
+  }
+  .chart-field--landscape .chart-summit--1 .chart-band--0 { --bamp: var(--amp20, 0); }
+  .chart-field--landscape .chart-summit--1 .chart-band--1 { --bamp: var(--amp21, 0); }
+  .chart-field--landscape .chart-summit--1 .chart-band--2 { --bamp: var(--amp22, 0); }
+  .chart-field--landscape .chart-summit--1 .chart-band--3 { --bamp: var(--amp23, 0); }
+  .chart-field--landscape .chart-summit--2 {
+    --samp: var(--amp3, 0);
+  }
+  .chart-field--landscape .chart-summit--2 .chart-band--0 { --bamp: var(--amp30, 0); }
+  .chart-field--landscape .chart-summit--2 .chart-band--1 { --bamp: var(--amp31, 0); }
+  .chart-field--landscape .chart-summit--2 .chart-band--2 { --bamp: var(--amp32, 0); }
+  .chart-field--landscape .chart-summit--2 .chart-band--3 { --bamp: var(--amp33, 0); }
+  .chart-field--landscape .chart-summit--3 {
+    --samp: var(--amp0, 0);
+  }
+  .chart-field--landscape .chart-summit--3 .chart-band--0 { --bamp: var(--amp00, 0); }
+  .chart-field--landscape .chart-summit--3 .chart-band--1 { --bamp: var(--amp01, 0); }
+  .chart-field--landscape .chart-summit--3 .chart-band--2 { --bamp: var(--amp02, 0); }
+  .chart-field--landscape .chart-summit--3 .chart-band--3 { --bamp: var(--amp03, 0); }
+  .chart-field--portrait .chart-summit--0 {
+    --samp: var(--amp1, 0);
+  }
+  .chart-field--portrait .chart-summit--0 .chart-band--0 { --bamp: var(--amp10, 0); }
+  .chart-field--portrait .chart-summit--0 .chart-band--1 { --bamp: var(--amp11, 0); }
+  .chart-field--portrait .chart-summit--0 .chart-band--2 { --bamp: var(--amp12, 0); }
+  .chart-field--portrait .chart-summit--0 .chart-band--3 { --bamp: var(--amp13, 0); }
+  .chart-field--portrait .chart-summit--1 {
+    --samp: max(var(--amp2, 0), var(--amp3, 0));
+  }
+  .chart-field--portrait .chart-summit--1 .chart-band--0 { --bamp: max(var(--amp20, 0), var(--amp30, 0)); }
+  .chart-field--portrait .chart-summit--1 .chart-band--1 { --bamp: max(var(--amp21, 0), var(--amp31, 0)); }
+  .chart-field--portrait .chart-summit--1 .chart-band--2 { --bamp: max(var(--amp22, 0), var(--amp32, 0)); }
+  .chart-field--portrait .chart-summit--1 .chart-band--3 { --bamp: max(var(--amp23, 0), var(--amp33, 0)); }
+  .chart-field--portrait .chart-summit--2 {
+    --samp: var(--amp0, 0);
+  }
+  .chart-field--portrait .chart-summit--2 .chart-band--0 { --bamp: var(--amp00, 0); }
+  .chart-field--portrait .chart-summit--2 .chart-band--1 { --bamp: var(--amp01, 0); }
+  .chart-field--portrait .chart-summit--2 .chart-band--2 { --bamp: var(--amp02, 0); }
+  .chart-field--portrait .chart-summit--2 .chart-band--3 { --bamp: var(--amp03, 0); }
+
   /* Outermost isolines: hairline, faint, near-still. */
   .chart-band--0 {
     --band-ink: var(--band-ink-0);
+    --band-gain: 8%;
+    --band-wgain: 0.3px;
     --band-w: 0.7px;
     --band-t: 96s;
     --band-delay: -31s;
@@ -260,6 +332,8 @@
   }
   .chart-band--1 {
     --band-ink: var(--band-ink-1);
+    --band-gain: 14%;
+    --band-wgain: 0.45px;
     --band-w: 0.9px;
     --band-t: 82s;
     --band-delay: -55s;
@@ -269,6 +343,8 @@
   }
   .chart-band--2 {
     --band-ink: var(--band-ink-2);
+    --band-gain: 24%;
+    --band-wgain: 0.65px;
     --band-w: 1.15px;
     --band-t: 70s;
     --band-delay: -18s;
@@ -279,6 +355,8 @@
   /* Innermost ring around each peak: the crispest line in the field. */
   .chart-band--3 {
     --band-ink: var(--band-ink-3);
+    --band-gain: 36%;
+    --band-wgain: 0.9px;
     --band-w: 1.5px;
     --band-t: 60s;
     --band-delay: -44s;
@@ -321,7 +399,8 @@
     animation: current-trace 36s linear infinite;
   }
   .dark .chart-current-glow {
-    opacity: 0.16;
+    /* The sonar bloom brightens with the music. */
+    opacity: calc(0.16 + var(--amp, 0) * 0.42);
   }
 
   /* Step nodes: the rollout's footprints along the route, spacing
@@ -347,6 +426,12 @@
   .chart-min-core {
     fill: var(--accent);
     stroke: none;
+  }
+  /* The convergence ring swells when its summit takes the light. */
+  .chart-min-ring {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(calc(1 + var(--amp0, 0) * 0.65));
   }
   /* The halo fires once per lap, timed to the comet head reaching the
      path end at 92% of the 36s trace cycle (offset 78 of 1000). */
@@ -453,6 +538,222 @@
   }
 }
 
+/* --- The /music stage --------------------------------------------------- *
+ * The listening machine's own page. The canvas fills the viewport
+ * behind the header, the transport bar owns the audio, and leaving
+ * (BACK TO HOME or Escape) fades the bar while the net collapses
+ * before navigation. */
+@layer components {
+  .net-stage {
+    position: fixed;
+    inset: 0;
+    z-index: -5;
+    pointer-events: none;
+  }
+  /* The machine's page: the reward-surface field stays home. */
+  body.music-page .chart-field {
+    display: none;
+  }
+  .net-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  body.net-leaving .listen-bar {
+    opacity: 0;
+  }
+
+  .listen-bar {
+    transition: opacity 0.45s ease;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  .listen-bar[hidden] {
+    display: none;
+  }
+  .listen-play {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--foreground);
+    letter-spacing: 0.18em;
+    transition: border-color 0.2s ease;
+  }
+  .listen-play:hover {
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .listen-clock {
+    color: var(--muted-foreground);
+    min-width: 4ch;
+    text-align: center;
+  }
+  .listen-picker {
+    position: relative;
+  }
+  .listen-track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 32ch;
+    min-width: 0;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: transparent;
+    color: var(--muted-foreground);
+    font: inherit;
+    letter-spacing: inherit;
+    white-space: nowrap;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .listen-track span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  /* The chevron points up: the list opens above the bar. */
+  .listen-track::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex: none;
+    border-top: 1px solid currentColor;
+    border-right: 1px solid currentColor;
+    transform: rotate(-45deg) translateY(2px);
+    transition: transform 0.2s ease;
+  }
+  .listen-track[aria-expanded="true"]::after {
+    transform: rotate(135deg) translateY(2px);
+  }
+  .listen-track:hover {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .listen-tracklist {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    min-width: 100%;
+    max-height: min(58vh, 440px);
+    overflow-y: auto;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: color-mix(in srgb, var(--background) 92%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .listen-tracklist li {
+    padding: 9px 12px;
+    border-radius: calc(var(--radius) - 4px);
+    color: var(--muted-foreground);
+    white-space: nowrap;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .listen-tracklist li:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  }
+  .listen-tracklist li[aria-selected="true"] {
+    color: var(--accent);
+  }
+  .listen-exit {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--foreground);
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+    transition: border-color 0.2s ease;
+  }
+  .listen-exit:hover {
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .listen-exit-short {
+    display: none;
+  }
+  .listen-seek {
+    flex: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 2px;
+    border-radius: 1px;
+    background: color-mix(in srgb, var(--foreground) 25%, transparent);
+    outline-offset: 6px;
+  }
+  .listen-seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+  .listen-seek::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+  /* Small screens: the scrubber takes its own full-width row on top,
+     the controls settle beneath it, and the picker stays usable with
+     ellipsized names. */
+  @media (max-width: 640px) {
+    .listen-bar {
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      padding: 12px 16px;
+    }
+    .listen-seek {
+      order: -1;
+      flex-basis: 100%;
+    }
+    .listen-track {
+      max-width: 34vw;
+    }
+    .listen-exit {
+      margin-left: auto;
+      padding: 7px 10px;
+      letter-spacing: 0.12em;
+    }
+    .listen-exit-full {
+      display: none;
+    }
+    .listen-exit-short {
+      display: inline;
+    }
+    #listen-dur {
+      display: none;
+    }
+    .listen-tracklist {
+      max-width: 86vw;
+    }
+    .listen-tracklist li {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
 /* --- The cursor: the policy in hand ---------------------------------- *
  * Fine pointers get a reticle built from the same furniture as the
  * background's convergence marker: an accent dot exactly on the pointer,
@@ -505,42 +806,6 @@
     width: 9px;
     height: 9px;
     margin: -4.5px;
-  }
-
-  /* The reticle: a quiet ring with four compass ticks, eased after the
-     pointer by cursor.js so it always arrives a beat late. */
-  .cur-ring {
-    --cur-tick: color-mix(in srgb, var(--accent) 65%, transparent);
-    width: 34px;
-    height: 34px;
-    margin: -17px;
-    border: 1px solid color-mix(in srgb, var(--foreground) 35%, transparent);
-    border-radius: 50%;
-    background:
-      linear-gradient(var(--cur-tick), var(--cur-tick)) top center / 1px 6px,
-      linear-gradient(var(--cur-tick), var(--cur-tick)) bottom center / 1px 6px,
-      linear-gradient(var(--cur-tick), var(--cur-tick)) left center / 6px 1px,
-      linear-gradient(var(--cur-tick), var(--cur-tick)) right center / 6px 1px;
-    background-repeat: no-repeat;
-    transition:
-      width 0.18s ease,
-      height 0.18s ease,
-      margin 0.18s ease,
-      opacity 0.18s ease;
-  }
-  .cur-down .cur-ring {
-    width: 26px;
-    height: 26px;
-    margin: -13px;
-  }
-  .cur-lock .cur-ring {
-    opacity: 0;
-  }
-  .cur-text .cur-ring {
-    width: 18px;
-    height: 18px;
-    margin: -9px;
-    opacity: 0.35;
   }
 
   /* Target lock: four corner brackets wrapping the hovered element.
@@ -650,6 +915,86 @@
     to {
       opacity: 0;
       transform: translateY(-26px);
+    }
+  }
+}
+
+/* --- Ambience: the SND control --------------------------------------- *
+ * An icon-square in the header controls, toggling the looping piano
+ * bed. Its icon is three accent equalizer bars that breathe while
+ * audio plays and sit flat when it is paused. ambience.js owns
+ * playback, this owns every visual. */
+@layer components {
+  .amb-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+  }
+  .amb-bars i {
+    width: 2px;
+    height: 12px;
+    background: var(--accent);
+    opacity: 0.4;
+    transform: scaleY(0.28);
+    transform-origin: bottom;
+    transition: opacity 0.2s ease;
+  }
+  .amb-on .amb-bars i {
+    opacity: 1;
+    animation: amb-eq 0.9s ease-in-out infinite alternate;
+  }
+  .amb-on .amb-bars i:nth-child(1) {
+    animation-delay: -0.62s;
+  }
+  .amb-on .amb-bars i:nth-child(2) {
+    animation-delay: -0.21s;
+  }
+  .amb-on .amb-bars i:nth-child(3) {
+    animation-delay: -0.44s;
+  }
+  @keyframes amb-eq {
+    from {
+      transform: scaleY(0.25);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  /* The suspicious question mark: the hero's unmarked door into
+     listening mode. It side-eyes every few seconds. */
+  .amb-q {
+    font-family: var(--font-mono);
+    font-size: 19px;
+    line-height: 1;
+    color: var(--accent);
+    transform: rotate(8deg);
+    animation: amb-sus 5.2s ease-in-out infinite;
+  }
+  @keyframes amb-sus {
+    0%,
+    72%,
+    100% {
+      transform: rotate(8deg) translateY(0);
+    }
+    78% {
+      transform: rotate(-10deg) translateY(-1px);
+    }
+    85% {
+      transform: rotate(12deg) translateY(0.5px);
+    }
+    92% {
+      transform: rotate(-3deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .amb-on .amb-bars i {
+      animation: none;
+      transform: scaleY(0.7);
+    }
+    .amb-q {
+      animation: none;
     }
   }
 }

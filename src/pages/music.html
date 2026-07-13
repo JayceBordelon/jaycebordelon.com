@@ -1,0 +1,30 @@
+---
+title: music | Jayce Bordelon
+ogTitle: music | Jayce Bordelon
+description: A neural machine that listens. Piano runs through a live FFT and lights a synaptic web of five hundred neurons, note by note and chord by chord. Pick a song and watch it think.
+ogType: website
+ogImage: /images/music-og.png
+canonical: https://jaycebordelon.com/music
+header: home
+bodyClass: "music-page"
+---
+<!-- The listening machine's own page. The canvas fills the viewport
+     behind the header, neural.js spawns the net on load, ambience.js
+     owns the audio through the transport bar, and BACK TO HOME (or
+     Escape) collapses the machine before navigating away. -->
+<div class="net-stage" aria-hidden="true">
+  <canvas id="bg-net"></canvas>
+</div>
+<div id="listen-bar" class="listen-bar">
+  <button type="button" id="listen-play" class="listen-play">PAUSE</button>
+  <button type="button" id="listen-regen" class="listen-play" aria-label="Regenerate the neural net">REGENERATE</button>
+  <span id="listen-time" class="listen-clock">0:00</span>
+  <input id="listen-seek" class="listen-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek through the track" />
+  <span id="listen-dur" class="listen-clock">0:00</span>
+  <div class="listen-picker">
+    <button type="button" id="listen-track-btn" class="listen-track" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose a song"><span id="listen-track-name"></span></button>
+    <ul id="listen-track-list" class="listen-tracklist" role="listbox" hidden></ul>
+  </div>
+  <a id="listen-exit" class="listen-exit" href="/"><span class="listen-exit-full">BACK TO HOME</span><span class="listen-exit-short">HOME</span></a>
+</div>
+<audio id="ambience-track" src="/audio/first-dance.m4a" autoplay preload="auto"></audio>

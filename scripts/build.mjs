@@ -20,9 +20,9 @@ import { readFileSync, writeFileSync, mkdirSync, cpSync, existsSync, readdirSync
 import { join, dirname, basename, extname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
+import { renderRewardField } from "./contours.mjs";
 import { marked } from "marked";
 import { createHighlighter } from "shiki";
-import { renderRewardField } from "./contours.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -219,10 +219,10 @@ const layoutTemplate = read(join(SRC, "partials/layout.html"));
 const headerHome = read(join(SRC, "partials/header-home.html"));
 const headerBlog = read(join(SRC, "partials/header-blog.html"));
 const postTemplate = read(join(SRC, "partials/post.html"));
-// The background is the reward surface: isolines of reward, the emerald
-// policy rollout, and mono reward readings, in landscape and portrait
-// compositions. The geometry comes from the seeded generator in
-// contours.mjs, so it is organic yet identical every build.
+// The background is the reward surface: isolines of reward, the
+// emerald policy rollout to the pi-star convergence marker, and mono
+// reward readings, in landscape and portrait compositions. Static ink
+// here: the audio-reactive machine lives at /musicv.
 const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")), renderRewardField());
 
 function renderPage({ frontmatter, body, slug }) {
