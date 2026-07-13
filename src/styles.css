@@ -253,9 +253,10 @@
     animation: band-drift var(--band-t) ease-in-out infinite alternate;
     animation-delay: var(--band-delay);
   }
-  /* The zone map: bass lights the convergence summit, low-mids the big
-     northwest stack, mids and highs the flanking peaks. Portrait blends
-     the top two zones into its right-side summit. */
+  /* The slot map: ambience.js rotates a spotlight through slots 0 to 3
+     as the music swells, so the light tours the summits. Slot 0 is the
+     convergence summit (its turn also pulses the ring). Portrait folds
+     the four slots onto its three summits. */
   .chart-field--landscape .chart-summit--0 {
     --samp: var(--amp1, 0);
   }
