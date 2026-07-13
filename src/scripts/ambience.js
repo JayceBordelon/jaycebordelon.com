@@ -24,19 +24,19 @@
     chip.setAttribute("aria-pressed", playing ? "true" : "false");
   }
 
-  // The analyser: one energy signal and a rotating spotlight. Each
-  // swell in the music (energy rising well above its own slow baseline)
-  // advances the light to the next summit slot, with a slow-rotation
-  // fallback during long sustained passages, so the glow tours the ring
-  // structures as the song plays. Slots are written to --amp0 through
-  // --amp3 (active slot carries the live energy, the rest decay slowly
-  // so summits hand the light to each other), and --amp carries the
-  // overall energy for the comet bloom. The element runs at full volume
-  // into the graph and a gain node does the quieting after the tap, so
-  // the analyser sees full-scale signal.
-  var ctx, analyser, data, looping = false;
+  // The analyser: note-by-note spotlight rotation. Onsets are detected
+  // by spectral flux (the frame-to-frame rise in spectral energy, the
+  // signature of a piano attack) against a rolling flux average, and
+  // every detected note hops the light to the next summit slot with a
+  // short refractory so fast runs dance across the terrain. Slots are
+  // written to --amp0 through --amp3 (the active slot punches up with
+  // the attack and the rest decay, so each note visibly lands on a new
+  // summit), and --amp carries the overall energy for the comet bloom.
+  // The element runs at full volume into the graph and a gain node does
+  // the quieting after the tap, so the analyser sees full-scale signal.
+  var ctx, analyser, data, prevData, looping = false;
   var amps = [0, 0, 0, 0];
-  var active = 0, lastHop = 0, energy = 0, base = 0;
+  var active = 0, lastHop = 0, energy = 0, fluxAvg = 0;
   function analyse() {
     if (still) return;
     if (!ctx) {
@@ -45,7 +45,7 @@
         var srcNode = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.82;
+        analyser.smoothingTimeConstant = 0.6;
         var gain = ctx.createGain();
         gain.gain.value = 0.35;
         srcNode.connect(analyser);
@@ -53,6 +53,7 @@
         gain.connect(ctx.destination);
         audio.volume = 1;
         data = new Uint8Array(analyser.frequencyBinCount);
+        prevData = new Uint8Array(analyser.frequencyBinCount);
       } catch (e) { return; }
     }
     if (ctx.state === "suspended") ctx.resume();
@@ -60,25 +61,29 @@
     looping = true;
     (function frame(now) {
       var style = document.documentElement.style;
-      var e = 0;
+      var e = 0, flux = 0;
       if (!audio.paused && analyser) {
         analyser.getByteFrequencyData(data);
-        var sum = 0;
-        for (var i = 1; i < 25; i++) sum += data[i];
+        var sum = 0, f = 0;
+        for (var i = 1; i < 41; i++) {
+          if (i < 25) sum += data[i];
+          var d = data[i] - prevData[i];
+          if (d > 0) f += d;
+          prevData[i] = data[i];
+        }
         e = Math.min(1, sum / 24 / 75);
+        flux = f / 40 / 20;
       }
-      energy += (e - energy) * 0.15;
-      base += (energy - base) * 0.008;
-      var swell = energy > 0.12 && energy > base * 1.3 && now - lastHop > 1400;
-      var stale = energy > 0.05 && now - lastHop > 6000;
-      if (swell || stale) {
+      energy += (e - energy) * 0.25;
+      fluxAvg += (flux - fluxAvg) * 0.04;
+      if (flux > fluxAvg * 1.7 + 0.06 && now - lastHop > 130) {
         active = (active + 1) % 4;
         lastHop = now;
       }
       var overall = 0;
       for (var s = 0; s < 4; s++) {
-        var target = s === active ? energy : 0;
-        amps[s] += (target - amps[s]) * (target > amps[s] ? 0.16 : 0.045);
+        var target = s === active ? Math.min(1, energy + flux * 0.5) : 0;
+        amps[s] += (target - amps[s]) * (target > amps[s] ? 0.4 : 0.06);
         style.setProperty("--amp" + s, amps[s].toFixed(3));
         overall = Math.max(overall, amps[s]);
       }
