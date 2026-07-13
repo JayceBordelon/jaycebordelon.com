@@ -225,6 +225,13 @@ const postTemplate = read(join(SRC, "partials/post.html"));
 // here: the audio-reactive machine lives at /musicv.
 const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")), renderRewardField());
 
+// One source of truth for the /music library: the player reads it off
+// window.SITE_TRACKS, and every track gets its own prebuilt page at
+// /music/<slug> with song-specific SEO, since crawlers read static
+// HTML and ignore query params.
+const TRACKS = JSON.parse(read(join(SRC, "tracks.json")));
+const tracksScript = `<script>window.SITE_TRACKS=${JSON.stringify(TRACKS)}</script>`;
+
 function renderPage({ frontmatter, body, slug }) {
   const header = frontmatter.header === "blog" ? headerBlog : headerHome;
   const jsonLd = frontmatter.jsonLd ?? defaultJsonLd();
@@ -273,9 +280,29 @@ function buildPages() {
     if (rel === "blog/index.html") continue;
     const raw = read(file);
     const { data, content } = parsePageFrontmatter(raw);
+    if (rel === "music.html") data.pageScripts = tracksScript + (data.pageScripts || "");
     const slug = "/" + (rel === "index.html" ? "" : rel.replace(/\/index\.html$/, "").replace(/\.html$/, ""));
     const html = renderPage({ frontmatter: data, body: content, slug });
     write(join(DIST, rel), html);
+  }
+}
+
+// Each track gets its own page: same machine, song-specific metadata
+// and og image, the song cued by a baked-in slug.
+function buildSongPages() {
+  const raw = read(join(SRC, "pages/music.html"));
+  const { data, content } = parsePageFrontmatter(raw);
+  for (const tr of TRACKS) {
+    const fm = { ...data };
+    fm.title = `${tr.name} | music | Jayce Bordelon`;
+    fm.ogTitle = `${tr.name} | jaycebordelon.com/music`;
+    fm.description = `Listen to ${tr.name} (${tr.sub}) inside the listening machine, a neural net that lights up note by note as the song plays.`;
+    fm.ogImage = `/images/og/${tr.slug}.png`;
+    fm.canonical = `${SITE_URL}/music/${tr.slug}`;
+    fm.ogType = "music.song";
+    fm.pageScripts = tracksScript + `<script>window.INITIAL_SONG=${JSON.stringify(tr.slug)}</script>` + (data.pageScripts || "");
+    const html = renderPage({ frontmatter: fm, body: content, slug: `/music/${tr.slug}` });
+    write(join(DIST, "music", `${tr.slug}.html`), html);
   }
 }
 
@@ -468,7 +495,7 @@ function copyAssets() {
 }
 
 function writeSitemap(posts) {
-  const urls = ["/", "/blog", ...posts.map((p) => `/blog/posts/${p.id}`)];
+  const urls = ["/", "/blog", "/music", ...TRACKS.map((t) => `/music/${t.slug}`), ...posts.map((p) => `/blog/posts/${p.id}`)];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${SITE_URL}${u}</loc></url>`).join("\n")}
@@ -503,6 +530,7 @@ async function main() {
   configureMarked(highlighter);
 
   buildPages();
+buildSongPages();
   const posts = buildPosts();
   buildBlogIndex(posts);
   copyAssets();
