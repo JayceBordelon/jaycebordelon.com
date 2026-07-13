@@ -13,7 +13,7 @@ src/
 │   ├── layout.html       <head> + body shell with {{ placeholders }}
 │   ├── header-home.html  Fixed header used on /
 │   ├── header-blog.html  Sticky header used on /blog and post pages
-│   ├── background.html   Blueprint sheet: grid, frame, registration marks
+│   ├── background.html   Reward surface: contour field + policy rollout trace
 │   └── post.html         Per-post article wrapper
 ├── posts/         Blog posts in markdown with YAML frontmatter
 ├── scripts/       Vanilla JS shipped to the browser (theme toggle,
