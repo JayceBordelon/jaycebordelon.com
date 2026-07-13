@@ -1,17 +1,18 @@
-// The background as a listening neural machine. Four flat layers turn
-// slowly in 3d, one per piano register (bass on the west face, treble
-// east), each layer four concentric rings of neurons, one ring per
-// pitch sub-band with pitch rising toward the ring core. Rings close
-// into circles, parallel struts link matching rings across layers,
-// and radial spokes tie neighboring rings inside each layer, so the
-// architecture reads deliberate and symmetric. Every neuron keeps its
-// own sensitivity bias: quiet notes clear only the most sensitive,
-// louder playing recruits deeper into the population. Attacks fire
-// signal pulses down the wiring, more and chattier when loud, and
-// arrivals can chain-fire in climaxes. The machine only exists in
-// listening mode: ambience.js calls window.neuralField.start/stop
-// with the mode toggle, and nothing renders outside it. Canvas 2d and
-// vanilla JS only. Reduced motion gets one static frame.
+// The background as a listening neural machine shaped as a tesseract.
+// A hypercube has sixteen vertices and the analyser publishes sixteen
+// pitch cells, so every 4d vertex IS a note cell, hosting a wheel of
+// neurons around a hub. Registers pick the xy quadrant, sub-bands the
+// zw pair, and hypercube edges join cells that differ by one bit, so
+// the wiring is the geometry of the pitch space itself. The whole
+// structure double-rotates through the fourth dimension while slowly
+// yawing in 3d, cubes turning inside out through one another. Every
+// neuron keeps its own sensitivity bias: quiet notes clear only the
+// most sensitive, louder playing recruits deeper. Attacks fire signal
+// pulses down the wiring, more and chattier when loud, and arrivals
+// can chain-fire in climaxes. The machine only exists in listening
+// mode: ambience.js calls window.neuralField.start/stop with the mode
+// toggle, and nothing renders outside it. Canvas 2d and vanilla JS
+// only. Reduced motion gets one static frame.
 (function () {
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
@@ -29,47 +30,53 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  var LAYER_X = [-0.9, -0.3, 0.3, 0.9];
-  var RINGS = [
-    { n: 20, r: 0.68 },
-    { n: 16, r: 0.5 },
-    { n: 12, r: 0.32 },
-    { n: 6, r: 0.14 },
-  ];
-  var nodes = [];
-  var ringStart = [];
-  for (var L = 0; L < 4; L++) {
-    ringStart.push([]);
-    for (var k = 0; k < 4; k++) {
-      ringStart[L].push(nodes.length);
-      for (var j = 0; j < RINGS[k].n; j++) {
-        var th = (TAU * j) / RINGS[k].n + k * 0.13;
-        nodes.push({
-          x: LAYER_X[L],
-          y: Math.cos(th) * RINGS[k].r * 0.95,
-          z: Math.sin(th) * RINGS[k].r,
-          cell: L * 4 + k,
-          bias: 0.12 + rnd() * 0.5,
-          act: 0,
-        });
-      }
+  // Geometry: 16 hypercube vertices at (±1, ±1, ±1, ±1) scaled, each
+  // a neuron wheel: a hub at the vertex plus a ring of 13 around it,
+  // the ring lying in a seeded 2-plane of 4d space so every wheel
+  // deforms differently as the structure turns through w.
+  var VS = 0.5, RN = 13, RR = 0.15, P4 = 3.2;
+  var nodes = [], edges = [], centers = [];
+  function rv() {
+    var v = [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5, rnd() - 0.5];
+    var l = Math.hypot(v[0], v[1], v[2], v[3]);
+    return [v[0] / l, v[1] / l, v[2] / l, v[3] / l];
+  }
+  for (var c = 0; c < 16; c++) {
+    var r = c >> 2, s = c & 3;
+    var vert = [
+      (r & 1 ? 1 : -1) * VS,
+      (r & 2 ? 1 : -1) * VS,
+      (s & 1 ? 1 : -1) * VS,
+      (s & 2 ? 1 : -1) * VS,
+    ];
+    var U = rv();
+    var V0 = rv();
+    var d0 = U[0] * V0[0] + U[1] * V0[1] + U[2] * V0[2] + U[3] * V0[3];
+    var V = [V0[0] - d0 * U[0], V0[1] - d0 * U[1], V0[2] - d0 * U[2], V0[3] - d0 * U[3]];
+    var vl = Math.hypot(V[0], V[1], V[2], V[3]);
+    V = [V[0] / vl, V[1] / vl, V[2] / vl, V[3] / vl];
+
+    var base = nodes.length;
+    centers.push(base);
+    nodes.push({ p: vert, cell: c, bias: 0.1 + rnd() * 0.35, act: 0 });
+    for (var j = 0; j < RN; j++) {
+      var th = (TAU * j) / RN;
+      var cu = Math.cos(th) * RR, sv = Math.sin(th) * RR;
+      nodes.push({
+        p: [vert[0] + cu * U[0] + sv * V[0], vert[1] + cu * U[1] + sv * V[1], vert[2] + cu * U[2] + sv * V[2], vert[3] + cu * U[3] + sv * V[3]],
+        cell: c,
+        bias: 0.12 + rnd() * 0.5,
+        act: 0,
+      });
+      edges.push([base + 1 + j, base + 1 + ((j + 1) % RN)]);
+      if (j % 2 === 0) edges.push([base, base + 1 + j]);
     }
   }
-
-  // Wiring: ring circles, inter-layer struts, intra-layer spokes.
-  var edges = [];
-  for (var L2 = 0; L2 < 4; L2++) {
-    for (var k2 = 0; k2 < 4; k2++) {
-      var n0 = RINGS[k2].n;
-      var s0 = ringStart[L2][k2];
-      for (var j2 = 0; j2 < n0; j2++) {
-        edges.push([s0 + j2, s0 + ((j2 + 1) % n0)]);
-        if (L2 < 3) edges.push([s0 + j2, ringStart[L2 + 1][k2] + j2]);
-        if (k2 < 3) {
-          var n1 = RINGS[k2 + 1].n;
-          edges.push([s0 + j2, ringStart[L2][k2 + 1] + (Math.round((j2 * n1) / n0) % n1)]);
-        }
-      }
+  // Hypercube wiring: an edge wherever two cells differ by one bit.
+  for (var a2 = 0; a2 < 16; a2++) {
+    for (var b2 = a2 + 1; b2 < 16; b2++) {
+      var x2 = a2 ^ b2;
+      if (!(x2 & (x2 - 1))) edges.push([centers[a2], centers[b2]]);
     }
   }
   var incident = nodes.map(function () { return []; });
@@ -163,23 +170,35 @@
       }
     }
 
-    // Project the cloud: slow yaw, a hint of tilt, gentle perspective.
-    var yaw = still ? 0.6 : t * 0.00012;
-    var tilt = 0.32 + (still ? 0 : Math.sin(t * 0.00005) * 0.1);
+    // Turn the tesseract: a double rotation through the xw and yz
+    // planes (the genuinely 4d motion), then a slow 3d yaw under a
+    // fixed tilt, then perspective. Depth cues blend both projections
+    // so near-in-w wheels read larger and brighter.
+    var a4 = still ? 0.5 : t * 0.00009;
+    var b4 = still ? 0.3 : t * 0.000063;
+    var ca4 = Math.cos(a4), sa4 = Math.sin(a4);
+    var cb4 = Math.cos(b4), sb4 = Math.sin(b4);
+    var yaw = still ? 0.6 : t * 0.00005;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
-    var cx1 = Math.cos(tilt), sx1 = Math.sin(tilt);
-    var S = Math.min(W, H) * 0.42;
-    var CX = W * 0.5, CY = H * 0.46;
+    var cx1 = Math.cos(0.3), sx1 = Math.sin(0.3);
+    var S = Math.min(W, H) * 0.3;
+    var CX = W * 0.5, CY = H * 0.47;
     for (var j = 0; j < nodes.length; j++) {
-      var m = nodes[j];
-      var xr = m.x * cy1 + m.z * sy1;
-      var zr = -m.x * sy1 + m.z * cy1;
-      var yr = m.y * cx1 - zr * sx1;
-      var z2 = m.y * sx1 + zr * cx1;
-      var per = 2.6 / (2.6 + z2);
+      var p = nodes[j].p;
+      var X4 = p[0] * ca4 - p[3] * sa4;
+      var W4 = p[0] * sa4 + p[3] * ca4;
+      var Y4 = p[1] * cb4 - p[2] * sb4;
+      var Z4 = p[1] * sb4 + p[2] * cb4;
+      var s3 = P4 / (P4 - W4);
+      var X = X4 * s3, Y = Y4 * s3, Z = Z4 * s3;
+      var xr = X * cy1 + Z * sy1;
+      var zr = -X * sy1 + Z * cy1;
+      var yr = Y * cx1 - zr * sx1;
+      var z2 = Y * sx1 + zr * cx1;
+      var per = 3.4 / (3.4 + z2);
       px[j] = CX + xr * S * per;
       py[j] = CY + yr * S * per;
-      pz[j] = per;
+      pz[j] = per * (0.55 + 0.45 * Math.min(1, Math.max(0, (s3 - 0.82) / 0.47)));
     }
 
     // Edges: quiet wiring that brightens when both ends are lit, with
@@ -190,7 +209,7 @@
       var a = edges[e2][0], d2 = edges[e2][1];
       var act = Math.min(nodes[a].act, nodes[d2].act);
       var depth = (pz[a] + pz[d2]) * 0.5;
-      g.globalAlpha = (0.04 + loud * 0.04 + act * 0.42) * depth;
+      g.globalAlpha = (0.11 + loud * 0.05 + act * 0.42) * depth;
       g.lineWidth = (0.6 + act * 1.2) * depth;
       g.beginPath();
       g.moveTo(px[a], py[a]);
@@ -235,7 +254,7 @@
         g.arc(px[w2], py[w2], (5 + nn.act * 9) * per2, 0, 6.2832);
         g.fill();
       }
-      g.globalAlpha = (0.2 + nn.act * 0.65) * per2;
+      g.globalAlpha = (0.34 + nn.act * 0.6) * per2;
       g.beginPath();
       g.arc(px[w2], py[w2], (1.15 + nn.act * 1.9) * per2, 0, 6.2832);
       g.fill();

@@ -1,8 +1,8 @@
-// The cursor as the policy. An accent dot rides the pointer, a reticle
-// ring trails it with inertia, interactive elements get a corner-bracket
-// target lock that flies out from the cursor, and every click lands a
-// reward pulse of expanding isolines plus a floating reward tick. Fine
-// pointers only. Touch devices and reduced motion never see any of it.
+// The custom cursor: an accent dot rides the pointer, interactive
+// elements get a corner-bracket lock that flies out from the cursor,
+// and every click lands a pulse of expanding rings plus a floating
+// reward tick. Fine pointers only. Touch devices and reduced motion
+// never see any of it.
 (function () {
   var fine = window.matchMedia && matchMedia("(pointer: fine)").matches;
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -11,13 +11,13 @@
   var cur = document.createElement("div");
   cur.className = "cur cur-hidden";
   cur.innerHTML =
-    '<div class="cur-dot"></div><div class="cur-ring"></div>' +
+    '<div class="cur-dot"></div>' +
     '<div class="cur-frame"><i></i><i></i><i></i><i></i></div>';
   document.body.appendChild(cur);
   document.documentElement.classList.add("cursor-on");
 
-  var dot = cur.children[0], ring = cur.children[1], frame = cur.children[2];
-  var px = innerWidth / 2, py = innerHeight / 2, rx = px, ry = py;
+  var dot = cur.children[0], frame = cur.children[1];
+  var px = innerWidth / 2, py = innerHeight / 2;
   var lock = null, fx = 0, fy = 0, fw = 0, fh = 0;
 
   addEventListener("pointermove", function (e) {
@@ -30,10 +30,9 @@
 
   addEventListener("pointerover", function (e) {
     var t = e.target.closest("a, button, [role=button], summary, [data-cursor]");
-    if (t && !lock) { fx = rx; fy = ry; fw = 0; fh = 0; }
+    if (t && !lock) { fx = px; fy = py; fw = 0; fh = 0; }
     lock = t;
     cur.classList.toggle("cur-lock", !!t);
-    cur.classList.toggle("cur-text", !t && !!e.target.closest(".prose"));
   });
 
   addEventListener("pointerdown", function (e) {
@@ -53,10 +52,7 @@
   addEventListener("pointerup", function () { cur.classList.remove("cur-down"); });
 
   (function tick() {
-    rx += (px - rx) * 0.16;
-    ry += (py - ry) * 0.16;
     dot.style.transform = "translate(" + px + "px," + py + "px)";
-    ring.style.transform = "translate(" + rx + "px," + ry + "px)";
     if (lock) {
       var b = lock.getBoundingClientRect();
       fx += (b.left - fx) * 0.22;
