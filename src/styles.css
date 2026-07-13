@@ -453,6 +453,207 @@
   }
 }
 
+/* --- The cursor: the policy in hand ---------------------------------- *
+ * Fine pointers get a reticle built from the same furniture as the
+ * background's convergence marker: an accent dot exactly on the pointer,
+ * a ticked ring trailing it with inertia. Hovering anything interactive
+ * swaps the ring for four corner brackets that fly out and wrap the
+ * target, and every click lands a reward pulse of expanding isolines
+ * with a floating mono reward tick. cursor.js only ever writes
+ * transforms and classes, everything visual lives here. The script
+ * sits out on touch and reduced motion, so none of this applies there. */
+@layer components {
+  html.cursor-on * {
+    cursor: none;
+  }
+  /* Long-form reading keeps the native I-beam, the reticle shrinks. */
+  html.cursor-on .prose,
+  html.cursor-on .prose * {
+    cursor: auto;
+  }
+
+  .cur {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  .cur-hidden {
+    opacity: 0;
+  }
+  .cur > * {
+    position: fixed;
+    top: 0;
+    left: 0;
+    will-change: transform;
+  }
+
+  .cur-dot {
+    width: 5px;
+    height: 5px;
+    margin: -2.5px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition:
+      width 0.15s ease,
+      height 0.15s ease,
+      margin 0.15s ease;
+  }
+  .cur-down .cur-dot {
+    width: 9px;
+    height: 9px;
+    margin: -4.5px;
+  }
+
+  /* The reticle: a quiet ring with four compass ticks, eased after the
+     pointer by cursor.js so it always arrives a beat late. */
+  .cur-ring {
+    --cur-tick: color-mix(in srgb, var(--accent) 65%, transparent);
+    width: 34px;
+    height: 34px;
+    margin: -17px;
+    border: 1px solid color-mix(in srgb, var(--foreground) 35%, transparent);
+    border-radius: 50%;
+    background:
+      linear-gradient(var(--cur-tick), var(--cur-tick)) top center / 1px 6px,
+      linear-gradient(var(--cur-tick), var(--cur-tick)) bottom center / 1px 6px,
+      linear-gradient(var(--cur-tick), var(--cur-tick)) left center / 6px 1px,
+      linear-gradient(var(--cur-tick), var(--cur-tick)) right center / 6px 1px;
+    background-repeat: no-repeat;
+    transition:
+      width 0.18s ease,
+      height 0.18s ease,
+      margin 0.18s ease,
+      opacity 0.18s ease;
+  }
+  .cur-down .cur-ring {
+    width: 26px;
+    height: 26px;
+    margin: -13px;
+  }
+  .cur-lock .cur-ring {
+    opacity: 0;
+  }
+  .cur-text .cur-ring {
+    width: 18px;
+    height: 18px;
+    margin: -9px;
+    opacity: 0.35;
+  }
+
+  /* Target lock: four corner brackets wrapping the hovered element.
+     cursor.js seeds the frame at the reticle and eases it onto the
+     target, so the brackets visibly fly out from the cursor. */
+  .cur-frame {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .cur-lock .cur-frame {
+    opacity: 1;
+  }
+  .cur-frame i {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid var(--accent);
+  }
+  .cur-frame i:nth-child(1) {
+    top: -5px;
+    left: -5px;
+    border-right: 0;
+    border-bottom: 0;
+    border-top-left-radius: 7px;
+  }
+  .cur-frame i:nth-child(2) {
+    top: -5px;
+    right: -5px;
+    border-left: 0;
+    border-bottom: 0;
+    border-top-right-radius: 7px;
+  }
+  .cur-frame i:nth-child(3) {
+    bottom: -5px;
+    right: -5px;
+    border-left: 0;
+    border-top: 0;
+    border-bottom-right-radius: 7px;
+  }
+  .cur-frame i:nth-child(4) {
+    bottom: -5px;
+    left: -5px;
+    border-right: 0;
+    border-top: 0;
+    border-bottom-left-radius: 7px;
+  }
+
+  /* The reward pulse: a click drops two expanding isolines on the spot
+     and a reward tick drifts up and out. The parent runs a no-op
+     lifetime animation whose animationend is the removal signal. */
+  .cur-pulse {
+    position: fixed;
+    z-index: 89;
+    width: 10px;
+    height: 10px;
+    margin: -5px;
+    pointer-events: none;
+    animation: cur-pulse-life 0.8s linear forwards;
+  }
+  .cur-pulse::before,
+  .cur-pulse::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    opacity: 0;
+  }
+  .cur-pulse::before {
+    animation: cur-pulse-ring 0.62s ease-out forwards;
+  }
+  .cur-pulse::after {
+    animation: cur-pulse-ring 0.6s ease-out 0.15s forwards;
+  }
+  .cur-pulse span {
+    position: absolute;
+    left: 12px;
+    top: -18px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    opacity: 0;
+    animation: cur-pulse-tick 0.7s ease-out 0.06s forwards;
+  }
+
+  @keyframes cur-pulse-life {
+    to {
+      visibility: visible;
+    }
+  }
+  @keyframes cur-pulse-ring {
+    from {
+      opacity: 0.85;
+      transform: scale(0.2);
+    }
+    to {
+      opacity: 0;
+      transform: scale(6);
+    }
+  }
+  @keyframes cur-pulse-tick {
+    from {
+      opacity: 0.9;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-26px);
+    }
+  }
+}
+
 /* --- A section flipped to the opposite tone ------------------------- */
 @layer components {
   .section-ink {
