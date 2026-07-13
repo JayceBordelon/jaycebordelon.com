@@ -648,6 +648,8 @@
     right: 0;
     bottom: calc(100% + 10px);
     min-width: 100%;
+    max-height: min(58vh, 440px);
+    overflow-y: auto;
     margin: 0;
     padding: 6px;
     list-style: none;
