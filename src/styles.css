@@ -243,11 +243,12 @@
      never move in lockstep and the terrain seems to shift internally. */
   .chart-band {
     fill: none;
-    /* Each ring's ink is its resting weight plus its summit's spotlight
-       energy, scaled by depth so the core rings light the hardest. The
-       stroke also thickens as the light lands. */
-    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--samp, 0) * var(--band-gain, 8%)), transparent);
-    stroke-width: calc(var(--band-w) + var(--samp, 0) * var(--band-wgain, 0.5px));
+    /* Each ring band's ink is its resting weight plus its own pitch
+       cell's energy (--bamp, falling back to the summit aggregate),
+       scaled by depth so lit core rings read hardest. The stroke also
+       thickens as the light lands. */
+    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--bamp, var(--samp, 0)) * var(--band-gain, 8%)), transparent);
+    stroke-width: calc(var(--band-w) + var(--bamp, var(--samp, 0)) * var(--band-wgain, 0.5px));
     transform-box: view-box;
     transform-origin: 50% 50%;
     will-change: transform;
@@ -259,32 +260,63 @@
     filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) calc(var(--samp, 0) * 55%), transparent));
   }
 
-  /* The slot map: ambience.js assigns each summit a piano register, so
-     the same pitch always lights the same rings. Slot 0 is bass and the
-     convergence summit (bass notes also pulse the ring), slot 1 tenor,
-     slot 2 alto, slot 3 the treble melody. Portrait folds the four
-     registers onto its three summits. */
+  /* The pitch map: ambience.js assigns each summit a piano register
+     (--ampZ aggregates drive the summit halos via --samp) and each of
+     its ring depths one sub-band of that register (--ampZS drives the
+     rings via --bamp), lowest pitch at the outer rings, so the same
+     note always lights the same ring and ascending lines climb the
+     summit. Slot 0 is bass on the convergence summit (bass also pulses
+     the pi ring), 1 tenor, 2 alto, 3 the treble melody. Portrait folds
+     the four registers onto its three summits. */
   .chart-field--landscape .chart-summit--0 {
     --samp: var(--amp1, 0);
   }
+  .chart-field--landscape .chart-summit--0 .chart-band--0 { --bamp: var(--amp10, 0); }
+  .chart-field--landscape .chart-summit--0 .chart-band--1 { --bamp: var(--amp11, 0); }
+  .chart-field--landscape .chart-summit--0 .chart-band--2 { --bamp: var(--amp12, 0); }
+  .chart-field--landscape .chart-summit--0 .chart-band--3 { --bamp: var(--amp13, 0); }
   .chart-field--landscape .chart-summit--1 {
     --samp: var(--amp2, 0);
   }
+  .chart-field--landscape .chart-summit--1 .chart-band--0 { --bamp: var(--amp20, 0); }
+  .chart-field--landscape .chart-summit--1 .chart-band--1 { --bamp: var(--amp21, 0); }
+  .chart-field--landscape .chart-summit--1 .chart-band--2 { --bamp: var(--amp22, 0); }
+  .chart-field--landscape .chart-summit--1 .chart-band--3 { --bamp: var(--amp23, 0); }
   .chart-field--landscape .chart-summit--2 {
     --samp: var(--amp3, 0);
   }
+  .chart-field--landscape .chart-summit--2 .chart-band--0 { --bamp: var(--amp30, 0); }
+  .chart-field--landscape .chart-summit--2 .chart-band--1 { --bamp: var(--amp31, 0); }
+  .chart-field--landscape .chart-summit--2 .chart-band--2 { --bamp: var(--amp32, 0); }
+  .chart-field--landscape .chart-summit--2 .chart-band--3 { --bamp: var(--amp33, 0); }
   .chart-field--landscape .chart-summit--3 {
     --samp: var(--amp0, 0);
   }
+  .chart-field--landscape .chart-summit--3 .chart-band--0 { --bamp: var(--amp00, 0); }
+  .chart-field--landscape .chart-summit--3 .chart-band--1 { --bamp: var(--amp01, 0); }
+  .chart-field--landscape .chart-summit--3 .chart-band--2 { --bamp: var(--amp02, 0); }
+  .chart-field--landscape .chart-summit--3 .chart-band--3 { --bamp: var(--amp03, 0); }
   .chart-field--portrait .chart-summit--0 {
     --samp: var(--amp1, 0);
   }
+  .chart-field--portrait .chart-summit--0 .chart-band--0 { --bamp: var(--amp10, 0); }
+  .chart-field--portrait .chart-summit--0 .chart-band--1 { --bamp: var(--amp11, 0); }
+  .chart-field--portrait .chart-summit--0 .chart-band--2 { --bamp: var(--amp12, 0); }
+  .chart-field--portrait .chart-summit--0 .chart-band--3 { --bamp: var(--amp13, 0); }
   .chart-field--portrait .chart-summit--1 {
     --samp: max(var(--amp2, 0), var(--amp3, 0));
   }
+  .chart-field--portrait .chart-summit--1 .chart-band--0 { --bamp: max(var(--amp20, 0), var(--amp30, 0)); }
+  .chart-field--portrait .chart-summit--1 .chart-band--1 { --bamp: max(var(--amp21, 0), var(--amp31, 0)); }
+  .chart-field--portrait .chart-summit--1 .chart-band--2 { --bamp: max(var(--amp22, 0), var(--amp32, 0)); }
+  .chart-field--portrait .chart-summit--1 .chart-band--3 { --bamp: max(var(--amp23, 0), var(--amp33, 0)); }
   .chart-field--portrait .chart-summit--2 {
     --samp: var(--amp0, 0);
   }
+  .chart-field--portrait .chart-summit--2 .chart-band--0 { --bamp: var(--amp00, 0); }
+  .chart-field--portrait .chart-summit--2 .chart-band--1 { --bamp: var(--amp01, 0); }
+  .chart-field--portrait .chart-summit--2 .chart-band--2 { --bamp: var(--amp02, 0); }
+  .chart-field--portrait .chart-summit--2 .chart-band--3 { --bamp: var(--amp03, 0); }
 
   /* Outermost isolines: hairline, faint, near-still. */
   .chart-band--0 {
