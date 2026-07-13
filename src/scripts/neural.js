@@ -43,16 +43,13 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // A mirrored starfield. Spiral arms survive only as loose
-    // tendencies buried in heavy random scatter, clumps land wherever
-    // they land, and every single star is stamped twice, itself and
-    // its reflection through the vertical plane, so the chaos always
-    // carries a mirror. Twins share a pitch cell and light together.
+    // Pure mirrored chaos. No structure pretends to be anything: a
+    // uniform scatter through the volume, unevenly weighted clumps
+    // wherever they land, a few random-walk wisps, and every point
+    // stamped with its reflection through the vertical plane. Twins
+    // share a pitch cell and light together.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.4;
-    var ARMS = 2 + ((rnd() * 3) | 0);
-    var WIND = 0.4 + rnd() * 0.7;
-    var SPIN = rnd() < 0.5 ? 1 : -1;
+    var YS = 0.5 + rnd() * 0.25;
     nodes = [];
     edges = [];
     function pushMirrored(x, y, z, bias) {
@@ -61,44 +58,50 @@
       nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
     }
 
-    // Loose arm tendencies drowned in scatter. Half the stars are
-    // sampled, the mirror doubles them.
-    var STARS = 130 + ((rnd() * 40) | 0);
-    for (var i0 = 0; i0 < STARS; i0++) {
-      var arm = (rnd() * ARMS) | 0;
-      var t0 = Math.pow(rnd(), 0.7);
-      var theta = (arm / ARMS) * TAU + SPIN * t0 * WIND * TAU + gauss() * (0.16 + t0 * 0.55);
-      var rr = 0.1 + t0 * 0.85 + gauss() * (0.04 + t0 * 0.14);
-      pushMirrored(Math.cos(theta) * rr, gauss() * (0.09 + t0 * 0.1), Math.sin(theta) * rr, 0.2 + rnd() * 0.5);
+    // The open scatter.
+    var SCATTER = 70 + ((rnd() * 40) | 0);
+    for (var s0 = 0; s0 < SCATTER; s0++) {
+      var sa = rnd() * TAU;
+      var sr = Math.pow(rnd(), 0.5) * 0.95;
+      pushMirrored(Math.cos(sa) * sr, (rnd() * 2 - 1) * YS, Math.sin(sa) * sr, 0.2 + rnd() * 0.5);
     }
 
-    // Random clumps, anywhere they please.
-    var CLUMPS = 3 + ((rnd() * 4) | 0);
-    for (var c1 = 0; c1 < CLUMPS; c1++) {
-      var cx1 = (rnd() - 0.5) * 1.6;
-      var cy1 = (rnd() * 2 - 1) * 0.3;
-      var cz1 = (rnd() - 0.5) * 1.6;
-      var cr1 = 0.06 + rnd() * 0.16;
-      var cn1 = 6 + ((rnd() * 12) | 0);
+    // Unevenly weighted clumps.
+    var K = 4 + ((rnd() * 5) | 0);
+    for (var c1 = 0; c1 < K; c1++) {
+      var cx1 = (rnd() - 0.5) * 1.7;
+      var cy1 = (rnd() * 2 - 1) * YS * 0.9;
+      var cz1 = (rnd() - 0.5) * 1.7;
+      var cr1 = 0.07 + rnd() * 0.2;
+      var cn1 = 8 + ((rnd() * rnd() * 40) | 0);
       for (var c2 = 0; c2 < cn1; c2++) {
-        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1 * 0.8, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
+        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1 * 0.85, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
       }
     }
 
-    // The bulge and a generous chaotic halo.
-    var BULGE = 34 + ((rnd() * 16) | 0);
-    for (var b0 = 0; b0 < BULGE; b0++) {
-      pushMirrored(gauss() * 0.13, gauss() * 0.12, gauss() * 0.13, 0.16 + rnd() * 0.45);
-    }
-    var HALO = 26 + ((rnd() * 18) | 0);
-    for (var h0 = 0; h0 < HALO; h0++) {
-      var ha = rnd() * TAU;
-      var hr = 0.25 + Math.pow(rnd(), 0.5) * 0.72;
-      pushMirrored(Math.cos(ha) * hr, (rnd() * 2 - 1) * 0.38, Math.sin(ha) * hr, 0.2 + rnd() * 0.5);
+    // Random-walk wisps.
+    var WISPS = 4 + ((rnd() * 5) | 0);
+    for (var w0 = 0; w0 < WISPS; w0++) {
+      var wx = (rnd() - 0.5) * 1.2, wy = (rnd() * 2 - 1) * YS * 0.7, wz = (rnd() - 0.5) * 1.2;
+      var dirx = gauss(), diry = gauss() * 0.6, dirz = gauss();
+      var dl = Math.hypot(dirx, diry, dirz) || 1;
+      dirx /= dl; diry /= dl; dirz /= dl;
+      var steps = 5 + ((rnd() * 8) | 0);
+      for (var st0 = 0; st0 < steps; st0++) {
+        wx += dirx * (0.08 + rnd() * 0.07);
+        wy += diry * (0.06 + rnd() * 0.05);
+        wz += dirz * (0.08 + rnd() * 0.07);
+        dirx += gauss() * 0.4;
+        diry += gauss() * 0.25;
+        dirz += gauss() * 0.4;
+        dl = Math.hypot(dirx, diry, dirz) || 1;
+        dirx /= dl; diry /= dl; dirz /= dl;
+        pushMirrored(wx, wy, wz, 0.2 + rnd() * 0.5);
+      }
     }
 
-    var label = "MIRRORED STARFIELD \u00b7 " + ARMS + " ARM TENDENCIES";
-    var eqn = "loose logarithmic arm tendencies\nheavy scatter, clumps, bulge, halo\nevery star reflected z \u2192 \u2212z\ntwins share a pitch cell";
+    var label = "MIRRORED CHAOS \u00b7 " + K + " CLUMPS " + WISPS + " WISPS";
+    var eqn = "uniform scatter through the volume\nunevenly weighted random clumps\nrandom-walk wisps\nevery point reflected z \u2192 \u2212z";
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
     // chords straight through the tangle.
