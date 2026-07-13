@@ -24,11 +24,16 @@
     chip.setAttribute("aria-pressed", playing ? "true" : "false");
   }
 
-  // The analyser: low-band energy, lerped so piano swells read as slow
-  // breaths, written to --amp on the root for styles.css to consume.
+  // The analyser: four log-spaced spectral zones (bass, low-mid, mid,
+  // high), each normalized and lerped on its own, written to --amp0
+  // through --amp3 for styles.css to light the summit ring structures
+  // zone by zone. --amp carries the overall energy for the comet bloom.
   // The element runs at full volume into the graph and a gain node does
   // the quieting after the tap, so the analyser sees full-scale signal.
-  var ctx, analyser, data, amp = 0, looping = false;
+  var ZONES = [[1, 4], [4, 9], [9, 19], [19, 41]];
+  var NORM = [95, 85, 70, 45];
+  var ctx, analyser, data, looping = false;
+  var amps = [0, 0, 0, 0];
   function analyse() {
     if (still) return;
     if (!ctx) {
@@ -37,7 +42,7 @@
         var srcNode = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.85;
+        analyser.smoothingTimeConstant = 0.82;
         var gain = ctx.createGain();
         gain.gain.value = 0.35;
         srcNode.connect(analyser);
@@ -51,19 +56,25 @@
     if (looping) return;
     looping = true;
     (function frame() {
-      var target = 0;
-      if (!audio.paused && analyser) {
-        analyser.getByteFrequencyData(data);
-        var sum = 0;
-        var n = data.length >> 2;
-        for (var i = 0; i < n; i++) sum += data[i];
-        target = Math.min(1, sum / n / 70);
+      var style = document.documentElement.style;
+      var overall = 0;
+      for (var z = 0; z < 4; z++) {
+        var target = 0;
+        if (!audio.paused && analyser) {
+          if (z === 0) analyser.getByteFrequencyData(data);
+          var sum = 0;
+          for (var i = ZONES[z][0]; i < ZONES[z][1]; i++) sum += data[i];
+          target = Math.min(1, sum / (ZONES[z][1] - ZONES[z][0]) / NORM[z]);
+        }
+        amps[z] += (target - amps[z]) * 0.12;
+        style.setProperty("--amp" + z, amps[z].toFixed(3));
+        overall += amps[z];
       }
-      amp += (target - amp) * 0.1;
-      document.documentElement.style.setProperty("--amp", amp.toFixed(3));
-      if (audio.paused && amp < 0.005) {
+      style.setProperty("--amp", (overall / 4).toFixed(3));
+      if (audio.paused && overall < 0.01) {
         looping = false;
-        document.documentElement.style.setProperty("--amp", "0");
+        for (var r = 0; r < 4; r++) style.setProperty("--amp" + r, "0");
+        style.setProperty("--amp", "0");
         return;
       }
       requestAnimationFrame(frame);

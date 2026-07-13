@@ -198,17 +198,23 @@ const PORTRAIT = {
 };
 
 function composeField(rng, cfg) {
-  const bands = [[], [], [], []];
-  for (const summit of cfg.summits) {
-    const shape = makeShape(rng);
-    for (let i = 0; i < summit.rings; i++) {
-      const wobblePhase = rng() * TAU;
-      const d = closedPath(ringPoints(summit, shape, i, wobblePhase));
-      bands[bandFor(i, summit.rings)].push(`<path d="${d}"/>`);
-    }
-  }
-  const chartBands = bands
-    .map((paths, i) => `<g class="chart-band chart-band--${i}">${paths.join("")}</g>`)
+  /* Each summit is its own spectral zone: rings grouped per summit so
+     styles.css can feed every zone a different frequency band, then
+     per depth band within it so inner rings can react the hardest. */
+  const chartBands = cfg.summits
+    .map((summit, si) => {
+      const shape = makeShape(rng);
+      const byBand = [[], [], [], []];
+      for (let i = 0; i < summit.rings; i++) {
+        const wobblePhase = rng() * TAU;
+        const d = closedPath(ringPoints(summit, shape, i, wobblePhase));
+        byBand[bandFor(i, summit.rings)].push(`<path d="${d}"/>`);
+      }
+      const inner = byBand
+        .map((paths, b) => (paths.length ? `<g class="chart-band chart-band--${b}">${paths.join("")}</g>` : ""))
+        .join("");
+      return `<g class="chart-summit chart-summit--${si}">${inner}</g>`;
+    })
     .join("\n    ");
 
   /* Middle waypoints get a little exploration jitter, the entry point

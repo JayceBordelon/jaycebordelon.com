@@ -179,9 +179,9 @@
     background-color: var(--background);
     opacity: 0;
     animation: field-in 1.1s ease-out forwards;
-    /* --amp is the music's smoothed energy, written by ambience.js
-       (0 when silent). The whole field inhales with the piano. */
-    transform: scale(calc(1 + var(--amp, 0) * 0.03));
+    /* --amp0..3 are the music's smoothed spectral zones, written by
+       ambience.js (0 when silent). Each summit is a zone and lights
+       with its own frequency band, mapped below. */
 
     /* Chart ink per depth band, brightened a touch on the sonar side. */
     --band-ink-0: 8%;
@@ -243,8 +243,9 @@
      never move in lockstep and the terrain seems to shift internally. */
   .chart-band {
     fill: none;
-    /* Louder passages ink the isolines a touch heavier. */
-    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--amp, 0) * 12%), transparent);
+    /* Each ring's ink is its resting weight plus its summit's spectral
+       energy, scaled by depth so the core rings light the hardest. */
+    stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--samp, 0) * var(--band-gain, 8%)), transparent);
     stroke-width: var(--band-w);
     transform-box: view-box;
     transform-origin: 50% 50%;
@@ -252,9 +253,35 @@
     animation: band-drift var(--band-t) ease-in-out infinite alternate;
     animation-delay: var(--band-delay);
   }
+  /* The zone map: bass lights the convergence summit, low-mids the big
+     northwest stack, mids and highs the flanking peaks. Portrait blends
+     the top two zones into its right-side summit. */
+  .chart-field--landscape .chart-summit--0 {
+    --samp: var(--amp1, 0);
+  }
+  .chart-field--landscape .chart-summit--1 {
+    --samp: var(--amp2, 0);
+  }
+  .chart-field--landscape .chart-summit--2 {
+    --samp: var(--amp3, 0);
+  }
+  .chart-field--landscape .chart-summit--3 {
+    --samp: var(--amp0, 0);
+  }
+  .chart-field--portrait .chart-summit--0 {
+    --samp: var(--amp1, 0);
+  }
+  .chart-field--portrait .chart-summit--1 {
+    --samp: max(var(--amp2, 0), var(--amp3, 0));
+  }
+  .chart-field--portrait .chart-summit--2 {
+    --samp: var(--amp0, 0);
+  }
+
   /* Outermost isolines: hairline, faint, near-still. */
   .chart-band--0 {
     --band-ink: var(--band-ink-0);
+    --band-gain: 5%;
     --band-w: 0.7px;
     --band-t: 96s;
     --band-delay: -31s;
@@ -264,6 +291,7 @@
   }
   .chart-band--1 {
     --band-ink: var(--band-ink-1);
+    --band-gain: 9%;
     --band-w: 0.9px;
     --band-t: 82s;
     --band-delay: -55s;
@@ -273,6 +301,7 @@
   }
   .chart-band--2 {
     --band-ink: var(--band-ink-2);
+    --band-gain: 14%;
     --band-w: 1.15px;
     --band-t: 70s;
     --band-delay: -18s;
@@ -283,6 +312,7 @@
   /* Innermost ring around each peak: the crispest line in the field. */
   .chart-band--3 {
     --band-ink: var(--band-ink-3);
+    --band-gain: 20%;
     --band-w: 1.5px;
     --band-t: 60s;
     --band-delay: -44s;
@@ -353,11 +383,11 @@
     fill: var(--accent);
     stroke: none;
   }
-  /* The convergence ring swells with the piano. */
+  /* The convergence ring swells with the bass zone. */
   .chart-min-ring {
     transform-box: fill-box;
     transform-origin: center;
-    transform: scale(calc(1 + var(--amp, 0) * 0.5));
+    transform: scale(calc(1 + var(--amp0, 0) * 0.5));
   }
   /* The halo fires once per lap, timed to the comet head reaching the
      path end at 92% of the 36s trace cycle (offset 78 of 1000). */
