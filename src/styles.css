@@ -627,10 +627,10 @@
     border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--background) 96%, transparent);
   }
-  .net-mathtip.open .net-label {
+  .net-mathtip:hover .net-label,
+  .net-mathtip:focus-within .net-label {
     opacity: 1;
     transform: translateY(0);
-    pointer-events: auto;
   }
   .net-label-name {
     display: block;
@@ -638,49 +638,20 @@
     letter-spacing: 0.22em;
     color: var(--foreground);
   }
-  .net-slider {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 11px;
-    min-width: 210px;
+  .net-label-eqn {
+    margin-top: 9px;
+    font-size: 10px;
+    line-height: 1.75;
+    letter-spacing: 0.04em;
+    white-space: pre;
+    color: color-mix(in srgb, var(--foreground) 72%, transparent);
   }
-  .ns-g {
-    font-size: 13px;
-    color: color-mix(in srgb, var(--foreground) 62%, transparent);
-    width: 12px;
-  }
-  .net-slider input {
-    flex: 1;
-    appearance: none;
-    -webkit-appearance: none;
-    height: 2px;
-    border-radius: 1px;
-    background: color-mix(in srgb, var(--foreground) 25%, transparent);
-    outline-offset: 6px;
-  }
-  .net-slider input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
-  }
-  .net-slider input::-moz-range-thumb {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
-  }
-  .ns-v {
+  .net-label-params {
+    display: block;
+    margin-top: 9px;
     font-size: 9.5px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     color: color-mix(in srgb, var(--foreground) 52%, transparent);
-    min-width: 4ch;
-    text-align: right;
   }
   body.net-leaving .net-mathtip {
     opacity: 0;
