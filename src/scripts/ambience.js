@@ -66,7 +66,10 @@
   }
   function paintBar() {
     if (!bar) return;
-    if (playBtn) playBtn.textContent = audio.paused ? "PLAY" : "PAUSE";
+    if (playBtn) {
+      playBtn.classList.toggle("playing", !audio.paused);
+      playBtn.setAttribute("aria-label", audio.paused ? "Play" : "Pause");
+    }
     if (timeEl) timeEl.textContent = fmt(audio.currentTime);
     if (durEl) durEl.textContent = fmt(audio.duration);
     if (seek && !seeking && audio.duration) {

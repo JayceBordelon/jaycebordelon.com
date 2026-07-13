@@ -588,12 +588,28 @@
     display: none;
   }
   .listen-play {
-    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 38px;
+    padding: 9px 12px;
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) - 2px);
     color: var(--foreground);
     letter-spacing: 0.18em;
     transition: border-color 0.2s ease;
+  }
+  /* Real transport glyphs: the triangle shows while paused, the twin
+     bars while playing. */
+  #listen-play .lp-pause {
+    display: none;
+  }
+  #listen-play.playing .lp-play {
+    display: none;
+  }
+  #listen-play.playing .lp-pause {
+    display: block;
   }
   .listen-play:hover {
     border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
