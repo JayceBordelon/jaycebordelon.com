@@ -43,87 +43,62 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // No named mathematics, just mess that grows. A handful of
-    // unevenly weighted gaussian blobs (some dense, some sparse),
-    // random-walk dendrites straggling off them, a loose scatter
-    // around everything, and a few long chords through the middle,
-    // all under a random per-axis squash and off-center drift. Never
-    // the same twice, never symmetric.
+    // A vast spiral galaxy. Stars pour out of a dense central bulge
+    // along logarithmic spiral arms whose scatter grows with radius,
+    // riding a thin disk that flares toward the rim, wrapped in a
+    // sparse halo with a couple of globular clusters hanging
+    // off-plane. Arm count, winding, and pitch are rolled fresh every
+    // time.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.5 + rnd() * 0.32;
-    var SX = 0.7 + rnd() * 0.6;
-    var SZ = 0.7 + rnd() * 0.6;
-    var OX = (rnd() - 0.5) * 0.3;
-    var OZ = (rnd() - 0.5) * 0.3;
+    var YS = 0.35;
+    var ARMS = 2 + ((rnd() * 4) | 0);
+    var WIND = 0.55 + rnd() * 0.75;
+    var PITCH = 0.18 + rnd() * 0.14;
+    var SPIN = rnd() < 0.5 ? 1 : -1;
     nodes = [];
     edges = [];
     function push(x, y, z, bias) {
-      x = x * SX + OX;
-      z = z * SZ + OZ;
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
     }
 
-    // Lumpy blobs with uneven populations.
-    var K = 4 + ((rnd() * 5) | 0);
-    var blobs = [];
-    var weights = [];
-    var wsum = 0;
-    for (var b0 = 0; b0 < K; b0++) {
-      blobs.push({
-        x: (rnd() - 0.5) * 1.5,
-        y: (rnd() * 2 - 1) * YS * 0.85,
-        z: (rnd() - 0.5) * 1.5,
-        r: 0.12 + rnd() * 0.3,
-      });
-      var w = 0.2 + rnd() * rnd() * 2.2;
-      weights.push(w);
-      wsum += w;
+    // The arms: density thins outward, scatter widens outward.
+    var STARS = 300 + ((rnd() * 80) | 0);
+    for (var i0 = 0; i0 < STARS; i0++) {
+      var arm = (rnd() * ARMS) | 0;
+      var t0 = Math.pow(rnd(), 0.72);
+      var theta = (arm / ARMS) * TAU + SPIN * t0 * WIND * TAU + gauss() * (0.06 + t0 * 0.22);
+      var r0 = 0.12 * Math.exp(Math.log(0.95 / 0.12) * t0);
+      var w0 = (0.02 + t0 * 0.09) * gauss();
+      var rr = r0 + w0;
+      var flare = 0.05 + t0 * 0.045;
+      push(Math.cos(theta) * rr, gauss() * flare, Math.sin(theta) * rr, 0.2 + rnd() * 0.5);
     }
-    var BUDGET = 340 + ((rnd() * 140) | 0);
-    for (var b1 = 0; b1 < K; b1++) {
-      var count = Math.round((weights[b1] / wsum) * BUDGET);
-      var bl = blobs[b1];
-      for (var i1 = 0; i1 < count; i1++) {
-        push(bl.x + gauss() * bl.r, bl.y + gauss() * bl.r * 0.8, bl.z + gauss() * bl.r, 0.2 + rnd() * 0.5);
+
+    // The bulge: a bright three-dimensional core.
+    var BULGE = 80 + ((rnd() * 30) | 0);
+    for (var b0 = 0; b0 < BULGE; b0++) {
+      push(gauss() * 0.13, gauss() * 0.11, gauss() * 0.13, 0.16 + rnd() * 0.45);
+    }
+
+    // The halo: sparse far stars above and below the plane.
+    var HALO = 34 + ((rnd() * 20) | 0);
+    for (var h0 = 0; h0 < HALO; h0++) {
+      var ha = rnd() * TAU;
+      var hr = 0.3 + Math.pow(rnd(), 0.6) * 0.68;
+      push(Math.cos(ha) * hr, (rnd() * 2 - 1) * 0.34, Math.sin(ha) * hr, 0.2 + rnd() * 0.5);
+    }
+
+    // Two globular clusters hanging off-plane.
+    for (var g0 = 0; g0 < 2; g0++) {
+      var gx = (rnd() - 0.5) * 1.3, gy = (rnd() < 0.5 ? -1 : 1) * (0.2 + rnd() * 0.14), gz = (rnd() - 0.5) * 1.3;
+      for (var g1 = 0; g1 < 13; g1++) {
+        push(gx + gauss() * 0.05, gy + gauss() * 0.05, gz + gauss() * 0.05, 0.2 + rnd() * 0.5);
       }
     }
 
-    // Dendrites: random walks straggling out of the mass.
-    var DEND = 9 + ((rnd() * 8) | 0);
-    for (var d0 = 0; d0 < DEND; d0++) {
-      var seed0 = blobs[(rnd() * K) | 0];
-      var wx = seed0.x + gauss() * seed0.r;
-      var wy = seed0.y + gauss() * seed0.r * 0.8;
-      var wz = seed0.z + gauss() * seed0.r;
-      var dirx = gauss(), diry = gauss() * 0.6, dirz = gauss();
-      var dl = Math.hypot(dirx, diry, dirz) || 1;
-      dirx /= dl; diry /= dl; dirz /= dl;
-      var steps = 4 + ((rnd() * 7) | 0);
-      for (var st0 = 0; st0 < steps; st0++) {
-        var step = 0.09 + rnd() * 0.08;
-        wx += dirx * step;
-        wy += diry * step;
-        wz += dirz * step;
-        dirx += gauss() * 0.35;
-        diry += gauss() * 0.22;
-        dirz += gauss() * 0.35;
-        dl = Math.hypot(dirx, diry, dirz) || 1;
-        dirx /= dl; diry /= dl; dirz /= dl;
-        push(wx, wy, wz, 0.2 + rnd() * 0.5);
-      }
-    }
-
-    // Loose scatter around everything.
-    var FREE = 60 + ((rnd() * 50) | 0);
-    for (var f0 = 0; f0 < FREE; f0++) {
-      var fa = rnd() * TAU;
-      var fr = 0.12 + Math.pow(rnd(), 0.55) * 0.95;
-      push(Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.08), Math.sin(fa) * fr, 0.2 + rnd() * 0.5);
-    }
-
-    var label = "ORGANIC GROWTH \u00b7 " + K + " BLOBS " + DEND + " DENDRITES";
-    var eqn = "unevenly weighted gaussian blobs\nrandom-walk dendrite chains\nloose scatter and long chords\nsquash " + SX.toFixed(2) + " / " + SZ.toFixed(2) + ", drift " + OX.toFixed(2) + " / " + OZ.toFixed(2);
+    var label = "SPIRAL GALAXY \u00b7 " + ARMS + " ARMS \u00b7 " + WIND.toFixed(2) + " TURNS";
+    var eqn = "logarithmic spiral arms\nr(t) = r\u2080 e^(k t), \u03b8 = \u03b8_arm + t\u00b7" + WIND.toFixed(2) + "\u00b72\u03c0\narm scatter grows with radius\nbulge + flared disk + halo + clusters";
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
     // chords straight through the tangle.
