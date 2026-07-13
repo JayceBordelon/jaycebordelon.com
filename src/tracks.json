@@ -158,5 +158,13 @@
     "cat": "Alternative",
     "sub": "moussalangelo",
     "title": "The GeekBar Candy Mountain by moussalangelo"
+  },
+  {
+    "slug": "love",
+    "src": "/audio/love.m4a",
+    "name": "love.",
+    "cat": "Hip Hop",
+    "sub": "Kid Cudi",
+    "title": "love. by Kid Cudi"
   }
 ]
