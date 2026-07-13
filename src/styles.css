@@ -243,16 +243,22 @@
      never move in lockstep and the terrain seems to shift internally. */
   .chart-band {
     fill: none;
-    /* Each ring's ink is its resting weight plus its summit's spectral
-       energy, scaled by depth so the core rings light the hardest. */
+    /* Each ring's ink is its resting weight plus its summit's spotlight
+       energy, scaled by depth so the core rings light the hardest. The
+       stroke also thickens as the light lands. */
     stroke: color-mix(in srgb, var(--foreground) calc(var(--band-ink) + var(--samp, 0) * var(--band-gain, 8%)), transparent);
-    stroke-width: var(--band-w);
+    stroke-width: calc(var(--band-w) + var(--samp, 0) * var(--band-wgain, 0.5px));
     transform-box: view-box;
     transform-origin: 50% 50%;
     will-change: transform;
     animation: band-drift var(--band-t) ease-in-out infinite alternate;
     animation-delay: var(--band-delay);
   }
+  /* A lit summit also emits: the halo scales with its slot energy. */
+  .chart-summit {
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) calc(var(--samp, 0) * 55%), transparent));
+  }
+
   /* The slot map: ambience.js rotates a spotlight through slots 0 to 3
      as the music swells, so the light tours the summits. Slot 0 is the
      convergence summit (its turn also pulses the ring). Portrait folds
@@ -282,7 +288,8 @@
   /* Outermost isolines: hairline, faint, near-still. */
   .chart-band--0 {
     --band-ink: var(--band-ink-0);
-    --band-gain: 5%;
+    --band-gain: 8%;
+    --band-wgain: 0.3px;
     --band-w: 0.7px;
     --band-t: 96s;
     --band-delay: -31s;
@@ -292,7 +299,8 @@
   }
   .chart-band--1 {
     --band-ink: var(--band-ink-1);
-    --band-gain: 9%;
+    --band-gain: 14%;
+    --band-wgain: 0.45px;
     --band-w: 0.9px;
     --band-t: 82s;
     --band-delay: -55s;
@@ -302,7 +310,8 @@
   }
   .chart-band--2 {
     --band-ink: var(--band-ink-2);
-    --band-gain: 14%;
+    --band-gain: 24%;
+    --band-wgain: 0.65px;
     --band-w: 1.15px;
     --band-t: 70s;
     --band-delay: -18s;
@@ -313,7 +322,8 @@
   /* Innermost ring around each peak: the crispest line in the field. */
   .chart-band--3 {
     --band-ink: var(--band-ink-3);
-    --band-gain: 20%;
+    --band-gain: 36%;
+    --band-wgain: 0.9px;
     --band-w: 1.5px;
     --band-t: 60s;
     --band-delay: -44s;
@@ -357,7 +367,7 @@
   }
   .dark .chart-current-glow {
     /* The sonar bloom brightens with the music. */
-    opacity: calc(0.16 + var(--amp, 0) * 0.34);
+    opacity: calc(0.16 + var(--amp, 0) * 0.42);
   }
 
   /* Step nodes: the rollout's footprints along the route, spacing
@@ -384,11 +394,11 @@
     fill: var(--accent);
     stroke: none;
   }
-  /* The convergence ring swells with the bass zone. */
+  /* The convergence ring swells when its summit takes the light. */
   .chart-min-ring {
     transform-box: fill-box;
     transform-origin: center;
-    transform: scale(calc(1 + var(--amp0, 0) * 0.5));
+    transform: scale(calc(1 + var(--amp0, 0) * 0.65));
   }
   /* The halo fires once per lap, timed to the comet head reaching the
      path end at 92% of the 36s trace cycle (offset 78 of 1000). */
