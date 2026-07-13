@@ -15,11 +15,13 @@ bodyClass: "music-page"
 <div class="net-stage" aria-hidden="true">
   <canvas id="bg-net"></canvas>
 </div>
-<div class="net-mathtip">
-  <button type="button" class="net-mathtip-btn" aria-describedby="net-label" aria-label="What mathematics grew this shape">&#402;</button>
-  <div id="net-label" class="net-label" role="tooltip">
-    <span id="net-label-name" class="net-label-name"></span>
-    <span id="net-label-params" class="net-label-params"></span>
+<div class="net-mathtip" id="net-mathtip">
+  <button type="button" id="net-mathtip-btn" class="net-mathtip-btn" aria-expanded="false" aria-controls="net-label" aria-label="Lorenz attractor controls">&#402;</button>
+  <div id="net-label" class="net-label">
+    <span class="net-label-name">LORENZ ATTRACTOR</span>
+    <label class="net-slider"><span class="ns-g">&#963;</span><input id="lz-sigma" type="range" min="1" max="20" step="0.1" value="10" aria-label="Sigma" /><span class="ns-v" id="lz-sigma-v">10.0</span></label>
+    <label class="net-slider"><span class="ns-g">&#961;</span><input id="lz-rho" type="range" min="5" max="45" step="0.1" value="28" aria-label="Rho" /><span class="ns-v" id="lz-rho-v">28.0</span></label>
+    <label class="net-slider"><span class="ns-g">&#946;</span><input id="lz-beta" type="range" min="0.5" max="5" step="0.01" value="2.67" aria-label="Beta" /><span class="ns-v" id="lz-beta-v">2.67</span></label>
   </div>
 </div>
 <div id="listen-bar" class="listen-bar">
@@ -30,7 +32,6 @@ bodyClass: "music-page"
   <span id="listen-time" class="listen-clock">0:00</span>
   <input id="listen-seek" class="listen-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek through the track" />
   <span id="listen-dur" class="listen-clock">0:00</span>
-  <button type="button" id="listen-regen" class="listen-play" aria-label="Regenerate the neural net">REGENERATE</button>
   <div class="listen-picker">
     <button type="button" id="listen-track-btn" class="listen-track" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose a song"><span id="listen-track-name"></span></button>
     <ul id="listen-track-list" class="listen-tracklist" role="listbox" hidden></ul>

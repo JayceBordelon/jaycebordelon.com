@@ -17,9 +17,8 @@
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
   var g = cv.getContext("2d");
-  var labelEl = document.getElementById("net-label");
-  var labelName = document.getElementById("net-label-name");
-  var labelParams = document.getElementById("net-label-params");
+  var panelWrap = document.getElementById("net-mathtip");
+  var panelBtn = document.getElementById("net-mathtip-btn");
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
   var pulses = [];
@@ -34,11 +33,9 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Every generation traces beautiful randomness: strange attractors,
-  // random Fourier knots, Chladni resonance clouds, Pickover dust, or
-  // DLA coral. Cell comes from where a neuron lives: register by
-  // height, sub-band by radius, so pitch geography survives every
-  // roll.
+  // The machine is the Lorenz attractor, its greeks on sliders. Cell
+  // comes from where a neuron lives: register by height, sub-band by
+  // radius, so pitch geography survives every rebuild.
   var nodes, edges, incident, cellNodes;
   function cellAt(rad2, my2, ys) {
     var t2 = my2 / (ys * 2);
@@ -46,187 +43,52 @@
     var sub = rad2 > 0.85 ? 0 : rad2 > 0.65 ? 1 : rad2 > 0.45 ? 2 : 3;
     return reg * 4 + sub;
   }
+  // The Lorenz attractor, and only the Lorenz attractor, with its
+  // greeks live on sliders. The orbit is integrated fresh on every
+  // rebuild with the current sigma, rho, and beta, under a fixed
+  // per-visit viewing orientation, so dragging a slider morphs the
+  // butterfly in place. Pitch geography still maps register
+  // by height and sub-band by radius.
+  var sigma = 10, rho = 28, beta = 8 / 3;
+  var oYaw = rnd() * TAU, oPitch = rnd() * Math.PI - Math.PI / 2;
   function generate() {
-    // The beautifully random gallery: every generation rolls one of
-    // five structures the generative-art canon holds sacred. Strange
-    // attractors (Lorenz, Halvorsen, Thomas, Aizawa) traced through
-    // their chaos, random Fourier knots, Chladni resonance clouds
-    // sampled on the nodal surfaces of random standing waves, Pickover
-    // iterated-map dust, and diffusion-limited aggregation coral grown
-    // particle by particle. All get centered, normalized to frame, and
-    // wired, so pitch geography (register by height, sub-band by
-    // radius) spans whatever grows.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.5 + rnd() * 0.3;
-    var N = 380 + ((rnd() * 90) | 0);
+    var YS = 0.62;
+    var N = 430;
     var pts = [];
-    var label = "";
-    var shape = (rnd() * 5) | 0;
-
-    if (shape === 0) {
-      // A strange attractor, integrated through its transient and
-      // sampled along the orbit.
-      var sys = (rnd() * 4) | 0;
-      var x = 0.1, y = 0.12, z = 0.05, dt, every, dx, dy, dz;
-      var p1 = 0, p2 = 0, p3 = 0;
-      if (sys === 0) { p1 = 10; p2 = 24 + rnd() * 8; p3 = 8 / 3; dt = 0.006; every = 3; label = "LORENZ ATTRACTOR \u00b7 \u03c3=10 \u03c1=" + p2.toFixed(1) + " \u03b2=8/3"; }
-      else if (sys === 1) { p1 = 1.3 + rnd() * 0.4; dt = 0.006; every = 3; label = "HALVORSEN ATTRACTOR \u00b7 a=" + p1.toFixed(2); }
-      else if (sys === 2) { p1 = 0.17 + rnd() * 0.05; dt = 0.05; every = 4; label = "THOMAS ATTRACTOR \u00b7 b=" + p1.toFixed(3); }
-      else { p1 = 0.95; p2 = 0.7; p3 = 3.5 + rnd() * 0.4; dt = 0.01; every = 3; label = "AIZAWA ATTRACTOR \u00b7 d=" + p3.toFixed(2); }
-      var steps = 400 + N * every;
-      for (var s0 = 0; s0 < steps; s0++) {
-        if (sys === 0) {
-          dx = p1 * (y - x);
-          dy = x * (p2 - z) - y;
-          dz = x * y - p3 * z;
-        } else if (sys === 1) {
-          dx = -p1 * x - 4 * y - 4 * z - y * y;
-          dy = -p1 * y - 4 * z - 4 * x - z * z;
-          dz = -p1 * z - 4 * x - 4 * y - x * x;
-        } else if (sys === 2) {
-          dx = Math.sin(y) - p1 * x;
-          dy = Math.sin(z) - p1 * y;
-          dz = Math.sin(x) - p1 * z;
-        } else {
-          dx = (z - p2) * x - p3 * y;
-          dy = p3 * x + (z - p2) * y;
-          dz = 0.6 + 0.95 * z - (z * z * z) / 3 - (x * x + y * y) * (1 + 0.25 * z) + 0.1 * z * x * x * x;
-        }
-        x += dx * dt;
-        y += dy * dt;
-        z += dz * dt;
-        if (!isFinite(x) || !isFinite(y) || !isFinite(z)) { x = 0.1; y = 0.12; z = 0.05; }
-        if (s0 > 400 && s0 % every === 0 && pts.length < N) pts.push([x, y, z]);
+    var x = 0.1, y = 0.12, z = 0.05;
+    var dt = 0.006, every = 3;
+    var steps = 400 + N * every;
+    for (var s0 = 0; s0 < steps; s0++) {
+      var dx = sigma * (y - x);
+      var dy = x * (rho - z) - y;
+      var dz = x * y - beta * z;
+      x += dx * dt;
+      y += dy * dt;
+      z += dz * dt;
+      if (!isFinite(x) || !isFinite(y) || !isFinite(z)) { x = 0.1; y = 0.12; z = 0.05; }
+      if (s0 > 400 && s0 % every === 0 && pts.length < N) {
+        pts.push([x + gauss() * 0.3, y + gauss() * 0.3, z + gauss() * 0.3]);
       }
-      // Chaos has a preferred orientation: give it a random one.
-      var ry = rnd() * TAU, rx = rnd() * Math.PI - Math.PI / 2;
-      var cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
-      for (var r0 = 0; r0 < pts.length; r0++) {
-        var ax = pts[r0][0] * cy + pts[r0][2] * sy;
-        var az = -pts[r0][0] * sy + pts[r0][2] * cy;
-        var ay = pts[r0][1] * cx - az * sx;
-        pts[r0] = [ax, pts[r0][1] * sx + az * cx, ay];
-      }
-    } else if (shape === 1) {
-      // A random Fourier knot: decaying random harmonics per axis
-      // close into a smooth tangled loop, different every time.
-      var K = 3 + ((rnd() * 4) | 0);
-      label = "RANDOM FOURIER KNOT \u00b7 " + K + " HARMONICS PER AXIS";
-      var coef = [];
-      for (var a1 = 0; a1 < 3; a1++) {
-        var row = [];
-        for (var k1 = 1; k1 <= K; k1++) {
-          row.push([(rnd() * 2 - 1) / Math.pow(k1, 1.1), rnd() * TAU]);
-        }
-        coef.push(row);
-      }
-      for (var i1 = 0; i1 < N; i1++) {
-        var t1 = (i1 / N) * TAU;
-        var v = [0, 0, 0];
-        for (var a2 = 0; a2 < 3; a2++) {
-          for (var k2 = 1; k2 <= K; k2++) {
-            v[a2] += coef[a2][k2 - 1][0] * Math.cos(k2 * t1 + coef[a2][k2 - 1][1]);
-          }
-        }
-        pts.push([v[0] + gauss() * 0.03, v[1] + gauss() * 0.03, v[2] + gauss() * 0.03]);
-      }
-    } else if (shape === 2) {
-      // A Chladni cloud: points settle on the nodal surfaces of a
-      // random superposition of standing waves, the shapes of
-      // resonance itself.
-      var M = 3 + ((rnd() * 3) | 0);
-      label = "CHLADNI NODAL FIELD \u00b7 " + M + " STANDING WAVES";
-      var waves = [];
-      for (var w0 = 0; w0 < M; w0++) {
-        var kx = gauss(), ky = gauss(), kz = gauss();
-        var kl = Math.hypot(kx, ky, kz) || 1;
-        waves.push([kx / kl, ky / kl, kz / kl, 1 + rnd() * 2.4, rnd() * TAU]);
-      }
-      var tries = 0;
-      while (pts.length < N && tries < 60000) {
-        tries++;
-        var qx = rnd() * 2 - 1, qy = rnd() * 2 - 1, qz = rnd() * 2 - 1;
-        var f = 0;
-        for (var w1 = 0; w1 < M; w1++) {
-          var wv = waves[w1];
-          f += Math.sin(wv[3] * Math.PI * (wv[0] * qx + wv[1] * qy + wv[2] * qz) + wv[4]);
-        }
-        if (Math.abs(f) < 0.22) pts.push([qx, qy, qz]);
-      }
-      while (pts.length < N) pts.push([gauss() * 0.6, gauss() * 0.6, gauss() * 0.6]);
-    } else if (shape === 3) {
-      // Pickover dust: a chaotic iterated map settling into ghostly
-      // filaments.
-      var pa = (rnd() * 2 - 1) * 2.4, pb = (rnd() * 2 - 1) * 2.4;
-      var pc = (rnd() * 2 - 1) * 2.4, pd = (rnd() * 2 - 1) * 2.4;
-      label = "PICKOVER MAP \u00b7 a=" + pa.toFixed(2) + " b=" + pb.toFixed(2) + " c=" + pc.toFixed(2) + " d=" + pd.toFixed(2);
-      var mx = 0.1, my = 0.1, mz = 0;
-      for (var m0 = 0; m0 < N + 120; m0++) {
-        var nx = Math.sin(pa * my) - mz * Math.cos(pb * mx);
-        var ny = mz * Math.sin(pc * mx) - Math.cos(pd * my);
-        var nz = Math.sin(mx);
-        mx = nx; my = ny; mz = nz;
-        if (m0 > 120) pts.push([mx, my, mz]);
-      }
-    } else {
-      // Diffusion-limited aggregation: coral grown one wandering
-      // particle at a time, sticking where it touches.
-      var STICK = 0.085, STEP = 0.06;
-      var cluster = [[0, 0, 0]];
-      var gridmap = {};
-      function keyOf(px2, py2, pz2) {
-        return ((px2 / STICK) | 0) + ":" + ((py2 / STICK) | 0) + ":" + ((pz2 / STICK) | 0);
-      }
-      function addTo(px2, py2, pz2) {
-        cluster.push([px2, py2, pz2]);
-        var kk = keyOf(px2, py2, pz2);
-        (gridmap[kk] = gridmap[kk] || []).push([px2, py2, pz2]);
-      }
-      function nearCluster(px2, py2, pz2) {
-        var gx = (px2 / STICK) | 0, gy = (py2 / STICK) | 0, gz = (pz2 / STICK) | 0;
-        for (var ox = -1; ox <= 1; ox++) for (var oy = -1; oy <= 1; oy++) for (var oz = -1; oz <= 1; oz++) {
-          var cell = gridmap[(gx + ox) + ":" + (gy + oy) + ":" + (gz + oz)];
-          if (!cell) continue;
-          for (var ci = 0; ci < cell.length; ci++) {
-            var ddx = cell[ci][0] - px2, ddy = cell[ci][1] - py2, ddz = cell[ci][2] - pz2;
-            if (ddx * ddx + ddy * ddy + ddz * ddz < STICK * STICK) return true;
-          }
-        }
-        return false;
-      }
-      addTo(0, 0, 0);
-      var radius = 0.15;
-      while (cluster.length < N) {
-        var th5 = rnd() * TAU, ph5 = Math.acos(rnd() * 2 - 1);
-        var wx = Math.sin(ph5) * Math.cos(th5) * radius;
-        var wy = Math.cos(ph5) * radius;
-        var wz = Math.sin(ph5) * Math.sin(th5) * radius;
-        var alive = 3000;
-        while (alive-- > 0) {
-          wx += gauss() * STEP; wy += gauss() * STEP; wz += gauss() * STEP;
-          var rr5 = Math.hypot(wx, wy, wz);
-          if (rr5 > radius + 0.5) { alive = 0; break; }
-          if (nearCluster(wx, wy, wz)) {
-            addTo(wx, wy, wz);
-            if (rr5 > radius - 0.12) radius = rr5 + 0.12;
-            break;
-          }
-        }
-      }
-      pts = cluster;
-      label = "DIFFUSION LIMITED AGGREGATION \u00b7 " + cluster.length + " PARTICLES";
+    }
+    // The stored viewing orientation.
+    var cy = Math.cos(oYaw), sy = Math.sin(oYaw);
+    var cx = Math.cos(oPitch), sx = Math.sin(oPitch);
+    for (var r0 = 0; r0 < pts.length; r0++) {
+      var ax = pts[r0][0] * cy + pts[r0][2] * sy;
+      var az = -pts[r0][0] * sy + pts[r0][2] * cy;
+      var ay = pts[r0][1] * cx - az * sx;
+      pts[r0] = [ax, pts[r0][1] * sx + az * cx, ay];
     }
 
-    // A breath of scatter around the form.
-    var FREE = 26 + ((rnd() * 26) | 0);
-    for (var f1 = 0; f1 < FREE; f1++) {
+    // A breath of scatter around the orbit.
+    for (var f1 = 0; f1 < 30; f1++) {
       var fa = rnd() * TAU;
-      var fr = 0.2 + Math.pow(rnd(), 0.55) * 0.9;
-      pts.push([Math.cos(fa) * fr, gauss() * 0.8, Math.sin(fa) * fr]);
+      pts.push([Math.cos(fa) * 12, gauss() * 14, Math.sin(fa) * 12]);
     }
 
     // Center on the centroid, then normalize radius and height so the
-    // register bands always span the structure.
+    // register bands always span the orbit.
     var cx0 = 0, cy0 = 0, cz0 = 0;
     for (var n0 = 0; n0 < pts.length; n0++) { cx0 += pts[n0][0]; cy0 += pts[n0][1]; cz0 += pts[n0][2]; }
     cx0 /= pts.length; cy0 /= pts.length; cz0 /= pts.length;
@@ -246,7 +108,7 @@
     }
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
-    // chords straight through the form.
+    // chords straight through the orbit.
     var seen = {};
     nodes.forEach(function (n, ai) {
       var ds = nodes.map(function (q, bi) {
@@ -258,8 +120,7 @@
         if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
       }
     });
-    var CHORDS = 6 + ((rnd() * 8) | 0);
-    for (var c0 = 0; c0 < CHORDS; c0++) {
+    for (var c0 = 0; c0 < 9; c0++) {
       var a0 = (rnd() * nodes.length) | 0;
       var b2 = (rnd() * nodes.length) | 0;
       if (a0 !== b2) edges.push([Math.min(a0, b2), Math.max(a0, b2)]);
@@ -270,16 +131,6 @@
     for (var c = 0; c < 16; c++) cellNodes.push([]);
     nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
     pulses.length = 0;
-    if (labelEl) {
-      var sep = label.indexOf("\u00b7");
-      var nm = sep > -1 ? label.slice(0, sep).trim() : label;
-      var pr = sep > -1 ? label.slice(sep + 1).trim() : "";
-      if (labelName) labelName.textContent = nm;
-      if (labelParams) {
-        labelParams.textContent = pr;
-        labelParams.style.display = pr ? "" : "none";
-      }
-    }
   }
 
   // Palette from the live theme tokens, re-read when the theme flips.
@@ -579,20 +430,43 @@
     },
   };
 
-  window.neuralField.regenerate = function () {
+  // The greek sliders: live readouts, throttled in-place rebuilds
+  // while dragging, a final rebuild on release.
+  var lastLive = 0;
+  function rebuild() {
     generate();
-    if (still) {
-      draw(0);
-    } else {
-      intro = 0;
-      mode = 1;
-      window.neuralField.start();
+    if (still) draw(0);
+  }
+  function bindGreek(id, setV, fmt) {
+    var el = document.getElementById(id);
+    var out = document.getElementById(id + "-v");
+    if (!el) return;
+    function paintV() {
+      if (out) out.textContent = fmt(+el.value);
     }
-  };
-  var regenBtn = document.getElementById("listen-regen");
-  if (regenBtn) {
-    regenBtn.addEventListener("click", function () {
-      window.neuralField.regenerate();
+    el.addEventListener("input", function () {
+      setV(+el.value);
+      paintV();
+      var now = performance.now();
+      if (now - lastLive > 140) {
+        lastLive = now;
+        rebuild();
+      }
+    });
+    el.addEventListener("change", function () {
+      setV(+el.value);
+      paintV();
+      rebuild();
+    });
+    paintV();
+  }
+  bindGreek("lz-sigma", function (v) { sigma = v; }, function (v) { return v.toFixed(1); });
+  bindGreek("lz-rho", function (v) { rho = v; }, function (v) { return v.toFixed(1); });
+  bindGreek("lz-beta", function (v) { beta = v; }, function (v) { return v.toFixed(2); });
+  if (panelBtn && panelWrap) {
+    panelBtn.addEventListener("click", function () {
+      var open = panelWrap.classList.toggle("open");
+      panelBtn.setAttribute("aria-expanded", open ? "true" : "false");
     });
   }
 
