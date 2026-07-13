@@ -43,62 +43,62 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // A vast spiral galaxy. Stars pour out of a dense central bulge
-    // along logarithmic spiral arms whose scatter grows with radius,
-    // riding a thin disk that flares toward the rim, wrapped in a
-    // sparse halo with a couple of globular clusters hanging
-    // off-plane. Arm count, winding, and pitch are rolled fresh every
-    // time.
+    // A mirrored starfield. Spiral arms survive only as loose
+    // tendencies buried in heavy random scatter, clumps land wherever
+    // they land, and every single star is stamped twice, itself and
+    // its reflection through the vertical plane, so the chaos always
+    // carries a mirror. Twins share a pitch cell and light together.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.35;
-    var ARMS = 2 + ((rnd() * 4) | 0);
-    var WIND = 0.55 + rnd() * 0.75;
-    var PITCH = 0.18 + rnd() * 0.14;
+    var YS = 0.4;
+    var ARMS = 2 + ((rnd() * 3) | 0);
+    var WIND = 0.4 + rnd() * 0.7;
     var SPIN = rnd() < 0.5 ? 1 : -1;
     nodes = [];
     edges = [];
-    function push(x, y, z, bias) {
+    function pushMirrored(x, y, z, bias) {
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
+      nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
     }
 
-    // The arms: density thins outward, scatter widens outward.
-    var STARS = 300 + ((rnd() * 80) | 0);
+    // Loose arm tendencies drowned in scatter. Half the stars are
+    // sampled, the mirror doubles them.
+    var STARS = 130 + ((rnd() * 40) | 0);
     for (var i0 = 0; i0 < STARS; i0++) {
       var arm = (rnd() * ARMS) | 0;
-      var t0 = Math.pow(rnd(), 0.72);
-      var theta = (arm / ARMS) * TAU + SPIN * t0 * WIND * TAU + gauss() * (0.06 + t0 * 0.22);
-      var r0 = 0.12 * Math.exp(Math.log(0.95 / 0.12) * t0);
-      var w0 = (0.02 + t0 * 0.09) * gauss();
-      var rr = r0 + w0;
-      var flare = 0.05 + t0 * 0.045;
-      push(Math.cos(theta) * rr, gauss() * flare, Math.sin(theta) * rr, 0.2 + rnd() * 0.5);
+      var t0 = Math.pow(rnd(), 0.7);
+      var theta = (arm / ARMS) * TAU + SPIN * t0 * WIND * TAU + gauss() * (0.16 + t0 * 0.55);
+      var rr = 0.1 + t0 * 0.85 + gauss() * (0.04 + t0 * 0.14);
+      pushMirrored(Math.cos(theta) * rr, gauss() * (0.09 + t0 * 0.1), Math.sin(theta) * rr, 0.2 + rnd() * 0.5);
     }
 
-    // The bulge: a bright three-dimensional core.
-    var BULGE = 80 + ((rnd() * 30) | 0);
-    for (var b0 = 0; b0 < BULGE; b0++) {
-      push(gauss() * 0.13, gauss() * 0.11, gauss() * 0.13, 0.16 + rnd() * 0.45);
-    }
-
-    // The halo: sparse far stars above and below the plane.
-    var HALO = 34 + ((rnd() * 20) | 0);
-    for (var h0 = 0; h0 < HALO; h0++) {
-      var ha = rnd() * TAU;
-      var hr = 0.3 + Math.pow(rnd(), 0.6) * 0.68;
-      push(Math.cos(ha) * hr, (rnd() * 2 - 1) * 0.34, Math.sin(ha) * hr, 0.2 + rnd() * 0.5);
-    }
-
-    // Two globular clusters hanging off-plane.
-    for (var g0 = 0; g0 < 2; g0++) {
-      var gx = (rnd() - 0.5) * 1.3, gy = (rnd() < 0.5 ? -1 : 1) * (0.2 + rnd() * 0.14), gz = (rnd() - 0.5) * 1.3;
-      for (var g1 = 0; g1 < 13; g1++) {
-        push(gx + gauss() * 0.05, gy + gauss() * 0.05, gz + gauss() * 0.05, 0.2 + rnd() * 0.5);
+    // Random clumps, anywhere they please.
+    var CLUMPS = 3 + ((rnd() * 4) | 0);
+    for (var c1 = 0; c1 < CLUMPS; c1++) {
+      var cx1 = (rnd() - 0.5) * 1.6;
+      var cy1 = (rnd() * 2 - 1) * 0.3;
+      var cz1 = (rnd() - 0.5) * 1.6;
+      var cr1 = 0.06 + rnd() * 0.16;
+      var cn1 = 6 + ((rnd() * 12) | 0);
+      for (var c2 = 0; c2 < cn1; c2++) {
+        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1 * 0.8, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
       }
     }
 
-    var label = "SPIRAL GALAXY \u00b7 " + ARMS + " ARMS \u00b7 " + WIND.toFixed(2) + " TURNS";
-    var eqn = "logarithmic spiral arms\nr(t) = r\u2080 e^(k t), \u03b8 = \u03b8_arm + t\u00b7" + WIND.toFixed(2) + "\u00b72\u03c0\narm scatter grows with radius\nbulge + flared disk + halo + clusters";
+    // The bulge and a generous chaotic halo.
+    var BULGE = 34 + ((rnd() * 16) | 0);
+    for (var b0 = 0; b0 < BULGE; b0++) {
+      pushMirrored(gauss() * 0.13, gauss() * 0.12, gauss() * 0.13, 0.16 + rnd() * 0.45);
+    }
+    var HALO = 26 + ((rnd() * 18) | 0);
+    for (var h0 = 0; h0 < HALO; h0++) {
+      var ha = rnd() * TAU;
+      var hr = 0.25 + Math.pow(rnd(), 0.5) * 0.72;
+      pushMirrored(Math.cos(ha) * hr, (rnd() * 2 - 1) * 0.38, Math.sin(ha) * hr, 0.2 + rnd() * 0.5);
+    }
+
+    var label = "MIRRORED STARFIELD \u00b7 " + ARMS + " ARM TENDENCIES";
+    var eqn = "loose logarithmic arm tendencies\nheavy scatter, clumps, bulge, halo\nevery star reflected z \u2192 \u2212z\ntwins share a pitch cell";
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
     // chords straight through the tangle.
