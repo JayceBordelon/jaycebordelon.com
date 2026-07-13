@@ -18,6 +18,8 @@
   if (!cv || !cv.getContext) return;
   var g = cv.getContext("2d");
   var labelEl = document.getElementById("net-label");
+  var labelName = document.getElementById("net-label-name");
+  var labelParams = document.getElementById("net-label-params");
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
   var pulses = [];
@@ -268,7 +270,16 @@
     for (var c = 0; c < 16; c++) cellNodes.push([]);
     nodes.forEach(function (n, ni) { cellNodes[n.cell].push(ni); });
     pulses.length = 0;
-    if (labelEl) labelEl.textContent = label;
+    if (labelEl) {
+      var sep = label.indexOf("\u00b7");
+      var nm = sep > -1 ? label.slice(0, sep).trim() : label;
+      var pr = sep > -1 ? label.slice(sep + 1).trim() : "";
+      if (labelName) labelName.textContent = nm;
+      if (labelParams) {
+        labelParams.textContent = pr;
+        labelParams.style.display = pr ? "" : "none";
+      }
+    }
   }
 
   // Palette from the live theme tokens, re-read when the theme flips.

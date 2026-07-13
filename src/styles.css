@@ -567,27 +567,92 @@
   body.net-leaving .listen-bar {
     opacity: 0;
   }
-  /* The specimen label: which mathematics grew this creature. */
-  .net-label {
+  /* The specimen tooltip: a small function badge above the bar, and a
+     clean card on hover naming which mathematics grew this creature. */
+  .net-mathtip {
     position: fixed;
     left: 24px;
     bottom: 74px;
     z-index: 55;
+  }
+  .net-mathtip-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
     font-family: var(--font-mono);
+    font-size: 14px;
+    font-style: italic;
+    color: color-mix(in srgb, var(--foreground) 55%, transparent);
+    background: color-mix(in srgb, var(--background) 82%, transparent);
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .net-mathtip-btn:hover {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .net-label {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 12px);
+    padding: 11px 15px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: color-mix(in srgb, var(--background) 92%, transparent);
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(5px);
+    transition:
+      opacity 0.22s ease,
+      transform 0.22s ease;
+  }
+  /* The pointer arrow, aimed at the badge. */
+  .net-label::after {
+    content: "";
+    position: absolute;
+    left: 13px;
+    bottom: -5px;
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--background) 96%, transparent);
+  }
+  .net-mathtip:hover .net-label,
+  .net-mathtip:focus-within .net-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .net-label-name {
+    display: block;
     font-size: 10px;
     letter-spacing: 0.22em;
-    color: color-mix(in srgb, var(--foreground) 45%, transparent);
-    pointer-events: none;
+    color: var(--foreground);
+  }
+  .net-label-params {
+    display: block;
+    margin-top: 5px;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    color: color-mix(in srgb, var(--foreground) 52%, transparent);
+  }
+  body.net-leaving .net-mathtip {
+    opacity: 0;
     transition: opacity 0.45s ease;
   }
-  body.net-leaving .net-label {
-    opacity: 0;
-  }
   @media (max-width: 640px) {
-    .net-label {
+    .net-mathtip {
       left: 16px;
       bottom: 118px;
-      letter-spacing: 0.16em;
     }
   }
 
