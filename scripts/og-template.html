@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- Song OG card template. Not shipped: rendered locally to static
+     images. To regenerate after adding a track:
+       npx http-server . -p 4980 &
+       chrome --headless --window-size=1200,630 --virtual-time-budget=4000 \
+         --screenshot=public/images/og/<slug>.png \
+         "http://localhost:4980/scripts/og-template.html?name=<name>&sub=<sub>"
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    position: relative;
+    background: #0b0b0c url("/public/images/music-og.png") center / cover no-repeat;
+    font-family: -apple-system, "Helvetica Neue", sans-serif;
+  }
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(8, 8, 10, 0.92) 0%, rgba(8, 8, 10, 0.35) 42%, rgba(8, 8, 10, 0.12) 100%);
+  }
+  .tag {
+    position: absolute;
+    top: 44px;
+    left: 56px;
+    font-family: "IBM Plex Mono", Menlo, monospace;
+    font-size: 19px;
+    letter-spacing: 0.3em;
+    color: rgba(235, 240, 245, 0.62);
+  }
+  .name {
+    position: absolute;
+    left: 56px;
+    bottom: 118px;
+    max-width: 1050px;
+    font-size: 68px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #f4f7f9;
+  }
+  .sub {
+    position: absolute;
+    left: 58px;
+    bottom: 62px;
+    font-family: "IBM Plex Mono", Menlo, monospace;
+    font-size: 25px;
+    letter-spacing: 0.08em;
+    color: rgba(220, 228, 235, 0.7);
+  }
+</style>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="tag">JAYCEBORDELON.COM / MUSIC</div>
+  <div class="name" id="name"></div>
+  <div class="sub" id="sub"></div>
+  <script>
+    var q = new URLSearchParams(location.search);
+    document.getElementById("name").textContent = q.get("name") || "";
+    document.getElementById("sub").textContent = q.get("sub") || "";
+  </script>
+</body>
+</html>

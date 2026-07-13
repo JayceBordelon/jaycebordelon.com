@@ -13,29 +13,18 @@
   audio.volume = 0.35;
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // name is what the picker shows, title carries the full credit,
-  // slug is the song's ?song= url identity.
-  var TRACKS = [
-    { slug: "first-dance", src: "/audio/first-dance.m4a", name: "the feeling of a first dance", cat: "Originals", sub: "Gabriel Piano", title: "the feeling of a first dance by Gabriel Piano" },
-    { slug: "je-te-laisserai-des-mots", src: "/audio/je-te-laisserai-des-mots.m4a", name: "Je te laisserai des mots", cat: "Piano Covers", sub: "Patrick Watson, by Gabriel Piano", title: "Je te laisserai des mots, Patrick Watson cover by Gabriel Piano" },
-    { slug: "let-down", src: "/audio/let-down.m4a", name: "Let down", cat: "Piano Covers", sub: "Radiohead, by Gabriel Piano", title: "Let down, Radiohead cover by Gabriel Piano" },
-    { slug: "fake-plastic-trees", src: "/audio/fake-plastic-trees.m4a", name: "Fake plastic trees", cat: "Piano Covers", sub: "Radiohead, by Gabriel Piano", title: "Fake plastic trees, Radiohead cover by Gabriel Piano" },
-    { slug: "the-night-we-met", src: "/audio/the-night-we-met.m4a", name: "The Night We Met", cat: "Piano Covers", sub: "Lord Huron, by The Theorist", title: "The Night We Met, Lord Huron cover by The Theorist" },
-    { slug: "can-you-hear-the-music", src: "/audio/can-you-hear-the-music.m4a", name: "Can You Hear The Music", cat: "Film Scores", sub: "Oppenheimer, by Patrik Pietschmann", title: "Can You Hear The Music, Oppenheimer piano version by Patrik Pietschmann" },
-    { slug: "comptine", src: "/audio/comptine.m4a", name: "Comptine d'un autre \u00e9t\u00e9", cat: "Film Scores", sub: "Am\u00e9lie, Yann Tiersen, by Rousseau", title: "Comptine d'un autre \u00e9t\u00e9 from Am\u00e9lie, Yann Tiersen, played by Rousseau" },
-    { slug: "clair-de-lune", src: "/audio/clair-de-lune.m4a", name: "Clair de Lune", cat: "Classical", sub: "Debussy, played by Rousseau", title: "Clair de Lune, Debussy, played by Rousseau" },
-    { slug: "experience", src: "/audio/experience.m4a", name: "Experience", cat: "Classical", sub: "Ludovico Einaudi, played by Rousseau", title: "Experience, Ludovico Einaudi, played by Rousseau" },
-    { slug: "swan-lake", src: "/audio/swan-lake.m4a", name: "Swan Lake", cat: "Classical", sub: "Tchaikovsky, played by Kassia", title: "Swan Lake, Tchaikovsky, played by Kassia" },
-    { slug: "passacaglia", src: "/audio/passacaglia.m4a", name: "Passacaglia", cat: "Classical", sub: "Handel and Halvorsen, by Kassia", title: "Passacaglia, Handel and Halvorsen, played by Kassia" },
-    { slug: "chicago-freestyle", src: "/audio/chicago-freestyle.m4a", name: "Chicago Freestyle", cat: "Hip Hop", sub: "Drake and Giveon", title: "Chicago Freestyle by Drake and Giveon" },
-    { slug: "halleys-comet", src: "/audio/halleys-comet.m4a", name: "Halley's Comet", cat: "Pop", sub: "Billie Eilish", title: "Halley's Comet by Billie Eilish" },
-  ];
+  // Track metadata is baked into the page at build time from
+  // src/tracks.json, one source of truth for the player, the per-song
+  // pages at /music/<slug>, and their SEO.
+  var TRACKS = window.SITE_TRACKS || [];
+  if (!TRACKS.length) return;
   // The song in the url wins and always starts from the top, so a
-  // shared /music?song=let-down link renders with that song cued.
+  // shared /music/let-down link renders with that song cued.
   var trackIdx = 0;
   try { trackIdx = (+localStorage.getItem("ambience-i") || 0) % TRACKS.length; } catch (e) {}
   try {
-    var wanted = new URLSearchParams(location.search).get("song");
+    var pathMatch = location.pathname.match(/^\/music\/([a-z0-9-]+)/);
+    var wanted = window.INITIAL_SONG || (pathMatch && pathMatch[1]) || new URLSearchParams(location.search).get("song");
     for (var wi = 0; wi < TRACKS.length; wi++) {
       if (TRACKS[wi].slug === wanted) {
         trackIdx = wi;
@@ -46,7 +35,7 @@
     }
   } catch (e) {}
   if (trackIdx !== 0) audio.src = TRACKS[trackIdx].src;
-  try { history.replaceState(null, "", "?song=" + TRACKS[trackIdx].slug); } catch (e) {}
+  try { history.replaceState(null, "", "/music/" + TRACKS[trackIdx].slug); } catch (e) {}
 
   var off = false;
   try { off = localStorage.getItem("ambience") === "off"; } catch (e) {}
@@ -94,7 +83,7 @@
     try {
       localStorage.setItem("ambience-i", String(trackIdx));
       localStorage.setItem("ambience-t", "0");
-      history.replaceState(null, "", "?song=" + TRACKS[trackIdx].slug);
+      history.replaceState(null, "", "/music/" + TRACKS[trackIdx].slug);
     } catch (e) {}
     if (playNow && !off) start();
     paintBar();
