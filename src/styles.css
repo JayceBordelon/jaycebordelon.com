@@ -569,11 +569,31 @@
   }
   /* The specimen tooltip: a small function badge above the bar, and a
      clean card on hover naming which mathematics grew this creature. */
-  .net-mathtip {
+  .net-tools {
     position: fixed;
     left: 24px;
     bottom: 74px;
     z-index: 55;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .net-mathtip {
+    position: relative;
+  }
+  .net-scramble {
+    font-style: normal;
+    font-size: 15px;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.35s ease;
+  }
+  .net-scramble:hover {
+    transform: rotate(120deg);
+  }
+  .net-scramble:active {
+    transform: rotate(300deg);
   }
   .net-mathtip-btn {
     display: flex;
@@ -653,12 +673,12 @@
     letter-spacing: 0.12em;
     color: color-mix(in srgb, var(--foreground) 52%, transparent);
   }
-  body.net-leaving .net-mathtip {
+  body.net-leaving .net-tools {
     opacity: 0;
     transition: opacity 0.45s ease;
   }
   @media (max-width: 640px) {
-    .net-mathtip {
+    .net-tools {
       left: 16px;
       bottom: 118px;
     }
