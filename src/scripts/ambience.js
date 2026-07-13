@@ -51,6 +51,7 @@
   var subMax = [];
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
+  var loudMax = 30;
   // cells are pitch-normalized (which note), loud is the absolute level
   // (how hard it is being played), published separately so the neural
   // background can recruit more neurons for louder passages.
@@ -65,7 +66,7 @@
         var srcNode = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
         analyser.fftSize = 4096;
-        analyser.smoothingTimeConstant = 0.65;
+        analyser.smoothingTimeConstant = 0.5;
         var gain = ctx.createGain();
         gain.gain.value = 0.35;
         srcNode.connect(analyser);
@@ -94,15 +95,20 @@
             var avg = sum / width;
             rawSum += sum;
             rawBins += width;
-            subMax[idx] = Math.max(subMax[idx] * 0.9985, avg, 25);
-            target = Math.min(1, Math.max(0, avg - 6) / (subMax[idx] - 6));
+            /* Slow-decaying peak reference plus a gamma curve keeps
+               dynamic range: mid energy reads mid, not pinned at 1. */
+            subMax[idx] = Math.max(subMax[idx] * 0.9992, avg, 25);
+            var ratio = Math.min(1, Math.max(0, avg - 6) / (subMax[idx] - 6));
+            target = Math.pow(ratio, 1.7);
           }
-          amps[idx] += (target - amps[idx]) * (target > amps[idx] ? 0.35 : 0.07);
+          amps[idx] += (target - amps[idx]) * (target > amps[idx] ? 0.35 : 0.12);
           overall = Math.max(overall, amps[idx]);
         }
       }
-      var loudTarget = rawBins ? Math.min(1, rawSum / rawBins / 55) : 0;
-      loud += (loudTarget - loud) * (loudTarget > loud ? 0.25 : 0.06);
+      var rawLoud = rawBins ? rawSum / rawBins : 0;
+      loudMax = Math.max(loudMax * 0.9992, rawLoud, 30);
+      var loudTarget = Math.pow(Math.min(1, rawLoud / loudMax), 1.6);
+      loud += (loudTarget - loud) * (loudTarget > loud ? 0.3 : 0.08);
       window.soundField.overall = overall;
       window.soundField.loud = loud;
       if (audio.paused && overall < 0.005) {

@@ -42,14 +42,14 @@
         y: LOBES[L].y + gauss() * LOBES[L].r * 0.85,
         z: LOBES[L].z + gauss() * LOBES[L].r,
         cell: L * 4 + ((rnd() * 4) | 0),
-        bias: 0.08 + rnd() * 0.5,
+        bias: 0.12 + rnd() * 0.5,
         act: 0,
       });
     }
   }
   // Bridge neurons near the center stitch the lobes into one organ.
   for (var b = 0; b < 24; b++) {
-    nodes.push({ x: gauss() * 0.34, y: gauss() * 0.32, z: gauss() * 0.34, cell: (rnd() * 16) | 0, bias: 0.08 + rnd() * 0.5, act: 0 });
+    nodes.push({ x: gauss() * 0.34, y: gauss() * 0.32, z: gauss() * 0.34, cell: (rnd() * 16) | 0, bias: 0.12 + rnd() * 0.5, act: 0 });
   }
 
   // Edges: each neuron to its four nearest neighbors, deduped.
@@ -116,16 +116,16 @@
     // population, so activation density follows the dynamics.
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
-      var drive = cs ? (cs[n.cell] || 0) * (0.35 + 1.15 * loud) : 0;
+      var drive = cs ? (cs[n.cell] || 0) * (0.15 + 1.05 * loud) : 0;
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.4) : 0;
-      n.act += (target - n.act) * (target > n.act ? 0.3 : 0.055);
+      n.act += (target - n.act) * (target > n.act ? 0.3 : 0.09);
     }
 
     // A rising cell is a struck note: fire pulses from its neurons,
     // more of them the louder the passage.
     if (cs && !still) {
       var burst = 1 + Math.round(loud * 4);
-      var thresh = Math.max(0.06, 0.15 - loud * 0.08);
+      var thresh = Math.max(0.07, 0.16 - loud * 0.08);
       for (var c = 0; c < 16; c++) {
         var v = cs[c] || 0;
         if (v - prevCells[c] > thresh) {
@@ -183,7 +183,7 @@
       var ea = edges[pu.e][pu.from], eb = edges[pu.e][1 - pu.from];
       if (pu.t >= 1) {
         nodes[eb].act = Math.min(1, nodes[eb].act + 0.22);
-        if (Math.random() < loud * 0.45) firePulse(eb);
+        if (Math.random() < loud * 0.35) firePulse(eb);
         pulses.splice(u, 1);
         continue;
       }
@@ -204,7 +204,7 @@
     for (var w2 = 0; w2 < nodes.length; w2++) {
       var nn = nodes[w2];
       var per2 = pz[w2];
-      if (nn.act > 0.12) {
+      if (nn.act > 0.2) {
         g.globalAlpha = nn.act * 0.16 * per2;
         g.beginPath();
         g.arc(px[w2], py[w2], (5 + nn.act * 9) * per2, 0, 6.2832);
