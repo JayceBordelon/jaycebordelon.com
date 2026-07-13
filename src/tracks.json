@@ -102,5 +102,13 @@
     "cat": "Hip Hop",
     "sub": "Drake and Giveon",
     "title": "Chicago Freestyle by Drake and Giveon"
+  },
+  {
+    "slug": "wgft",
+    "src": "/audio/wgft.m4a",
+    "name": "wgft",
+    "cat": "Hip Hop",
+    "sub": "Gunna feat. Burna Boy",
+    "title": "wgft by Gunna featuring Burna Boy"
   }
 ]
