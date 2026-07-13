@@ -31,11 +31,11 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
-  // Every generation grows its own creature with no symmetry group at
-  // all: lumpy uneven blobs, straggling dendrites, loose scatter, and
-  // long chords, squashed and drifted off center, never the same
-  // twice. Cell comes from where a neuron lives: register by height,
-  // sub-band by radius, so pitch geography survives every roll.
+  // Every generation rolls a symmetry group and feeds it wild seed
+  // points from blobs, dendrite walks, and scatter, so the silhouette
+  // reads ordered while the texture inside never repeats. Cell comes
+  // from where a neuron lives: register by height, sub-band by radius,
+  // so pitch geography survives every roll.
   var nodes, edges, incident, cellNodes;
   function cellAt(rad2, my2, ys) {
     var t2 = my2 / (ys * 2);
@@ -44,55 +44,47 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // No symmetry group at all anymore: the creature grows like
-    // tissue. A handful of unevenly weighted cluster blobs (some
-    // dense, some sparse), random-walk dendrites straggling off them,
-    // a loose scatter around everything, and a few long chords through
-    // the middle, all under a random per-axis squash and off-center
-    // drift.
+    // Symmetry is back, but the points feeding it are wild: seeds come
+    // from unevenly weighted blobs, random-walk dendrites, and loose
+    // scatter, then every seed is stamped through this creature's
+    // rotational group (sometimes mirrored) with a whisper of per-copy
+    // jitter. The silhouette reads ordered, the texture inside never
+    // repeats.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
     var YS = 0.5 + rnd() * 0.32;
-    var SX = 0.7 + rnd() * 0.6;
-    var SZ = 0.7 + rnd() * 0.6;
-    var OX = (rnd() - 0.5) * 0.3;
-    var OZ = (rnd() - 0.5) * 0.3;
-    nodes = [];
-    edges = [];
-    function push(x, y, z, bias) {
-      x = x * SX + OX;
-      z = z * SZ + OZ;
-      var rad = Math.hypot(x, z);
-      nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
-    }
+    var SQ = 0.86 + rnd() * 0.26;
+    var rotN = [2, 2, 3, 4][(rnd() * 4) | 0];
+    var mirrored = rnd() < 0.5;
+    var copies = rotN * (mirrored ? 2 : 1);
+    var JIT = 0.03 + rnd() * 0.05;
 
-    // Lumpy blobs with uneven populations.
-    var K = 4 + ((rnd() * 5) | 0);
+    // Super random seed points from the organic samplers.
+    var seedsWanted = ((430 + rnd() * 120) / copies) | 0;
+    var pts = [];
+    var K = 3 + ((rnd() * 4) | 0);
     var blobs = [];
     var weights = [];
     var wsum = 0;
     for (var b0 = 0; b0 < K; b0++) {
       blobs.push({
-        x: (rnd() - 0.5) * 1.5,
+        x: (rnd() - 0.5) * 1.4,
         y: (rnd() * 2 - 1) * YS * 0.85,
-        z: (rnd() - 0.5) * 1.5,
-        r: 0.12 + rnd() * 0.3,
+        z: (rnd() - 0.5) * 1.4,
+        r: 0.12 + rnd() * 0.28,
       });
       var w = 0.2 + rnd() * rnd() * 2.2;
       weights.push(w);
       wsum += w;
     }
-    var BUDGET = 340 + ((rnd() * 140) | 0);
+    var blobShare = (seedsWanted * 0.62) | 0;
     for (var b1 = 0; b1 < K; b1++) {
-      var count = Math.round((weights[b1] / wsum) * BUDGET);
+      var count = Math.round((weights[b1] / wsum) * blobShare);
       var bl = blobs[b1];
       for (var i1 = 0; i1 < count; i1++) {
-        push(bl.x + gauss() * bl.r, bl.y + gauss() * bl.r * 0.8, bl.z + gauss() * bl.r, 0.12 + rnd() * 0.5);
+        pts.push([bl.x + gauss() * bl.r, bl.y + gauss() * bl.r * 0.8, bl.z + gauss() * bl.r]);
       }
     }
-
-    // Dendrites: random walks straggling out of the mass.
-    var DEND = 9 + ((rnd() * 8) | 0);
-    for (var d0 = 0; d0 < DEND; d0++) {
+    while (pts.length < seedsWanted * 0.85) {
       var seed0 = blobs[(rnd() * K) | 0];
       var wx = seed0.x + gauss() * seed0.r;
       var wy = seed0.y + gauss() * seed0.r * 0.8;
@@ -100,8 +92,8 @@
       var dirx = gauss(), diry = gauss() * 0.6, dirz = gauss();
       var dl = Math.hypot(dirx, diry, dirz) || 1;
       dirx /= dl; diry /= dl; dirz /= dl;
-      var steps = 4 + ((rnd() * 7) | 0);
-      for (var st0 = 0; st0 < steps; st0++) {
+      var steps = 4 + ((rnd() * 6) | 0);
+      for (var st0 = 0; st0 < steps && pts.length < seedsWanted; st0++) {
         var step = 0.09 + rnd() * 0.08;
         wx += dirx * step;
         wy += diry * step;
@@ -111,16 +103,31 @@
         dirz += gauss() * 0.35;
         dl = Math.hypot(dirx, diry, dirz) || 1;
         dirx /= dl; diry /= dl; dirz /= dl;
-        push(wx, wy, wz, 0.12 + rnd() * 0.5);
+        pts.push([wx, wy, wz]);
       }
     }
-
-    // Loose scatter around everything.
-    var FREE = 60 + ((rnd() * 50) | 0);
-    for (var f0 = 0; f0 < FREE; f0++) {
+    while (pts.length < seedsWanted) {
       var fa = rnd() * TAU;
       var fr = 0.12 + Math.pow(rnd(), 0.55) * 0.95;
-      push(Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.08), Math.sin(fa) * fr, 0.12 + rnd() * 0.5);
+      pts.push([Math.cos(fa) * fr, (rnd() * 2 - 1) * (YS + 0.08), Math.sin(fa) * fr]);
+    }
+
+    // Stamp every seed through the group.
+    nodes = [];
+    edges = [];
+    for (var p0 = 0; p0 < pts.length; p0++) {
+      var px0 = pts[p0][0], py0 = pts[p0][1], pz0 = pts[p0][2];
+      var bias = 0.12 + rnd() * 0.5;
+      for (var cpy = 0; cpy < copies; cpy++) {
+        var rot = (cpy % rotN) * (TAU / rotN);
+        var mir = mirrored && cpy >= rotN ? -1 : 1;
+        var ca = Math.cos(rot), sa = Math.sin(rot);
+        var x = ((px0 * ca - pz0 * sa) * mir + (rnd() - 0.5) * JIT) * SQ;
+        var y = py0 + (rnd() - 0.5) * JIT * 0.8;
+        var z = px0 * sa + pz0 * ca + (rnd() - 0.5) * JIT;
+        var rad = Math.hypot(x, z);
+        nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
+      }
     }
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
@@ -197,24 +204,32 @@
     new MutationObserver(palette).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   }
 
-  // Grab and spin: dragging anywhere off the controls throws the net,
-  // momentum carries it and decays, and the slow automatic turn never
-  // stops underneath.
-  var userYaw = 0, yawVel = 0, dragging = false, dragX = 0;
+  // Grab and tumble: dragging anywhere off the controls throws the
+  // net in both axes, momentum carries it and decays, and the slow
+  // automatic turn never stops underneath.
+  var userYaw = 0, yawVel = 0, userTilt = 0, tiltVel = 0;
+  var dragging = false, dragX = 0, dragY = 0;
   if (!still) {
     addEventListener("pointerdown", function (e) {
       if (e.target && e.target.closest && e.target.closest(".listen-bar, header, a, button, input, select")) return;
       dragging = true;
       dragX = e.clientX;
+      dragY = e.clientY;
       yawVel = 0;
+      tiltVel = 0;
     });
     addEventListener("pointermove", function (e) {
       if (!dragging) return;
       var dx = e.clientX - dragX;
+      var dy = e.clientY - dragY;
       dragX = e.clientX;
+      dragY = e.clientY;
       var d = -dx * 0.005;
+      var d2 = -dy * 0.004;
       userYaw += d;
+      userTilt += d2;
       yawVel = d;
+      tiltVel = d2;
     });
     addEventListener("pointerup", function () { dragging = false; });
     addEventListener("pointercancel", function () { dragging = false; });
@@ -313,10 +328,13 @@
     if (!dragging) {
       userYaw += yawVel;
       yawVel *= 0.95;
+      userTilt += tiltVel;
+      tiltVel *= 0.95;
     }
     var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5 + userYaw;
+    var tilt = 0.32 + userTilt;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
-    var cx1 = Math.cos(0.32), sx1 = Math.sin(0.32);
+    var cx1 = Math.cos(tilt), sx1 = Math.sin(tilt);
     var S = Math.min(W, H) * (W < H ? 0.46 : 0.36);
     var CX = W * 0.5, CY = H * 0.47;
     var prog = [];
