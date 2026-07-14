@@ -24,6 +24,8 @@
   var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
   var pulses = [];
+  var rings = [];
+  var lastKick = -9999;
 
   // A fresh seed every visit: the brain is never the same twice.
   var seed = (Math.random() * 4294967296) | 0;
@@ -49,10 +51,11 @@
     // stamped with its reflection through the vertical plane. Twins
     // share a pitch cell and light together.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.72 + rnd() * 0.28;
+    var YS = 0.52 + rnd() * 0.18;
     nodes = [];
     edges = [];
     function pushMirrored(x, y, z, bias) {
+      y = Math.max(-0.7, Math.min(0.7, y));
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
       nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
@@ -299,6 +302,8 @@
     var field = window.soundField;
     var cs = field && field.cells ? field.cells : null;
     var loud = field ? field.loud || 0 : 0;
+    var kickV = field ? field.kick || 0 : 0;
+    var fluxV = field ? field.flux || 0 : 0;
 
     // Two separators keep loud polyphony granular. Lateral inhibition:
     // a neuron's drive is its cell's energy above the mean of all
@@ -330,7 +335,7 @@
     // A rising cell is a struck note: fire pulses from its neurons,
     // more of them the louder the passage. Not during the spawn.
     if (cs && !still && eff > 0.85) {
-      var burst = 1 + Math.round(loud * 4);
+      var burst = 1 + Math.round(loud * 3 + fluxV * 3);
       var thresh = Math.max(0.07, 0.16 - loud * 0.08);
       for (var c2 = 0; c2 < 16; c2++) {
         var v = cs[c2] || 0;
@@ -375,6 +380,25 @@
       px[j] = CX + xr * S * per;
       py[j] = CY + yr * S * per;
       pz[j] = per;
+    }
+
+    // Kick shockwaves: a bass hit throws an expanding ring from the
+    // center of the structure.
+    if (!still && eff > 0.9 && kickV > 0.5 && t - lastKick > 190) {
+      lastKick = t;
+      if (rings.length < 6) rings.push({ r: Math.min(W, H) * 0.05, v: 7 + kickV * 9, a: 0.34 });
+    }
+    for (var rg = rings.length - 1; rg >= 0; rg--) {
+      var R0 = rings[rg];
+      R0.r += R0.v;
+      R0.a *= 0.93;
+      if (R0.a < 0.02) { rings.splice(rg, 1); continue; }
+      g.strokeStyle = ramp(0.55);
+      g.globalAlpha = R0.a;
+      g.lineWidth = 1;
+      g.beginPath();
+      g.arc(CX, CY, R0.r, 0, 6.2832);
+      g.stroke();
     }
 
     // Edges: quiet wiring that brightens and heats up when both ends

@@ -31,6 +31,13 @@ bodyClass: "music-page"
     <svg class="lp-play" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
     <svg class="lp-pause" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
   </button>
+  <div class="np">
+    <span class="np-eq" aria-hidden="true"><i></i><i></i><i></i></span>
+    <div class="np-meta">
+      <span id="np-name" class="np-name"></span>
+      <span id="np-sub" class="np-sub"></span>
+    </div>
+  </div>
   <span id="listen-time" class="listen-clock">0:00</span>
   <input id="listen-seek" class="listen-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Seek through the track" />
   <span id="listen-dur" class="listen-clock">0:00</span>
