@@ -84,6 +84,14 @@
     edges = [];
     function pushMirrored(x, y, z, bias) {
       y = Math.max(-0.7, Math.min(0.7, y));
+      // Soft radial compression: outliers get pulled back toward the
+      // body instead of dangling far outside it.
+      var r0 = Math.hypot(x, z);
+      if (r0 > 1.02) {
+        var pull = (1.02 + (r0 - 1.02) * 0.22) / r0;
+        x *= pull;
+        z *= pull;
+      }
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
       nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
