@@ -59,6 +59,7 @@
     "Alternative": "#b8e34a",
     "Folk": "#d9a05b",
     "Rock": "#f43f5e",
+    "Electronic": "#22d3ee",
   };
   function catColor(cat) {
     return CAT_COLORS[cat] || "#34d399";
@@ -362,6 +363,7 @@
         togglePick(false);
         return;
       }
+      if (document.querySelector(".net-mix.open")) return;
       leave();
     }
   });

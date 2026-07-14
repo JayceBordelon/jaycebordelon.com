@@ -25,6 +25,22 @@ bodyClass: "music-page"
     </div>
   </div>
   <button type="button" id="net-scramble" class="net-mathtip-btn net-scramble" aria-label="Scramble a new shape">&#8635;</button>
+  <div class="net-mix" id="net-mix">
+    <button type="button" id="net-mix-btn" class="net-mathtip-btn net-mix-btn" aria-expanded="false" aria-label="Signal mix controls">&#955;</button>
+    <div id="net-mix-panel" class="net-label net-mix-panel">
+      <span class="net-label-name">SIGNAL MIX</span>
+      <label class="mix-row"><span class="mix-g">&#955;</span><input id="sw-lam" type="range" min="0" max="2.5" step="0.05" value="1.5" aria-label="Loudness weight" /><span class="mix-v" id="sw-lam-v">1.50</span></label>
+      <span class="mix-hint">loudness, how much sheer volume recruits the whole net</span>
+      <label class="mix-row"><span class="mix-g">&#963;</span><input id="sw-sig" type="range" min="0" max="2" step="0.05" value="1" aria-label="Spectrum weight" /><span class="mix-v" id="sw-sig-v">1.00</span></label>
+      <span class="mix-hint">spectrum, how much each frequency band drives its own region</span>
+      <label class="mix-row"><span class="mix-g">&#954;</span><input id="sw-kap" type="range" min="0" max="2" step="0.05" value="1" aria-label="Impact weight" /><span class="mix-v" id="sw-kap-v">1.00</span></label>
+      <span class="mix-hint">impact, how hard drum hits and attacks slam everything</span>
+      <label class="mix-row"><span class="mix-g">&#966;</span><input id="sw-phi" type="range" min="0" max="2" step="0.05" value="1" aria-label="Pitch steering weight" /><span class="mix-v" id="sw-phi-v">1.00</span></label>
+      <span class="mix-hint">pitch steer, how strongly brightness pulls light up and down</span>
+      <label class="mix-row"><span class="mix-g">&#951;</span><input id="sw-eta" type="range" min="0" max="2" step="0.05" value="1" aria-label="Contrast weight" /><span class="mix-v" id="sw-eta-v">1.00</span></label>
+      <span class="mix-hint">contrast, how much busy passages suppress the background wash</span>
+    </div>
+  </div>
 </div>
 <div id="listen-bar" class="listen-bar">
   <button type="button" id="listen-play" class="listen-play" aria-label="Pause">

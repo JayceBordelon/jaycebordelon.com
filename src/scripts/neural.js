@@ -17,6 +17,14 @@
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
   var g = cv.getContext("2d");
+  // The signal mix: user-dialed weights for the reward signaling,
+  // volume the heaviest by default, persisted across visits.
+  var WEIGHTS = { lam: 1.5, sig: 1, kap: 1, phi: 1, eta: 1 };
+  try {
+    var savedW = JSON.parse(localStorage.getItem("sigmix") || "null");
+    if (savedW) for (var wk in WEIGHTS) if (typeof savedW[wk] === "number") WEIGHTS[wk] = savedW[wk];
+  } catch (e) {}
+
   var labelEl = document.getElementById("net-label");
   var labelName = document.getElementById("net-label-name");
   var labelEqn = document.getElementById("net-label-eqn");
@@ -337,11 +345,12 @@
       var n = nodes[i];
       var reg = n.cell >> 2;
       var raw = cs ? cs[n.cell] || 0 : 0;
-      var rel = Math.max(0, raw - mean * 0.45);
+      var rel = Math.max(0, raw - mean * 0.45 * WEIGHTS.eta);
       var atk = Math.max(0, raw - cellBase[n.cell]);
       var regN = 1 - reg / 3;
       var freqW = 0.55 + 0.95 * (1 - Math.abs(regN - cent));
-      var drive = rel * (0.45 + 1.6 * atk) * (0.25 + 1.05 * loud) * 1.7 * freqW + impact * (0.35 + 0.75 * loud);
+      freqW = 1 + WEIGHTS.phi * (freqW - 1);
+      var drive = WEIGHTS.sig * rel * (0.45 + 1.6 * atk) * (0.15 + WEIGHTS.lam * loud) * 1.7 * freqW + WEIGHTS.kap * impact * (0.35 + 0.75 * loud);
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
       n.act += (target - n.act) * (target > n.act ? ATTACK[reg] : RELEASE[reg]);
     }
@@ -536,6 +545,43 @@
       }
     },
   };
+
+  // The signal mix modal: greek-dialed weights with live apply.
+  var mixWrap = document.getElementById("net-mix");
+  var mixBtn = document.getElementById("net-mix-btn");
+  if (mixBtn && mixWrap) {
+    mixBtn.addEventListener("click", function () {
+      var open = mixWrap.classList.toggle("open");
+      mixBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && mixWrap.classList.contains("open")) {
+        mixWrap.classList.remove("open");
+        mixBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+  function bindWeight(id, key) {
+    var el = document.getElementById(id);
+    var out = document.getElementById(id + "-v");
+    if (!el) return;
+    el.value = String(WEIGHTS[key]);
+    function paintW() {
+      if (out) out.textContent = (+el.value).toFixed(2);
+    }
+    el.addEventListener("input", function () {
+      WEIGHTS[key] = +el.value;
+      paintW();
+      try { localStorage.setItem("sigmix", JSON.stringify(WEIGHTS)); } catch (e) {}
+      if (still && active) draw(0);
+    });
+    paintW();
+  }
+  bindWeight("sw-lam", "lam");
+  bindWeight("sw-sig", "sig");
+  bindWeight("sw-kap", "kap");
+  bindWeight("sw-phi", "phi");
+  bindWeight("sw-eta", "eta");
 
   // The scramble badge rolls a fresh structure and replays the spawn.
   var scrambleBtn = document.getElementById("net-scramble");
