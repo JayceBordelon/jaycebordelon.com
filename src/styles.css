@@ -644,31 +644,6 @@
     letter-spacing: 0.14em;
     color: color-mix(in srgb, var(--foreground) 78%, transparent);
   }
-  .mix-row input {
-    flex: 1;
-    appearance: none;
-    -webkit-appearance: none;
-    height: 2px;
-    border-radius: 1px;
-    background: color-mix(in srgb, var(--foreground) 25%, transparent);
-    outline-offset: 6px;
-  }
-  .mix-row input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
-  }
-  .mix-row input::-moz-range-thumb {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
-  }
   .mix-v {
     font-size: 9.5px;
     letter-spacing: 0.08em;
@@ -788,9 +763,6 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.14em;
-  }
-  .listen-bar[hidden] {
-    display: none;
   }
   .listen-play {
     display: flex;
