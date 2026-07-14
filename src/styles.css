@@ -607,6 +607,13 @@
   }
   .net-mix-panel {
     min-width: 268px;
+    max-width: 88vw;
+    overflow-x: auto;
+  }
+  .mix-eq {
+    margin-top: 10px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--border);
   }
   .net-mix.open .net-mix-panel {
     opacity: 1;
