@@ -142,9 +142,9 @@
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
   var loudMax = 30;
-  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0 };
+  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0, centroid: 0.5 };
   var loud = 0;
-  var kick = 0, flux = 0, bassBase = 0;
+  var kick = 0, flux = 0, bassBase = 0, centroid = 0.5;
   var prevBins = null;
   var ctx, analyser, data, looping = false;
   function analyse() {
@@ -210,13 +210,22 @@
         kickT = Math.min(1, Math.max(0, bassAvg - bassBase - 6) / 42);
         if (!prevBins) prevBins = new Uint8Array(140);
         var fsum = 0, fi2 = 0;
+        var cw = 0, cm = 0;
+        var lo = Math.log(4), hi = Math.log(560);
         for (var fb = 4; fb < 560 && fb < data.length; fb += 4) {
           var dfb = data[fb] - prevBins[fi2];
           if (dfb > 0) fsum += dfb;
           prevBins[fi2] = data[fb];
           fi2++;
+          var mag = data[fb];
+          if (mag > 8) {
+            var pos = (Math.log(fb) - lo) / (hi - lo);
+            cw += mag * pos;
+            cm += mag;
+          }
         }
         fluxT = Math.min(1, fsum / fi2 / 26);
+        if (cm > 40) centroid += ((cw / cm) - centroid) * 0.2;
       }
       kick += (kickT - kick) * (kickT > kick ? 0.55 : 0.2);
       flux += (fluxT - flux) * (fluxT > flux ? 0.5 : 0.18);
@@ -224,6 +233,7 @@
       window.soundField.loud = loud;
       window.soundField.kick = kick;
       window.soundField.flux = flux;
+      window.soundField.centroid = centroid;
       if (audio.paused && overall < 0.005) {
         looping = false;
         for (var r2 = 0; r2 < 16; r2++) amps[r2] = 0;
