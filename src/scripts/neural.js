@@ -195,9 +195,20 @@
   var dragging = false, dragX = 0, dragY = 0;
   var mmx = -1, mmy = -1;
   var showAxes = false;
+  var zoom = 1, zoomT = 1;
+  var touches = {}, touchCount = 0, pinchLast = 0;
+  function clampZoom(v) { return Math.max(0.35, Math.min(3, v)); }
   if (!still) {
     addEventListener("pointerdown", function (e) {
       if (e.target && e.target.closest && e.target.closest(".listen-bar, header, a, button, input, select")) return;
+      touches[e.pointerId] = [e.clientX, e.clientY];
+      touchCount++;
+      if (touchCount === 2) {
+        var ids = Object.keys(touches);
+        pinchLast = Math.hypot(touches[ids[0]][0] - touches[ids[1]][0], touches[ids[0]][1] - touches[ids[1]][1]);
+        dragging = false;
+        return;
+      }
       dragging = true;
       dragX = e.clientX;
       dragY = e.clientY;
@@ -207,6 +218,15 @@
     addEventListener("pointermove", function (e) {
       mmx = e.clientX;
       mmy = e.clientY;
+      if (touches[e.pointerId]) touches[e.pointerId] = [e.clientX, e.clientY];
+      if (touchCount === 2) {
+        var ids2 = Object.keys(touches);
+        var d2p = Math.hypot(touches[ids2[0]][0] - touches[ids2[1]][0], touches[ids2[0]][1] - touches[ids2[1]][1]);
+        if (pinchLast > 0 && d2p > 0) zoomT = clampZoom(zoomT * (d2p / pinchLast));
+        pinchLast = d2p;
+        if (still && active) { zoom = zoomT; draw(0); }
+        return;
+      }
       if (!dragging) return;
       var dx = e.clientX - dragX;
       var dy = e.clientY - dragY;
@@ -219,8 +239,23 @@
       yawVel = d;
       tiltVel = d2;
     });
-    addEventListener("pointerup", function () { dragging = false; });
-    addEventListener("pointercancel", function () { dragging = false; });
+    addEventListener("pointerup", function (e) {
+      dragging = false;
+      if (touches[e.pointerId]) { delete touches[e.pointerId]; touchCount--; }
+      pinchLast = 0;
+    });
+    addEventListener("pointercancel", function (e) {
+      dragging = false;
+      if (touches[e.pointerId]) { delete touches[e.pointerId]; touchCount--; }
+      pinchLast = 0;
+    });
+    // Scroll to zoom, except over the scrollable song list and bar.
+    addEventListener("wheel", function (e) {
+      if (e.target && e.target.closest && e.target.closest(".listen-bar, .listen-tracklist, .net-label")) return;
+      e.preventDefault();
+      zoomT = clampZoom(zoomT * Math.exp(-e.deltaY * 0.0012));
+      if (still && active) { zoom = zoomT; draw(0); }
+    }, { passive: false });
   }
 
   var W = 0, H = 0;
@@ -319,11 +354,12 @@
       userTilt += tiltVel;
       tiltVel *= 0.95;
     }
+    zoom += (zoomT - zoom) * 0.18;
     var yaw = (still ? 0.6 : t * 0.00008) + (1 - eff) * 1.5 + userYaw;
     var tilt = 0.32 + userTilt;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
     var cx1 = Math.cos(tilt), sx1 = Math.sin(tilt);
-    var S = Math.min(W, H) * (W < H ? 0.46 : 0.36);
+    var S = Math.min(W, H) * (W < H ? 0.46 : 0.36) * zoom;
     var CX = W * 0.5, CY = H * 0.47;
     var prog = [];
     for (var j = 0; j < nodes.length; j++) {
