@@ -304,6 +304,7 @@
     var loud = field ? field.loud || 0 : 0;
     var kickV = field ? field.kick || 0 : 0;
     var fluxV = field ? field.flux || 0 : 0;
+    var cent = field ? (field.centroid == null ? 0.5 : field.centroid) : 0.5;
 
     // Two separators keep loud polyphony granular. Lateral inhibition:
     // a neuron's drive is its cell's energy above the mean of all
@@ -325,15 +326,24 @@
     // Broadband impact bypasses lateral inhibition: a slammed chord
     // raises every cell at once, which inhibition would otherwise
     // cancel, so kick and flux drive the whole structure directly.
+    // Frequency carries real authority: the spectral centroid steers
+    // drive toward the register geography that matches the sound's
+    // brightness, and each register has its own dynamics, bass
+    // blooming slow and heavy while treble sparkles fast.
     var impact = kickV * 0.42 + fluxV * 0.46;
+    var ATTACK = [0.2, 0.28, 0.4, 0.55];
+    var RELEASE = [0.07, 0.1, 0.15, 0.21];
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
+      var reg = n.cell >> 2;
       var raw = cs ? cs[n.cell] || 0 : 0;
       var rel = Math.max(0, raw - mean * 0.45);
       var atk = Math.max(0, raw - cellBase[n.cell]);
-      var drive = rel * (0.45 + 1.6 * atk) * (0.25 + 1.05 * loud) * 1.5 + impact * (0.35 + 0.75 * loud);
+      var regN = 1 - reg / 3;
+      var freqW = 0.55 + 0.95 * (1 - Math.abs(regN - cent));
+      var drive = rel * (0.45 + 1.6 * atk) * (0.25 + 1.05 * loud) * 1.7 * freqW + impact * (0.35 + 0.75 * loud);
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
-      n.act += (target - n.act) * (target > n.act ? 0.3 : 0.13);
+      n.act += (target - n.act) * (target > n.act ? ATTACK[reg] : RELEASE[reg]);
     }
 
     // A rising cell is a struck note: fire pulses from its neurons,
