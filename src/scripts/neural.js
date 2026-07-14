@@ -370,7 +370,9 @@
     // blooming slow and heavy while treble sparkles fast.
     var impact = kickV * 0.3 + fluxV * 0.33;
     var ATTACK = [0.2, 0.28, 0.4, 0.55];
-    var RELEASE = [0.07, 0.1, 0.15, 0.21];
+    // The gradual backoff: light drains out slowly after the sound
+    // stops, bass lingering longest, treble still the quickest.
+    var RELEASE = [0.04, 0.055, 0.08, 0.11];
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
       var reg = n.cell >> 2;
