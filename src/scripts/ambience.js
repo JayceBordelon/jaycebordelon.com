@@ -194,8 +194,10 @@
         }
       }
       var rawLoud = rawBins ? rawSum / rawBins : 0;
-      loudMax = Math.max(loudMax * 0.9992, rawLoud, 30);
-      var loudTarget = Math.pow(Math.min(1, rawLoud / loudMax), 1.6);
+      // The firm floor keeps mid-level passages reading mid: without
+      // it the rolling max normalizes everything toward 1.
+      loudMax = Math.max(loudMax * 0.9992, rawLoud, 58);
+      var loudTarget = Math.pow(Math.min(1, rawLoud / loudMax), 1.9);
       loud += (loudTarget - loud) * (loudTarget > loud ? 0.3 : 0.08);
 
       // Percussion signals: kick is the rise of bass energy over its
@@ -225,7 +227,7 @@
             cm += mag;
           }
         }
-        fluxT = Math.min(1, fsum / fi2 / 26);
+        fluxT = Math.min(1, fsum / fi2 / 34);
         if (cm > 40) centroid += ((cw / cm) - centroid) * 0.2;
       }
       kick += (kickT - kick) * (kickT > kick ? 0.55 : 0.2);

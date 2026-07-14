@@ -19,7 +19,7 @@
   var g = cv.getContext("2d");
   // The signal mix: user-dialed weights for the reward signaling,
   // volume the heaviest by default, persisted across visits.
-  var WEIGHTS = { lam: 1.5, sig: 1, kap: 1, phi: 1, eta: 1 };
+  var WEIGHTS = { lam: 1.2, sig: 1, kap: 1, phi: 1, eta: 1 };
   try {
     var savedW = JSON.parse(localStorage.getItem("sigmix") || "null");
     if (savedW) for (var wk in WEIGHTS) if (typeof savedW[wk] === "number") WEIGHTS[wk] = savedW[wk];
@@ -338,7 +338,7 @@
     // drive toward the register geography that matches the sound's
     // brightness, and each register has its own dynamics, bass
     // blooming slow and heavy while treble sparkles fast.
-    var impact = kickV * 0.42 + fluxV * 0.46;
+    var impact = kickV * 0.3 + fluxV * 0.33;
     var ATTACK = [0.2, 0.28, 0.4, 0.55];
     var RELEASE = [0.07, 0.1, 0.15, 0.21];
     for (var i = 0; i < nodes.length; i++) {
@@ -350,7 +350,7 @@
       var regN = 1 - reg / 3;
       var freqW = 0.55 + 0.95 * (1 - Math.abs(regN - cent));
       freqW = 1 + WEIGHTS.phi * (freqW - 1);
-      var drive = WEIGHTS.sig * rel * (0.45 + 1.6 * atk) * (0.15 + WEIGHTS.lam * loud) * 1.7 * freqW + WEIGHTS.kap * impact * (0.35 + 0.75 * loud);
+      var drive = WEIGHTS.sig * rel * (0.45 + 1.6 * atk) * (0.15 + WEIGHTS.lam * loud) * 1.35 * freqW + WEIGHTS.kap * impact * (0.35 + 0.75 * loud);
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
       n.act += (target - n.act) * (target > n.act ? ATTACK[reg] : RELEASE[reg]);
     }
