@@ -17,13 +17,33 @@
   var cv = document.getElementById("bg-net");
   if (!cv || !cv.getContext) return;
   var g = cv.getContext("2d");
-  // The signal mix: user-dialed weights for the reward signaling,
-  // volume the heaviest by default, persisted across visits.
-  var WEIGHTS = { lam: 1.2, sig: 1, kap: 1, phi: 1, eta: 1 };
-  try {
-    var savedW = JSON.parse(localStorage.getItem("sigmix") || "null");
-    if (savedW) for (var wk in WEIGHTS) if (typeof savedW[wk] === "number") WEIGHTS[wk] = savedW[wk];
-  } catch (e) {}
+  // The signal mix is fixed, tuned per genre so every song arrives
+  // with its ideal chemistry: spectrum leads, impact punctuates, and
+  // loudness modulates. The modal displays the active values.
+  var UNIVERSAL = { sig: 1.4, lam: 0.9, kap: 1.1, phi: 0.8, eta: 0.9 };
+  var PRESETS = {
+    "Classical": { sig: 1.6, lam: 0.8, kap: 0.8, phi: 1.1, eta: 0.7 },
+    "Piano Covers": { sig: 1.6, lam: 0.8, kap: 0.8, phi: 1.1, eta: 0.7 },
+    "Originals": { sig: 1.6, lam: 0.8, kap: 0.8, phi: 1.1, eta: 0.7 },
+    "Film Scores": { sig: 1.6, lam: 0.8, kap: 0.8, phi: 1.1, eta: 0.7 },
+    "Rock": { sig: 1.2, lam: 1.0, kap: 1.4, phi: 0.6, eta: 1.2 },
+    "Alternative": { sig: 1.25, lam: 1.0, kap: 1.25, phi: 0.7, eta: 1.1 },
+    "Electronic": { sig: 1.1, lam: 1.1, kap: 1.3, phi: 0.9, eta: 0.8 },
+    "Hip Hop": { sig: 1.0, lam: 1.0, kap: 1.5, phi: 0.7, eta: 1.0 },
+  };
+  var WEIGHTS = UNIVERSAL;
+  var lastGenre = null;
+  function applyPreset(genre) {
+    lastGenre = genre;
+    WEIGHTS = PRESETS[genre] || UNIVERSAL;
+    var ids = { lam: "sw-lam-v", sig: "sw-sig-v", kap: "sw-kap-v", phi: "sw-phi-v", eta: "sw-eta-v" };
+    for (var k in ids) {
+      var el = document.getElementById(ids[k]);
+      if (el) el.textContent = WEIGHTS[k].toFixed(2);
+    }
+    var gEl = document.getElementById("mix-genre");
+    if (gEl) gEl.textContent = genre ? "tuned for " + genre.toLowerCase() : "universal tuning";
+  }
 
   var labelEl = document.getElementById("net-label");
   var labelName = document.getElementById("net-label-name");
@@ -313,6 +333,8 @@
     var kickV = field ? field.kick || 0 : 0;
     var fluxV = field ? field.flux || 0 : 0;
     var cent = field ? (field.centroid == null ? 0.5 : field.centroid) : 0.5;
+    var gnow = field ? field.genre || "" : "";
+    if (gnow !== lastGenre) applyPreset(gnow);
 
     // Two separators keep loud polyphony granular. Lateral inhibition:
     // a neuron's drive is its cell's energy above the mean of all
@@ -546,7 +568,7 @@
     },
   };
 
-  // The signal mix modal: greek-dialed weights with live apply.
+  // The signal mix modal displays the active per-genre tuning.
   var mixWrap = document.getElementById("net-mix");
   var mixBtn = document.getElementById("net-mix-btn");
   if (mixBtn && mixWrap) {
@@ -561,27 +583,7 @@
       }
     });
   }
-  function bindWeight(id, key) {
-    var el = document.getElementById(id);
-    var out = document.getElementById(id + "-v");
-    if (!el) return;
-    el.value = String(WEIGHTS[key]);
-    function paintW() {
-      if (out) out.textContent = (+el.value).toFixed(2);
-    }
-    el.addEventListener("input", function () {
-      WEIGHTS[key] = +el.value;
-      paintW();
-      try { localStorage.setItem("sigmix", JSON.stringify(WEIGHTS)); } catch (e) {}
-      if (still && active) draw(0);
-    });
-    paintW();
-  }
-  bindWeight("sw-lam", "lam");
-  bindWeight("sw-sig", "sig");
-  bindWeight("sw-kap", "kap");
-  bindWeight("sw-phi", "phi");
-  bindWeight("sw-eta", "eta");
+  applyPreset("");
 
   // The scramble badge rolls a fresh structure and replays the spawn.
   var scrambleBtn = document.getElementById("net-scramble");
