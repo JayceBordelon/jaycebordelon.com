@@ -35,6 +35,12 @@
     }
   } catch (e) {}
   if (trackIdx !== 0) audio.src = TRACKS[trackIdx].src;
+  // A shared ?ts= timestamp resumes playback there, refreshing keeps
+  // your place.
+  try {
+    var tsWanted = parseFloat(new URLSearchParams(location.search).get("ts")) || 0;
+    if (tsWanted > 0) localStorage.setItem("ambience-t", String(tsWanted));
+  } catch (e) {}
   try { history.replaceState(null, "", "/music/" + TRACKS[trackIdx].slug); } catch (e) {}
 
   var off = false;
@@ -52,6 +58,7 @@
     "Hip Hop": "#ff6436",
     "Alternative": "#b8e34a",
     "Folk": "#d9a05b",
+    "Rock": "#f43f5e",
   };
   function catColor(cat) {
     return CAT_COLORS[cat] || "#34d399";
@@ -357,6 +364,14 @@
   audio.addEventListener("play", paintBar);
   audio.addEventListener("pause", paintBar);
   audio.addEventListener("durationchange", paintBar);
+
+  setInterval(function () {
+    if (!audio.paused && audio.duration) {
+      try {
+        history.replaceState(null, "", "/music/" + TRACKS[trackIdx].slug + "?ts=" + Math.floor(audio.currentTime));
+      } catch (e) {}
+    }
+  }, 5000);
 
   addEventListener("pagehide", function () {
     try {

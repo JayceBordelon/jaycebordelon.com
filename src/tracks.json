@@ -166,5 +166,269 @@
     "cat": "Alternative",
     "sub": "The Cranberries",
     "title": "Linger by The Cranberries"
+  },
+  {
+    "slug": "moonlight-sonata",
+    "src": "/audio/moonlight-sonata.m4a",
+    "name": "Moonlight Sonata",
+    "cat": "Classical",
+    "sub": "Beethoven, played by Valentina Lisitsa",
+    "title": "Moonlight Sonata by Beethoven, played by Valentina Lisitsa"
+  },
+  {
+    "slug": "moonlight-sonata-presto",
+    "src": "/audio/moonlight-sonata-presto.m4a",
+    "name": "Moonlight Sonata III",
+    "cat": "Classical",
+    "sub": "Beethoven, Lisitsa live in Hannover",
+    "title": "Moonlight Sonata III by Beethoven, Lisitsa live in Hannover"
+  },
+  {
+    "slug": "nocturne-op9-no2",
+    "src": "/audio/nocturne-op9-no2.m4a",
+    "name": "Nocturne Op. 9 No. 2",
+    "cat": "Classical",
+    "sub": "Chopin, played by Rousseau",
+    "title": "Nocturne Op. 9 No. 2 by Chopin, played by Rousseau"
+  },
+  {
+    "slug": "four-seasons",
+    "src": "/audio/four-seasons.m4a",
+    "name": "The Four Seasons",
+    "cat": "Classical",
+    "sub": "Vivaldi, Voices of Music",
+    "title": "The Four Seasons by Vivaldi, Voices of Music"
+  },
+  {
+    "slug": "winter",
+    "src": "/audio/winter.m4a",
+    "name": "Winter",
+    "cat": "Classical",
+    "sub": "Vivaldi, Voices of Music",
+    "title": "Winter by Vivaldi, Voices of Music"
+  },
+  {
+    "slug": "canon-in-d",
+    "src": "/audio/canon-in-d.m4a",
+    "name": "Canon in D",
+    "cat": "Classical",
+    "sub": "Pachelbel, Voices of Music",
+    "title": "Canon in D by Pachelbel, Voices of Music"
+  },
+  {
+    "slug": "toccata-and-fugue",
+    "src": "/audio/toccata-and-fugue.m4a",
+    "name": "Toccata and Fugue in D minor",
+    "cat": "Classical",
+    "sub": "Bach, pipe organ",
+    "title": "Toccata and Fugue in D minor by Bach, pipe organ"
+  },
+  {
+    "slug": "stick-season",
+    "src": "/audio/stick-season.m4a",
+    "name": "Stick Season",
+    "cat": "Folk",
+    "sub": "Noah Kahan",
+    "title": "Stick Season by Noah Kahan"
+  },
+  {
+    "slug": "stick-season-fenway",
+    "src": "/audio/stick-season-fenway.m4a",
+    "name": "Stick Season, live at Fenway",
+    "cat": "Folk",
+    "sub": "Noah Kahan",
+    "title": "Stick Season, live at Fenway by Noah Kahan"
+  },
+  {
+    "slug": "dial-drunk",
+    "src": "/audio/dial-drunk.m4a",
+    "name": "Dial Drunk",
+    "cat": "Folk",
+    "sub": "Noah Kahan",
+    "title": "Dial Drunk by Noah Kahan"
+  },
+  {
+    "slug": "dial-drunk-red-rocks",
+    "src": "/audio/dial-drunk-red-rocks.m4a",
+    "name": "Dial Drunk, live at Red Rocks",
+    "cat": "Folk",
+    "sub": "Noah Kahan",
+    "title": "Dial Drunk, live at Red Rocks by Noah Kahan"
+  },
+  {
+    "slug": "northern-attitude",
+    "src": "/audio/northern-attitude.m4a",
+    "name": "Northern Attitude",
+    "cat": "Folk",
+    "sub": "Noah Kahan with Hozier",
+    "title": "Northern Attitude by Noah Kahan with Hozier"
+  },
+  {
+    "slug": "northern-attitude-red-rocks",
+    "src": "/audio/northern-attitude-red-rocks.m4a",
+    "name": "Northern Attitude, live at Red Rocks",
+    "cat": "Folk",
+    "sub": "Noah Kahan",
+    "title": "Northern Attitude, live at Red Rocks by Noah Kahan"
+  },
+  {
+    "slug": "reptilia",
+    "src": "/audio/reptilia.m4a",
+    "name": "Reptilia",
+    "cat": "Rock",
+    "sub": "The Strokes",
+    "title": "Reptilia by The Strokes"
+  },
+  {
+    "slug": "you-only-live-once",
+    "src": "/audio/you-only-live-once.m4a",
+    "name": "You Only Live Once",
+    "cat": "Rock",
+    "sub": "The Strokes",
+    "title": "You Only Live Once by The Strokes"
+  },
+  {
+    "slug": "last-nite",
+    "src": "/audio/last-nite.m4a",
+    "name": "Last Nite",
+    "cat": "Rock",
+    "sub": "The Strokes",
+    "title": "Last Nite by The Strokes"
+  },
+  {
+    "slug": "someday",
+    "src": "/audio/someday.m4a",
+    "name": "Someday",
+    "cat": "Rock",
+    "sub": "The Strokes",
+    "title": "Someday by The Strokes"
+  },
+  {
+    "slug": "aint-no-rest-for-the-wicked",
+    "src": "/audio/aint-no-rest-for-the-wicked.m4a",
+    "name": "Ain't No Rest for the Wicked",
+    "cat": "Rock",
+    "sub": "Cage the Elephant",
+    "title": "Ain't No Rest for the Wicked by Cage the Elephant"
+  },
+  {
+    "slug": "cigarette-daydreams",
+    "src": "/audio/cigarette-daydreams.m4a",
+    "name": "Cigarette Daydreams",
+    "cat": "Rock",
+    "sub": "Cage the Elephant",
+    "title": "Cigarette Daydreams by Cage the Elephant"
+  },
+  {
+    "slug": "come-a-little-closer",
+    "src": "/audio/come-a-little-closer.m4a",
+    "name": "Come a Little Closer",
+    "cat": "Rock",
+    "sub": "Cage the Elephant",
+    "title": "Come a Little Closer by Cage the Elephant"
+  },
+  {
+    "slug": "shake-me-down",
+    "src": "/audio/shake-me-down.m4a",
+    "name": "Shake Me Down",
+    "cat": "Rock",
+    "sub": "Cage the Elephant",
+    "title": "Shake Me Down by Cage the Elephant"
+  },
+  {
+    "slug": "trouble",
+    "src": "/audio/trouble.m4a",
+    "name": "Trouble",
+    "cat": "Rock",
+    "sub": "Cage the Elephant",
+    "title": "Trouble by Cage the Elephant"
+  },
+  {
+    "slug": "the-less-i-know-the-better",
+    "src": "/audio/the-less-i-know-the-better.m4a",
+    "name": "The Less I Know The Better",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "The Less I Know The Better by Tame Impala"
+  },
+  {
+    "slug": "feels-like-we-only-go-backwards",
+    "src": "/audio/feels-like-we-only-go-backwards.m4a",
+    "name": "Feels Like We Only Go Backwards",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "Feels Like We Only Go Backwards by Tame Impala"
+  },
+  {
+    "slug": "lost-in-yesterday",
+    "src": "/audio/lost-in-yesterday.m4a",
+    "name": "Lost in Yesterday",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "Lost in Yesterday by Tame Impala"
+  },
+  {
+    "slug": "is-it-true",
+    "src": "/audio/is-it-true.m4a",
+    "name": "Is It True",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "Is It True by Tame Impala"
+  },
+  {
+    "slug": "my-old-ways",
+    "src": "/audio/my-old-ways.m4a",
+    "name": "My Old Ways",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "My Old Ways by Tame Impala"
+  },
+  {
+    "slug": "loser",
+    "src": "/audio/loser.m4a",
+    "name": "Loser",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "Loser by Tame Impala"
+  },
+  {
+    "slug": "end-of-summer",
+    "src": "/audio/end-of-summer.m4a",
+    "name": "End Of Summer",
+    "cat": "Alternative",
+    "sub": "Tame Impala",
+    "title": "End Of Summer by Tame Impala"
+  },
+  {
+    "slug": "electric-love",
+    "src": "/audio/electric-love.m4a",
+    "name": "Electric Love",
+    "cat": "Pop",
+    "sub": "BORNS",
+    "title": "Electric Love by BORNS"
+  },
+  {
+    "slug": "american-money",
+    "src": "/audio/american-money.m4a",
+    "name": "American Money",
+    "cat": "Pop",
+    "sub": "BORNS",
+    "title": "American Money by BORNS"
+  },
+  {
+    "slug": "ten-thousand-emerald-pools",
+    "src": "/audio/ten-thousand-emerald-pools.m4a",
+    "name": "10,000 Emerald Pools",
+    "cat": "Pop",
+    "sub": "BORNS",
+    "title": "10,000 Emerald Pools by BORNS"
+  },
+  {
+    "slug": "ten-thousand-emerald-pools-acoustic",
+    "src": "/audio/ten-thousand-emerald-pools-acoustic.m4a",
+    "name": "10,000 Emerald Pools, acoustic",
+    "cat": "Pop",
+    "sub": "BORNS",
+    "title": "10,000 Emerald Pools, acoustic by BORNS"
   }
 ]
