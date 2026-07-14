@@ -167,12 +167,11 @@
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
   var loudMax = 30;
-  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0, centroid: 0.5, genre: "", voices: [0, 0, 0, 0] };
+  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0, centroid: 0.5, genre: "" };
   var loud = 0;
   var kick = 0, flux = 0, bassBase = 0, centroid = 0.5;
   var prevBins = null;
-  var voices = [0, 0, 0, 0];
-  var ctx, analyser, analyserMid, analyserSide, data, dataMid, dataSide, looping = false;
+  var ctx, analyser, data, looping = false;
   function analyse() {
     if (still) return;
     if (!ctx) {
@@ -187,33 +186,8 @@
         srcNode.connect(analyser);
         analyser.connect(gain);
         gain.connect(ctx.destination);
-        // Mid/side taps: engineers pan instruments apart, so the side
-        // channel carries the wide instruments and the mid carries
-        // vocals, bass, and drums. Analysis only, no audible output.
-        var split = ctx.createChannelSplitter(2);
-        srcNode.connect(split);
-        var midSum = ctx.createGain();
-        var sideSum = ctx.createGain();
-        var lHalf = ctx.createGain(); lHalf.gain.value = 0.5;
-        var rHalf = ctx.createGain(); rHalf.gain.value = 0.5;
-        var lSide = ctx.createGain(); lSide.gain.value = 0.5;
-        var rSide = ctx.createGain(); rSide.gain.value = -0.5;
-        split.connect(lHalf, 0); lHalf.connect(midSum);
-        split.connect(rHalf, 1); rHalf.connect(midSum);
-        split.connect(lSide, 0); lSide.connect(sideSum);
-        split.connect(rSide, 1); rSide.connect(sideSum);
-        analyserMid = ctx.createAnalyser();
-        analyserMid.fftSize = 4096;
-        analyserMid.smoothingTimeConstant = 0.5;
-        analyserSide = ctx.createAnalyser();
-        analyserSide.fftSize = 4096;
-        analyserSide.smoothingTimeConstant = 0.5;
-        midSum.connect(analyserMid);
-        sideSum.connect(analyserSide);
         audio.volume = 1;
         data = new Uint8Array(analyser.frequencyBinCount);
-        dataMid = new Uint8Array(analyserMid.frequencyBinCount);
-        dataSide = new Uint8Array(analyserSide.frequencyBinCount);
       } catch (e) { return; }
     }
     if (ctx.state === "suspended") ctx.resume();
@@ -282,40 +256,6 @@
       }
       kick += (kickT - kick) * (kickT > kick ? 0.55 : 0.2);
       flux += (fluxT - flux) * (fluxT > flux ? 0.5 : 0.18);
-
-      // The voices: percussion, bass, vocal, width. Heuristics, not
-      // recognition, but on produced mixes they track the instruments.
-      var percT = 0, bassVT = 0, vocT = 0, wideT = 0;
-      if (playing && analyserMid) {
-        analyserMid.getByteFrequencyData(dataMid);
-        analyserSide.getByteFrequencyData(dataSide);
-        percT = Math.min(1, kick * 0.65 + flux * 0.8);
-        var bSum = 0;
-        for (var vb = 4; vb < 18; vb++) bSum += data[vb];
-        bassVT = Math.min(1, Math.max(0, bSum / 14 - 16) / 68);
-        var vm = 0, vcnt = 0, vlog = 0;
-        for (var vv = 19; vv < 280; vv += 4) {
-          vm += dataMid[vv];
-          vlog += Math.log(dataMid[vv] + 1);
-          vcnt++;
-        }
-        var meanM = vm / vcnt;
-        var flatness = Math.exp(vlog / vcnt) / (meanM + 0.001);
-        vocT = Math.min(1, Math.max(0, meanM - 10) / 66) * Math.min(1, Math.max(0, 1 - flatness) * 1.7);
-        var smSum = 0, scnt = 0;
-        for (var sv = 10; sv < 400; sv += 4) {
-          smSum += dataSide[sv];
-          scnt++;
-        }
-        var meanS = smSum / scnt;
-        var ratio = meanS / (meanS + meanM + 1);
-        wideT = Math.min(1, Math.max(0, meanS - 7) / 55) * Math.min(1, ratio * 2.6);
-      }
-      voices[0] += (percT - voices[0]) * (percT > voices[0] ? 0.6 : 0.25);
-      voices[1] += (bassVT - voices[1]) * (bassVT > voices[1] ? 0.35 : 0.12);
-      voices[2] += (vocT - voices[2]) * (vocT > voices[2] ? 0.35 : 0.1);
-      voices[3] += (wideT - voices[3]) * (wideT > voices[3] ? 0.35 : 0.12);
-      window.soundField.voices = voices;
       window.soundField.overall = overall;
       window.soundField.loud = loud;
       window.soundField.kick = kick;
@@ -327,7 +267,6 @@
         loud = 0;
         kick = 0;
         flux = 0;
-        voices[0] = voices[1] = voices[2] = voices[3] = 0;
         window.soundField.overall = 0;
         window.soundField.loud = 0;
         window.soundField.kick = 0;
