@@ -41,6 +41,21 @@
   try { off = localStorage.getItem("ambience") === "off"; } catch (e) {}
 
   var bar = document.getElementById("listen-bar");
+  var npName = document.getElementById("np-name");
+  var npSub = document.getElementById("np-sub");
+  var CAT_COLORS = {
+    "Originals": "#34d399",
+    "Piano Covers": "#38acff",
+    "Film Scores": "#ffba22",
+    "Classical": "#8e7cff",
+    "Pop": "#ff5fa8",
+    "Hip Hop": "#ff6436",
+    "Alternative": "#b8e34a",
+    "Folk": "#d9a05b",
+  };
+  function catColor(cat) {
+    return CAT_COLORS[cat] || "#34d399";
+  }
   var playBtn = document.getElementById("listen-play");
   var seek = document.getElementById("listen-seek");
   var timeEl = document.getElementById("listen-time");
@@ -57,14 +72,21 @@
   }
   function paintBar() {
     if (!bar) return;
+    bar.classList.toggle("playing", !audio.paused);
     if (playBtn) {
       playBtn.classList.toggle("playing", !audio.paused);
       playBtn.setAttribute("aria-label", audio.paused ? "Play" : "Pause");
     }
     if (timeEl) timeEl.textContent = fmt(audio.currentTime);
     if (durEl) durEl.textContent = fmt(audio.duration);
+    if (npName) npName.textContent = TRACKS[trackIdx].name;
+    if (npSub) npSub.textContent = TRACKS[trackIdx].sub;
     if (seek && !seeking && audio.duration) {
       seek.value = String(((audio.currentTime / audio.duration) * 1000) | 0);
+    }
+    if (seek && audio.duration) {
+      var pct = ((audio.currentTime / audio.duration) * 100).toFixed(2);
+      seek.style.background = "linear-gradient(to right, var(--np-color) " + pct + "%, color-mix(in srgb, var(--foreground) 22%, transparent) " + pct + "%)";
     }
   }
   var pickName = document.getElementById("listen-track-name");
@@ -79,6 +101,7 @@
   function setTrack(i, playNow) {
     trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
     audio.src = TRACKS[trackIdx].src;
+    if (bar) bar.style.setProperty("--np-color", catColor(TRACKS[trackIdx].cat));
     paintPicker();
     try {
       localStorage.setItem("ambience-i", String(trackIdx));
@@ -99,18 +122,23 @@
   // played), both published on window.soundField. The element runs at
   // full volume into the graph and a gain node does the quieting after
   // the tap, so the analyser sees full-scale signal.
+  // Tuned for full-band music, not just piano: bass fundamentals,
+  // low mids, high mids, and a treble register that reaches cymbal
+  // and sibilance territory near 6kHz.
   var SUBS = [
-    [4, 6, 8, 10, 12],
-    [12, 15, 18, 21, 24],
-    [24, 30, 36, 42, 48],
-    [48, 64, 84, 104, 130],
+    [4, 8, 12, 15, 18],
+    [18, 26, 34, 41, 48],
+    [48, 70, 95, 118, 140],
+    [140, 220, 320, 440, 560],
   ];
   var subMax = [];
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
   var loudMax = 30;
-  window.soundField = { cells: amps, overall: 0, loud: 0 };
+  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0 };
   var loud = 0;
+  var kick = 0, flux = 0, bassBase = 0;
+  var prevBins = null;
   var ctx, analyser, data, looping = false;
   function analyse() {
     if (still) return;
@@ -153,7 +181,7 @@
             var ratio = Math.min(1, Math.max(0, avg - 6) / (subMax[idx] - 6));
             target = Math.pow(ratio, 1.7);
           }
-          amps[idx] += (target - amps[idx]) * (target > amps[idx] ? 0.35 : 0.16);
+          amps[idx] += (target - amps[idx]) * (target > amps[idx] ? 0.5 : 0.16);
           overall = Math.max(overall, amps[idx]);
         }
       }
@@ -161,14 +189,44 @@
       loudMax = Math.max(loudMax * 0.9992, rawLoud, 30);
       var loudTarget = Math.pow(Math.min(1, rawLoud / loudMax), 1.6);
       loud += (loudTarget - loud) * (loudTarget > loud ? 0.3 : 0.08);
+
+      // Percussion signals: kick is the rise of bass energy over its
+      // rolling baseline, flux is broadband frame-to-frame change, so
+      // drums and attacks drive the picture even when tonal cells
+      // barely move.
+      var kickT = 0, fluxT = 0;
+      if (playing) {
+        var bassSum = 0;
+        for (var kb = 4; kb < 18; kb++) bassSum += data[kb];
+        var bassAvg = bassSum / 14;
+        bassBase += (bassAvg - bassBase) * 0.04;
+        kickT = Math.min(1, Math.max(0, bassAvg - bassBase - 6) / 42);
+        if (!prevBins) prevBins = new Uint8Array(140);
+        var fsum = 0, fi2 = 0;
+        for (var fb = 4; fb < 560 && fb < data.length; fb += 4) {
+          var dfb = data[fb] - prevBins[fi2];
+          if (dfb > 0) fsum += dfb;
+          prevBins[fi2] = data[fb];
+          fi2++;
+        }
+        fluxT = Math.min(1, fsum / fi2 / 26);
+      }
+      kick += (kickT - kick) * (kickT > kick ? 0.55 : 0.2);
+      flux += (fluxT - flux) * (fluxT > flux ? 0.5 : 0.18);
       window.soundField.overall = overall;
       window.soundField.loud = loud;
+      window.soundField.kick = kick;
+      window.soundField.flux = flux;
       if (audio.paused && overall < 0.005) {
         looping = false;
         for (var r2 = 0; r2 < 16; r2++) amps[r2] = 0;
         loud = 0;
+        kick = 0;
+        flux = 0;
         window.soundField.overall = 0;
         window.soundField.loud = 0;
+        window.soundField.kick = 0;
+        window.soundField.flux = 0;
         return;
       }
       requestAnimationFrame(frame);
@@ -234,6 +292,7 @@
       head.className = "listen-cat";
       head.setAttribute("role", "presentation");
       head.textContent = cat.toUpperCase();
+      head.style.setProperty("--cat-color", catColor(cat));
       pickList.appendChild(head);
       members.forEach(function (ti) {
         var tr = TRACKS[ti];
@@ -241,6 +300,7 @@
         li.setAttribute("role", "option");
         li.setAttribute("aria-selected", "false");
         li.title = tr.title;
+        li.style.setProperty("--cat-color", catColor(tr.cat));
         var nm = document.createElement("span");
         nm.className = "lt-name";
         nm.textContent = tr.name;
@@ -313,6 +373,7 @@
     if (!document.hidden) retry();
   });
 
+  if (bar) bar.style.setProperty("--np-color", catColor(TRACKS[trackIdx].cat));
   paintBar();
   if (off) {
     audio.pause();
