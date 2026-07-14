@@ -322,12 +322,16 @@
       }
       mean /= 16;
     }
+    // Broadband impact bypasses lateral inhibition: a slammed chord
+    // raises every cell at once, which inhibition would otherwise
+    // cancel, so kick and flux drive the whole structure directly.
+    var impact = kickV * 0.42 + fluxV * 0.46;
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
       var raw = cs ? cs[n.cell] || 0 : 0;
       var rel = Math.max(0, raw - mean * 0.45);
       var atk = Math.max(0, raw - cellBase[n.cell]);
-      var drive = rel * (0.45 + 1.6 * atk) * (0.25 + 1.05 * loud) * 1.5;
+      var drive = rel * (0.45 + 1.6 * atk) * (0.25 + 1.05 * loud) * 1.5 + impact * (0.35 + 0.75 * loud);
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
       n.act += (target - n.act) * (target > n.act ? 0.3 : 0.13);
     }
@@ -384,9 +388,9 @@
 
     // Kick shockwaves: a bass hit throws an expanding ring from the
     // center of the structure.
-    if (!still && eff > 0.9 && kickV > 0.5 && t - lastKick > 190) {
+    if (!still && eff > 0.9 && kickV > 0.45 && t - lastKick > 180) {
       lastKick = t;
-      if (rings.length < 6) rings.push({ r: Math.min(W, H) * 0.05, v: 7 + kickV * 9, a: 0.34 });
+      if (rings.length < 8) rings.push({ r: Math.min(W, H) * 0.05, v: 9 + kickV * 12, a: 0.5 });
     }
     for (var rg = rings.length - 1; rg >= 0; rg--) {
       var R0 = rings[rg];
