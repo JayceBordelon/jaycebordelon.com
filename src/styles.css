@@ -595,6 +595,15 @@
   .net-scramble:active {
     transform: rotate(300deg);
   }
+  .net-axes {
+    font-style: normal;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  .net-axes[aria-pressed="true"] {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
   .net-mathtip-btn {
     display: flex;
     align-items: center;

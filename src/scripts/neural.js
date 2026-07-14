@@ -193,6 +193,8 @@
   // automatic turn never stops underneath.
   var userYaw = 0, yawVel = 0, userTilt = 0, tiltVel = 0;
   var dragging = false, dragX = 0, dragY = 0;
+  var mmx = -1, mmy = -1;
+  var showAxes = false;
   if (!still) {
     addEventListener("pointerdown", function (e) {
       if (e.target && e.target.closest && e.target.closest(".listen-bar, header, a, button, input, select")) return;
@@ -203,6 +205,8 @@
       tiltVel = 0;
     });
     addEventListener("pointermove", function (e) {
+      mmx = e.clientX;
+      mmy = e.clientY;
       if (!dragging) return;
       var dx = e.clientX - dragX;
       var dy = e.clientY - dragY;
@@ -338,6 +342,45 @@
       pz[j] = per;
     }
 
+    // The model axes, toggled from the tools row: hairlines through
+    // the origin with ticks and lowercase labels at the positive ends.
+    function proj(x0, y0, z0) {
+      var xr0 = x0 * cy1 + z0 * sy1;
+      var zr0 = -x0 * sy1 + z0 * cy1;
+      var yr0 = y0 * cx1 - zr0 * sx1;
+      var zz0 = y0 * sx1 + zr0 * cx1;
+      var pr0 = 3.4 / (3.4 + zz0);
+      return [CX + xr0 * S * pr0, CY + yr0 * S * pr0, pr0];
+    }
+    if (showAxes) {
+      var AXES = [[1.05, 0, 0, "x"], [0, 1.05, 0, "y"], [0, 0, 1.05, "z"]];
+      g.strokeStyle = ink;
+      g.fillStyle = ink;
+      g.lineWidth = 0.7;
+      g.font = '10px "IBM Plex Mono", Menlo, monospace';
+      for (var ax0 = 0; ax0 < 3; ax0++) {
+        var A = AXES[ax0];
+        var pA = proj(A[0], A[1], A[2]);
+        var pB = proj(-A[0], -A[1], -A[2]);
+        g.globalAlpha = 0.24;
+        g.beginPath();
+        g.moveTo(pA[0], pA[1]);
+        g.lineTo(pB[0], pB[1]);
+        g.stroke();
+        for (var tk = -3; tk <= 3; tk++) {
+          if (!tk) continue;
+          var tp = proj(A[0] * tk * 0.238, A[1] * tk * 0.238, A[2] * tk * 0.238);
+          g.globalAlpha = 0.3;
+          g.beginPath();
+          g.arc(tp[0], tp[1], 1.1 * tp[2], 0, 6.2832);
+          g.fill();
+        }
+        g.globalAlpha = 0.55;
+        g.fillText(A[3], pA[0] + 6, pA[1] - 6);
+      }
+      g.globalAlpha = 1;
+    }
+
     // Edges: quiet wiring that brightens and heats up when both ends
     // are lit, with the whole loom lifting slightly in loud passages.
     // Threads only exist once both endpoints have arrived.
@@ -403,6 +446,28 @@
       g.arc(px[w2], py[w2], (1.15 + nn.act * 1.9) * per2, 0, 6.2832);
       g.fill();
     }
+    // Hover: ring the nearest point and print its model coordinates.
+    if (!dragging && mmx >= 0 && eff > 0.9) {
+      var best = -1, bestD = 144;
+      for (var hv = 0; hv < nodes.length; hv++) {
+        var hdx = px[hv] - mmx, hdy = py[hv] - mmy;
+        var hd = hdx * hdx + hdy * hdy;
+        if (hd < bestD) { bestD = hd; best = hv; }
+      }
+      if (best >= 0) {
+        var hn = nodes[best];
+        g.strokeStyle = ink;
+        g.globalAlpha = 0.85;
+        g.lineWidth = 1;
+        g.beginPath();
+        g.arc(px[best], py[best], 6.5, 0, 6.2832);
+        g.stroke();
+        g.font = '10px "IBM Plex Mono", Menlo, monospace';
+        g.fillStyle = ink;
+        g.globalAlpha = 0.9;
+        g.fillText("(" + hn.x.toFixed(2) + ", " + hn.y.toFixed(2) + ", " + hn.z.toFixed(2) + ")", px[best] + 12, py[best] - 9);
+      }
+    }
     g.globalAlpha = 1;
   }
 
@@ -437,6 +502,15 @@
       }
     },
   };
+
+  var axesBtn = document.getElementById("net-axes");
+  if (axesBtn) {
+    axesBtn.addEventListener("click", function () {
+      showAxes = !showAxes;
+      axesBtn.setAttribute("aria-pressed", showAxes ? "true" : "false");
+      if (still && active) draw(0);
+    });
+  }
 
   // The scramble badge rolls a fresh structure and replays the spawn.
   var scrambleBtn = document.getElementById("net-scramble");
