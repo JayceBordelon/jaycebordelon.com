@@ -106,9 +106,33 @@
       if (optionEls[li]) optionEls[li].setAttribute("aria-selected", li === trackIdx ? "true" : "false");
     }
   }
+  // The host ignores http range requests, so seeking past the buffer
+  // stalls or snaps home. The buffer engine fixes it: playback starts
+  // on the stream, the full file downloads quietly, then the element
+  // hot-swaps onto a local blob where the whole timeline is instantly
+  // seekable.
+  var blobUrl = null, desiredTime = -1, loadToken = 0;
+  function armBlob() {
+    var my = ++loadToken;
+    var srcUrl = TRACKS[trackIdx].src;
+    fetch(srcUrl).then(function (r) { return r.blob(); }).then(function (b) {
+      if (my !== loadToken) return;
+      var t0 = audio.currentTime, wasPaused = audio.paused;
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      blobUrl = URL.createObjectURL(b);
+      audio.src = blobUrl;
+      audio.currentTime = desiredTime > 0 ? desiredTime : t0;
+      desiredTime = -1;
+      if (!wasPaused) audio.play().catch(function () {});
+    }).catch(function () {});
+  }
+
   function setTrack(i, playNow) {
     trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
     audio.src = TRACKS[trackIdx].src;
+    window.soundField.genre = TRACKS[trackIdx].cat;
+    desiredTime = -1;
+    armBlob();
     if (bar) bar.style.setProperty("--np-color", catColor(TRACKS[trackIdx].cat));
     paintPicker();
     try {
@@ -143,7 +167,7 @@
   var amps = [];
   for (var k = 0; k < 16; k++) { subMax.push(30); amps.push(0); }
   var loudMax = 30;
-  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0, centroid: 0.5 };
+  window.soundField = { cells: amps, overall: 0, loud: 0, kick: 0, flux: 0, centroid: 0.5, genre: "" };
   var loud = 0;
   var kick = 0, flux = 0, bassBase = 0, centroid = 0.5;
   var prevBins = null;
@@ -257,7 +281,10 @@
     audio.play().then(function () {
       try {
         var t = +localStorage.getItem("ambience-t") || 0;
-        if (t > 0 && t < audio.duration && Math.abs(audio.currentTime - t) > 2) audio.currentTime = t;
+        if (t > 0 && t < audio.duration && Math.abs(audio.currentTime - t) > 2) {
+          desiredTime = t;
+          audio.currentTime = t;
+        }
       } catch (e) {}
       analyse();
       paintBar();
@@ -283,7 +310,11 @@
   if (seek) {
     seek.addEventListener("input", function () { seeking = true; });
     seek.addEventListener("change", function () {
-      if (audio.duration) audio.currentTime = (seek.value / 1000) * audio.duration;
+      if (audio.duration) {
+        var target = (seek.value / 1000) * audio.duration;
+        desiredTime = target;
+        try { audio.currentTime = target; } catch (e) {}
+      }
       seeking = false;
     });
   }
@@ -403,6 +434,8 @@
   });
 
   if (bar) bar.style.setProperty("--np-color", catColor(TRACKS[trackIdx].cat));
+  window.soundField.genre = TRACKS[trackIdx].cat;
+  armBlob();
   paintBar();
   if (off) {
     audio.pause();

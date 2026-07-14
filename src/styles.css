@@ -624,6 +624,19 @@
     width: 12px;
     color: color-mix(in srgb, var(--foreground) 70%, transparent);
   }
+  .mix-genre {
+    display: block;
+    margin-top: 4px;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  .mix-what {
+    flex: 1;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: color-mix(in srgb, var(--foreground) 78%, transparent);
+  }
   .mix-row input {
     flex: 1;
     appearance: none;
