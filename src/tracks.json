@@ -26,10 +26,10 @@
   {
     "slug": "fake-plastic-trees",
     "src": "/audio/fake-plastic-trees.m4a",
-    "name": "Fake plastic trees",
-    "cat": "Piano Covers",
-    "sub": "Radiohead, by Gabriel Piano",
-    "title": "Fake plastic trees, Radiohead cover by Gabriel Piano"
+    "name": "Fake Plastic Trees",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Fake Plastic Trees by Radiohead"
   },
   {
     "slug": "can-you-hear-the-music",
@@ -176,14 +176,6 @@
     "title": "Moonlight Sonata by Beethoven, played by Valentina Lisitsa"
   },
   {
-    "slug": "moonlight-sonata-presto",
-    "src": "/audio/moonlight-sonata-presto.m4a",
-    "name": "Moonlight Sonata III",
-    "cat": "Classical",
-    "sub": "Beethoven, Lisitsa live in Hannover",
-    "title": "Moonlight Sonata III by Beethoven, Lisitsa live in Hannover"
-  },
-  {
     "slug": "nocturne-op9-no2",
     "src": "/audio/nocturne-op9-no2.m4a",
     "name": "Nocturne Op. 9 No. 2",
@@ -198,14 +190,6 @@
     "cat": "Classical",
     "sub": "Vivaldi, Voices of Music",
     "title": "The Four Seasons by Vivaldi, Voices of Music"
-  },
-  {
-    "slug": "winter",
-    "src": "/audio/winter.m4a",
-    "name": "Winter",
-    "cat": "Classical",
-    "sub": "Vivaldi, Voices of Music",
-    "title": "Winter by Vivaldi, Voices of Music"
   },
   {
     "slug": "canon-in-d",
@@ -232,14 +216,6 @@
     "title": "Stick Season by Noah Kahan"
   },
   {
-    "slug": "stick-season-fenway",
-    "src": "/audio/stick-season-fenway.m4a",
-    "name": "Stick Season, live at Fenway",
-    "cat": "Folk",
-    "sub": "Noah Kahan",
-    "title": "Stick Season, live at Fenway by Noah Kahan"
-  },
-  {
     "slug": "dial-drunk",
     "src": "/audio/dial-drunk.m4a",
     "name": "Dial Drunk",
@@ -248,28 +224,12 @@
     "title": "Dial Drunk by Noah Kahan"
   },
   {
-    "slug": "dial-drunk-red-rocks",
-    "src": "/audio/dial-drunk-red-rocks.m4a",
-    "name": "Dial Drunk, live at Red Rocks",
-    "cat": "Folk",
-    "sub": "Noah Kahan",
-    "title": "Dial Drunk, live at Red Rocks by Noah Kahan"
-  },
-  {
     "slug": "northern-attitude",
     "src": "/audio/northern-attitude.m4a",
     "name": "Northern Attitude",
     "cat": "Folk",
     "sub": "Noah Kahan with Hozier",
     "title": "Northern Attitude by Noah Kahan with Hozier"
-  },
-  {
-    "slug": "northern-attitude-red-rocks",
-    "src": "/audio/northern-attitude-red-rocks.m4a",
-    "name": "Northern Attitude, live at Red Rocks",
-    "cat": "Folk",
-    "sub": "Noah Kahan",
-    "title": "Northern Attitude, live at Red Rocks by Noah Kahan"
   },
   {
     "slug": "reptilia",
@@ -424,11 +384,155 @@
     "title": "10,000 Emerald Pools by BORNS"
   },
   {
-    "slug": "ten-thousand-emerald-pools-acoustic",
-    "src": "/audio/ten-thousand-emerald-pools-acoustic.m4a",
-    "name": "10,000 Emerald Pools, acoustic",
-    "cat": "Pop",
-    "sub": "BORNS",
-    "title": "10,000 Emerald Pools, acoustic by BORNS"
+    "slug": "innerbloom",
+    "src": "/audio/innerbloom.m4a",
+    "name": "Innerbloom",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "Innerbloom by RUFUS DU SOL"
+  },
+  {
+    "slug": "you-were-right",
+    "src": "/audio/you-were-right.m4a",
+    "name": "You Were Right",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "You Were Right by RUFUS DU SOL"
+  },
+  {
+    "slug": "underwater",
+    "src": "/audio/underwater.m4a",
+    "name": "Underwater",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "Underwater by RUFUS DU SOL"
+  },
+  {
+    "slug": "treat-you-better",
+    "src": "/audio/treat-you-better.m4a",
+    "name": "Treat You Better",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "Treat You Better by RUFUS DU SOL"
+  },
+  {
+    "slug": "alive",
+    "src": "/audio/alive.m4a",
+    "name": "Alive",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "Alive by RUFUS DU SOL"
+  },
+  {
+    "slug": "on-my-knees",
+    "src": "/audio/on-my-knees.m4a",
+    "name": "On My Knees",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "On My Knees by RUFUS DU SOL"
+  },
+  {
+    "slug": "no-place",
+    "src": "/audio/no-place.m4a",
+    "name": "No Place",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "No Place by RUFUS DU SOL"
+  },
+  {
+    "slug": "like-an-animal",
+    "src": "/audio/like-an-animal.m4a",
+    "name": "Like an Animal",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "Like an Animal by RUFUS DU SOL"
+  },
+  {
+    "slug": "say-a-prayer-for-me",
+    "src": "/audio/say-a-prayer-for-me.m4a",
+    "name": "Say a Prayer for Me",
+    "cat": "Electronic",
+    "sub": "RUFUS DU SOL",
+    "title": "Say a Prayer for Me by RUFUS DU SOL"
+  },
+  {
+    "slug": "creep",
+    "src": "/audio/creep.m4a",
+    "name": "Creep",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Creep by Radiohead"
+  },
+  {
+    "slug": "paranoid-android",
+    "src": "/audio/paranoid-android.m4a",
+    "name": "Paranoid Android",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Paranoid Android by Radiohead"
+  },
+  {
+    "slug": "no-surprises",
+    "src": "/audio/no-surprises.m4a",
+    "name": "No Surprises",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "No Surprises by Radiohead"
+  },
+  {
+    "slug": "street-spirit",
+    "src": "/audio/street-spirit.m4a",
+    "name": "Street Spirit, Fade Out",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Street Spirit, Fade Out by Radiohead"
+  },
+  {
+    "slug": "pyramid-song",
+    "src": "/audio/pyramid-song.m4a",
+    "name": "Pyramid Song",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Pyramid Song by Radiohead"
+  },
+  {
+    "slug": "weird-fishes",
+    "src": "/audio/weird-fishes.m4a",
+    "name": "Weird Fishes, Arpeggi",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Weird Fishes, Arpeggi by Radiohead"
+  },
+  {
+    "slug": "lotus-flower",
+    "src": "/audio/lotus-flower.m4a",
+    "name": "Lotus Flower",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Lotus Flower by Radiohead"
+  },
+  {
+    "slug": "daydreaming",
+    "src": "/audio/daydreaming.m4a",
+    "name": "Daydreaming",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Daydreaming by Radiohead"
+  },
+  {
+    "slug": "ode-to-the-mets",
+    "src": "/audio/ode-to-the-mets.m4a",
+    "name": "Ode To The Mets",
+    "cat": "Rock",
+    "sub": "The Strokes",
+    "title": "Ode To The Mets by The Strokes"
+  },
+  {
+    "slug": "at-the-door",
+    "src": "/audio/at-the-door.m4a",
+    "name": "At The Door",
+    "cat": "Rock",
+    "sub": "The Strokes",
+    "title": "At The Door by The Strokes"
   }
 ]

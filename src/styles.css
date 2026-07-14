@@ -595,6 +595,75 @@
   .net-scramble:active {
     transform: rotate(300deg);
   }
+  .net-mix {
+    position: relative;
+  }
+  .net-mix-btn {
+    font-style: normal;
+  }
+  .net-mix.open .net-mix-btn {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .net-mix-panel {
+    min-width: 268px;
+  }
+  .net-mix.open .net-mix-panel {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .mix-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 11px;
+  }
+  .mix-g {
+    font-size: 13px;
+    width: 12px;
+    color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  }
+  .mix-row input {
+    flex: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 2px;
+    border-radius: 1px;
+    background: color-mix(in srgb, var(--foreground) 25%, transparent);
+    outline-offset: 6px;
+  }
+  .mix-row input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+  .mix-row input::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+  .mix-v {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--foreground) 52%, transparent);
+    min-width: 4ch;
+    text-align: right;
+  }
+  .mix-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--foreground) 45%, transparent);
+  }
   .net-mathtip-btn {
     display: flex;
     align-items: center;
