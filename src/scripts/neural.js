@@ -82,7 +82,7 @@
     var YS = 0.52 + rnd() * 0.18;
     nodes = [];
     edges = [];
-    function pushMirrored(x, y, z, bias) {
+    function pushMirrored(x, y, z, bias, voice) {
       y = Math.max(-0.7, Math.min(0.7, y));
       // Soft radial compression: outliers get pulled back toward the
       // body instead of dangling far outside it.
@@ -93,8 +93,8 @@
         z *= pull;
       }
       var rad = Math.hypot(x, z);
-      nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
-      nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
+      nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, voice: voice, act: 0 });
+      nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, voice: voice, act: 0 });
     }
 
     // The open scatter.
@@ -102,7 +102,7 @@
     for (var s0 = 0; s0 < SCATTER; s0++) {
       var sa = rnd() * TAU;
       var sr = Math.pow(rnd(), 0.5) * 0.95;
-      pushMirrored(Math.cos(sa) * sr, (rnd() * 2 - 1) * YS, Math.sin(sa) * sr, 0.2 + rnd() * 0.5);
+      pushMirrored(Math.cos(sa) * sr, (rnd() * 2 - 1) * YS, Math.sin(sa) * sr, 0.2 + rnd() * 0.5, 3);
     }
 
     // Unevenly weighted clumps.
@@ -113,8 +113,10 @@
       var cz1 = (rnd() - 0.5) * 1.7;
       var cr1 = 0.07 + rnd() * 0.2;
       var cn1 = 8 + ((rnd() * rnd() * 40) | 0);
+      var cvRoll = rnd();
+      var clumpVoice = cvRoll < 0.4 ? 2 : cvRoll < 0.7 ? 1 : 3;
       for (var c2 = 0; c2 < cn1; c2++) {
-        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
+        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5, clumpVoice);
       }
     }
 
@@ -135,7 +137,7 @@
         dirz += gauss() * 0.4;
         dl = Math.hypot(dirx, diry, dirz) || 1;
         dirx /= dl; diry /= dl; dirz /= dl;
-        pushMirrored(wx, wy, wz, 0.2 + rnd() * 0.5);
+        pushMirrored(wx, wy, wz, 0.2 + rnd() * 0.5, 0);
       }
     }
 
@@ -343,6 +345,7 @@
     var cent = field ? (field.centroid == null ? 0.5 : field.centroid) : 0.5;
     var gnow = field ? field.genre || "" : "";
     if (gnow !== lastGenre) applyPreset(gnow);
+    var voicesArr = field && field.voices ? field.voices : null;
 
     // Two separators keep loud polyphony granular. Lateral inhibition:
     // a neuron's drive is its cell's energy above the mean of all
@@ -381,6 +384,11 @@
       var freqW = 0.55 + 0.95 * (1 - Math.abs(regN - cent));
       freqW = 1 + WEIGHTS.phi * (freqW - 1);
       var drive = WEIGHTS.sig * rel * (0.45 + 1.6 * atk) * (0.15 + WEIGHTS.lam * loud) * 1.35 * freqW + WEIGHTS.kap * impact * (0.35 + 0.75 * loud);
+      // The voice blend: each node family answers its instrument,
+      // wisps to drums, clumps to voice and bass, scatter to width.
+      if (voicesArr) {
+        drive = drive * 0.55 + (voicesArr[n.voice] || 0) * 0.8 * (0.35 + 0.75 * loud);
+      }
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
       n.act += (target - n.act) * (target > n.act ? ATTACK[reg] : RELEASE[reg]);
     }
