@@ -33,6 +33,8 @@ bodyClass: "music-page"
       <div class="net-label-eqn mix-eq">drive = &#963;&#183;spec&#183;(0.15 + &#955;&#183;loud)&#183;steer + &#954;&#183;hit&#183;(0.35 + 0.75&#183;loud)
 spec = max(0, band &#8722; 0.45&#951;&#183;wash)&#183;(0.45 + 1.6&#183;attack)
 steer = 1 + &#966;&#183;(brightness match &#8722; 0.45)
+drive = 0.55&#183;drive + voice&#183;0.8&#183;(0.35 + 0.75&#183;loud)
+voice: drums, bass, vocals, or stereo width by node family
 a neuron fires when drive exceeds its threshold</div>
       <div class="mix-row"><span class="mix-g">&#963;</span><span class="mix-what">spectrum</span><span class="mix-v" id="sw-sig-v">1.40</span></div>
       <span class="mix-hint">how much each frequency band drives its own region</span>
