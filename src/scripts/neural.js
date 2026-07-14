@@ -31,18 +31,20 @@
     "Electronic": { sig: 1.1, lam: 1.1, kap: 1.3, phi: 0.9, eta: 0.8 },
     "Hip Hop": { sig: 1.0, lam: 1.0, kap: 1.5, phi: 0.7, eta: 1.0 },
   };
-  var WEIGHTS = UNIVERSAL;
+  var WEIGHTS = Object.assign({}, UNIVERSAL);
   var lastGenre = null;
   function applyPreset(genre) {
     lastGenre = genre;
-    WEIGHTS = PRESETS[genre] || UNIVERSAL;
+    // A copy, not a reference: nothing may mutate the preset tables
+    // through the live weights.
+    WEIGHTS = Object.assign({}, PRESETS[genre] || UNIVERSAL);
     var ids = { lam: "sw-lam-v", sig: "sw-sig-v", kap: "sw-kap-v", phi: "sw-phi-v", eta: "sw-eta-v" };
     for (var k in ids) {
       var el = document.getElementById(ids[k]);
       if (el) el.textContent = WEIGHTS[k].toFixed(2);
     }
     var gEl = document.getElementById("mix-genre");
-    if (gEl) gEl.textContent = genre ? "tuned for " + genre.toLowerCase() : "universal tuning";
+    if (gEl) gEl.textContent = PRESETS[genre] ? "tuned for " + genre.toLowerCase() : "universal tuning";
   }
 
   var labelEl = document.getElementById("net-label");
@@ -94,7 +96,9 @@
       }
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
-      nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
+      // A point on the mirror plane would reflect onto itself and
+      // stack an identical twin there, so it stays single.
+      if (Math.abs(z) >= 0.02) nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
     }
 
     // The open scatter.
@@ -102,7 +106,7 @@
     for (var s0 = 0; s0 < SCATTER; s0++) {
       var sa = rnd() * TAU;
       var sr = Math.pow(rnd(), 0.5) * 0.95;
-      pushMirrored(Math.cos(sa) * sr, (rnd() * 2 - 1) * YS, Math.sin(sa) * sr, 0.2 + rnd() * 0.5);
+      pushMirrored(Math.cos(sa) * sr, (rnd() * 2 - 1) * YS, Math.sin(sa) * sr, 0.1 + rnd() * 0.5);
     }
 
     // Unevenly weighted clumps.
@@ -114,7 +118,7 @@
       var cr1 = 0.07 + rnd() * 0.2;
       var cn1 = 8 + ((rnd() * rnd() * 40) | 0);
       for (var c2 = 0; c2 < cn1; c2++) {
-        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1, cz1 + gauss() * cr1, 0.2 + rnd() * 0.5);
+        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1, cz1 + gauss() * cr1, 0.1 + rnd() * 0.5);
       }
     }
 
@@ -135,7 +139,7 @@
         dirz += gauss() * 0.4;
         dl = Math.hypot(dirx, diry, dirz) || 1;
         dirx /= dl; diry /= dl; dirz /= dl;
-        pushMirrored(wx, wy, wz, 0.2 + rnd() * 0.5);
+        pushMirrored(wx, wy, wz, 0.1 + rnd() * 0.5);
       }
     }
 
@@ -159,7 +163,11 @@
     for (var c0 = 0; c0 < CHORDS; c0++) {
       var a0 = (rnd() * nodes.length) | 0;
       var b2 = (rnd() * nodes.length) | 0;
-      if (a0 !== b2) edges.push([Math.min(a0, b2), Math.max(a0, b2)]);
+      var ck = Math.min(a0, b2) + ":" + Math.max(a0, b2);
+      if (a0 !== b2 && !seen[ck]) {
+        seen[ck] = 1;
+        edges.push([Math.min(a0, b2), Math.max(a0, b2)]);
+      }
     }
     incident = nodes.map(function () { return []; });
     edges.forEach(function (e, ei) { incident[e[0]].push(ei); incident[e[1]].push(ei); });
@@ -262,7 +270,6 @@
         var d2p = Math.hypot(touches[ids2[0]][0] - touches[ids2[1]][0], touches[ids2[0]][1] - touches[ids2[1]][1]);
         if (pinchLast > 0 && d2p > 0) zoomT = clampZoom(zoomT * (d2p / pinchLast));
         pinchLast = d2p;
-        if (still && active) { zoom = zoomT; draw(0); }
         return;
       }
       if (!dragging) return;
@@ -292,7 +299,6 @@
       if (e.target && e.target.closest && e.target.closest(".listen-bar, .listen-tracklist, .net-label")) return;
       e.preventDefault();
       zoomT = clampZoom(zoomT * Math.exp(-e.deltaY * 0.0012));
-      if (still && active) { zoom = zoomT; draw(0); }
     }, { passive: false });
   }
 
@@ -382,7 +388,12 @@
       var regN = 1 - reg / 3;
       var freqW = 0.55 + 0.95 * (1 - Math.abs(regN - cent));
       freqW = 1 + WEIGHTS.phi * (freqW - 1);
-      var drive = WEIGHTS.sig * rel * (0.45 + 1.6 * atk) * (0.15 + WEIGHTS.lam * loud) * 1.35 * freqW + WEIGHTS.kap * impact * (0.35 + 0.75 * loud);
+      // The trailing sustain term keeps held pads and quiet uniform
+      // passages glowing: with no attack and no cell above the mean,
+      // the main product collapses below every bias and the machine
+      // would read a clearly-audible passage as silence. Capped by
+      // loudness so it lifts the quiet floor without brightening peaks.
+      var drive = WEIGHTS.sig * rel * (0.45 + 1.6 * atk) * (0.15 + WEIGHTS.lam * loud) * 1.35 * freqW + WEIGHTS.kap * impact * (0.35 + 0.75 * loud) + WEIGHTS.sig * rel * 0.45 * Math.min(0.5, loud);
       var target = drive > n.bias ? Math.min(1, ((drive - n.bias) / (1 - n.bias)) * 1.15) : 0;
       n.act += (target - n.act) * (target > n.act ? ATTACK[reg] : RELEASE[reg]);
     }
@@ -400,8 +411,13 @@
             firePulse(members[(Math.random() * members.length) | 0]);
           }
         }
-        prevCells[c2] = v;
       }
+    }
+    // The change detector tracks every frame, spawn included.
+    // Otherwise its first tracked frame reads the whole field as one
+    // giant onset and volleys pulses from every cell at once.
+    if (cs) {
+      for (var c3 = 0; c3 < 16; c3++) prevCells[c3] = cs[c3] || 0;
     }
 
     // Turn the cloud: a slow yaw under a fixed tilt, sped up into a
@@ -588,6 +604,10 @@
     });
     addEventListener("keydown", function (e) {
       if (e.key === "Escape" && mixWrap.classList.contains("open")) {
+        // The song picker owns Escape while it's open: one press, one
+        // surface closed, never both at once.
+        var tl = document.getElementById("listen-track-list");
+        if (tl && !tl.hidden) return;
         mixWrap.classList.remove("open");
         mixBtn.setAttribute("aria-expanded", "false");
       }

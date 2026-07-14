@@ -67,4 +67,8 @@ a neuron fires when drive exceeds its threshold</div>
     <ul id="listen-track-list" class="listen-tracklist" role="listbox" hidden></ul>
   </div>
 </div>
-<audio id="ambience-track" src="/audio/first-dance.m4a" autoplay preload="auto"></audio>
+<!-- No autoplay attribute: the script starts playback itself, and the
+     attribute would re-arm playback on every blob swap and track change
+     even after the visitor pressed pause. The src is rewritten per
+     track on the /music/<slug> pages at build time. -->
+<audio id="ambience-track" src="/audio/first-dance.m4a" preload="metadata"></audio>

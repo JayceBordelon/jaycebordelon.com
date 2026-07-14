@@ -222,7 +222,7 @@ const postTemplate = read(join(SRC, "partials/post.html"));
 // The background is the reward surface: isolines of reward, the
 // emerald policy rollout to the pi-star convergence marker, and mono
 // reward readings, in landscape and portrait compositions. Static ink
-// here: the audio-reactive machine lives at /musicv.
+// here: the audio-reactive machine lives at /music.
 const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")), renderRewardField());
 
 // One source of truth for the /music library: the player reads it off
@@ -230,7 +230,7 @@ const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")),
 // /music/<slug> with song-specific SEO, since crawlers read static
 // HTML and ignore query params.
 const TRACKS = JSON.parse(read(join(SRC, "tracks.json")));
-const tracksScript = `<script>window.SITE_TRACKS=${JSON.stringify(TRACKS)}</script>`;
+const tracksScript = `<script>window.SITE_TRACKS=${escapeJSONForScript(TRACKS)}</script>`;
 
 function renderPage({ frontmatter, body, slug }) {
   const header = frontmatter.header === "blog" ? headerBlog : headerHome;
@@ -300,8 +300,16 @@ function buildSongPages() {
     fm.ogImage = `/images/og/${tr.slug}.png`;
     fm.canonical = `${SITE_URL}/music/${tr.slug}`;
     fm.ogType = "music.song";
-    fm.pageScripts = tracksScript + `<script>window.INITIAL_SONG=${JSON.stringify(tr.slug)}</script>` + (data.pageScripts || "");
-    const html = renderPage({ frontmatter: fm, body: content, slug: `/music/${tr.slug}` });
+    fm.pageScripts = tracksScript + `<script>window.INITIAL_SONG=${escapeJSONForScript(tr.slug)}</script>` + (data.pageScripts || "");
+    // The audio element must be baked with this page's own song. The
+    // shared markup carries the default track, and leaving it would
+    // briefly cue (and start downloading) the wrong file before the
+    // player script swaps it.
+    const body = content.replace(
+      /(<audio id="ambience-track" src=")[^"]+(")/,
+      `$1${tr.src}$2`,
+    );
+    const html = renderPage({ frontmatter: fm, body, slug: `/music/${tr.slug}` });
     write(join(DIST, "music", `${tr.slug}.html`), html);
   }
 }

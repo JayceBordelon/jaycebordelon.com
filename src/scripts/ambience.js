@@ -1,12 +1,12 @@
 // The /music page's player. Only /music carries the audio element, so
 // music exists nowhere else and leaving the page silences it by
-// construction. Two responsibilities: drive the audio (five local
-// piano tracks with a picker, scrubber, and rotation when a track
+// construction. Two responsibilities: drive the audio (the track
+// library with a picker, scrubber, and rotation when a track
 // ends, playing the moment the browser permits with a
 // first-gesture fallback and focus retries, track and playhead
 // persisted across visits) and publish 16 pitch cells plus a loudness
 // signal on window.soundField for the neural machine. Leaving via
-// BACK TO HOME or Escape collapses the net first, then navigates.
+// the logo or Escape collapses the net first, then navigates.
 (function () {
   var audio = document.getElementById("ambience-track");
   if (!audio) return;
@@ -21,15 +21,29 @@
   // The song in the url wins and always starts from the top, so a
   // shared /music/let-down link renders with that song cued.
   var trackIdx = 0;
-  try { trackIdx = (+localStorage.getItem("ambience-i") || 0) % TRACKS.length; } catch (e) {}
+  // The remembered track is stored by slug, so the manifest can be
+  // reordered without last visit's index landing on the wrong song.
+  // The bare index is the legacy key, read as a fallback.
+  try {
+    var savedSlug = localStorage.getItem("ambience-s");
+    if (savedSlug) {
+      for (var si = 0; si < TRACKS.length; si++) {
+        if (TRACKS[si].slug === savedSlug) { trackIdx = si; break; }
+      }
+    } else {
+      trackIdx = (+localStorage.getItem("ambience-i") || 0) % TRACKS.length;
+    }
+  } catch (e) {}
   try {
     var pathMatch = location.pathname.match(/^\/music\/([a-z0-9-]+)/);
-    var wanted = window.INITIAL_SONG || (pathMatch && pathMatch[1]) || new URLSearchParams(location.search).get("song");
+    // An explicit ?song= is the most deliberate signal, so it outranks
+    // the slug a per-song page was baked with.
+    var wanted = new URLSearchParams(location.search).get("song") || window.INITIAL_SONG || (pathMatch && pathMatch[1]);
     for (var wi = 0; wi < TRACKS.length; wi++) {
       if (TRACKS[wi].slug === wanted) {
         trackIdx = wi;
         localStorage.setItem("ambience-t", "0");
-        localStorage.setItem("ambience-i", String(wi));
+        localStorage.setItem("ambience-s", TRACKS[wi].slug);
         break;
       }
     }
@@ -70,7 +84,6 @@
   var durEl = document.getElementById("listen-dur");
   var pickBtn = document.getElementById("listen-track-btn");
   var pickList = document.getElementById("listen-track-list");
-  var exitLink = document.getElementById("listen-exit");
   var seeking = false;
 
   function fmt(sec) {
@@ -111,32 +124,56 @@
   // on the stream, the full file downloads quietly, then the element
   // hot-swaps onto a local blob where the whole timeline is instantly
   // seekable.
-  var blobUrl = null, desiredTime = -1, loadToken = 0;
+  // desiredTime is the one pending playhead target: a saved position
+  // from a previous visit, a ?ts= deep link, or a scrub past the
+  // buffer. It applies whenever fresh media can honor it and clears
+  // only once the element actually lands there, so a stale target
+  // can't snap playback backward later.
+  var resumeT = 0;
+  try { resumeT = parseFloat(localStorage.getItem("ambience-t")) || 0; } catch (e) {}
+  var blobUrl = null, desiredTime = resumeT > 0.5 ? resumeT : -1, loadToken = 0;
   function armBlob() {
     var my = ++loadToken;
     var srcUrl = TRACKS[trackIdx].src;
-    fetch(srcUrl).then(function (r) { return r.blob(); }).then(function (b) {
+    fetch(srcUrl).then(function (r) {
+      if (!r.ok) throw new Error("audio fetch " + r.status);
+      return r.blob();
+    }).then(function (b) {
       if (my !== loadToken) return;
       var t0 = audio.currentTime, wasPaused = audio.paused;
       if (blobUrl) URL.revokeObjectURL(blobUrl);
       blobUrl = URL.createObjectURL(b);
       audio.src = blobUrl;
-      audio.currentTime = desiredTime > 0 ? desiredTime : t0;
-      desiredTime = -1;
+      var want = desiredTime > 0 ? desiredTime : t0;
+      if (want > 0.1) { try { audio.currentTime = want; } catch (e) {} }
       if (!wasPaused) audio.play().catch(function () {});
     }).catch(function () {});
   }
+  audio.addEventListener("loadedmetadata", function () {
+    if (desiredTime > 0 && audio.duration && desiredTime < audio.duration - 1 && Math.abs(audio.currentTime - desiredTime) > 1) {
+      try { audio.currentTime = desiredTime; } catch (e) {}
+    }
+  });
+  audio.addEventListener("seeked", function () {
+    if (desiredTime > 0 && Math.abs(audio.currentTime - desiredTime) < 1.5) desiredTime = -1;
+  });
 
   function setTrack(i, playNow) {
     trackIdx = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
     audio.src = TRACKS[trackIdx].src;
     window.soundField.genre = TRACKS[trackIdx].cat;
     desiredTime = -1;
+    // A fresh song must not inherit the last one's loudness ceilings:
+    // the rolling maxima would read the new intro as near-silence and
+    // hold the machine dark until they decayed.
+    for (var nz = 0; nz < 16; nz++) subMax[nz] = 30;
+    loudMax = 58;
+    bassBase = 0;
     armBlob();
     if (bar) bar.style.setProperty("--np-color", catColor(TRACKS[trackIdx].cat));
     paintPicker();
     try {
-      localStorage.setItem("ambience-i", String(trackIdx));
+      localStorage.setItem("ambience-s", TRACKS[trackIdx].slug);
       localStorage.setItem("ambience-t", "0");
       history.replaceState(null, "", "/music/" + TRACKS[trackIdx].slug);
     } catch (e) {}
@@ -171,7 +208,7 @@
   var loud = 0;
   var kick = 0, flux = 0, bassBase = 0, centroid = 0.5;
   var prevBins = null;
-  var ctx, analyser, data, looping = false;
+  var ctx, analyser, data, looping = false, frameTick = 0;
   function analyse() {
     if (still) return;
     if (!ctx) {
@@ -190,10 +227,14 @@
         data = new Uint8Array(analyser.frequencyBinCount);
       } catch (e) { return; }
     }
-    if (ctx.state === "suspended") ctx.resume();
+    if (ctx.state === "suspended") ctx.resume().catch(function () {});
     if (looping) return;
     looping = true;
     (function frame() {
+      // A context the browser suspended mid-session (tab juggling,
+      // route changes) feeds the analyser frozen bins while the music
+      // audibly plays, so keep nudging it awake.
+      if (ctx.state === "suspended" && !(frameTick++ & 63)) ctx.resume().catch(function () {});
       var playing = !audio.paused && analyser;
       if (playing) analyser.getByteFrequencyData(data);
       var overall = 0;
@@ -277,25 +318,29 @@
     })();
   }
 
-  function start() {
-    audio.play().then(function () {
-      try {
-        var t = +localStorage.getItem("ambience-t") || 0;
-        if (t > 0 && t < audio.duration && Math.abs(audio.currentTime - t) > 2) {
-          desiredTime = t;
-          audio.currentTime = t;
-        }
-      } catch (e) {}
-      analyse();
-      paintBar();
+  // Nothing analyser-critical lives on the play() promise: the blob
+  // swap aborts an in-flight play() (AbortError) and external resumes
+  // (media keys, the OS media overlay) never produce one. The "play"
+  // event fires for all of them, so the analyser and its frame loop
+  // hook up there, and the machine can never end up with audible music
+  // and a dead soundField.
+  audio.addEventListener("play", function () {
+    analyse();
+    if (ctx && ctx.state === "running") {
       removeEventListener("pointerdown", gesture);
       removeEventListener("keydown", gesture);
-    }).catch(function () {});
+    }
+  });
+  function start() {
+    audio.play().then(paintBar).catch(function () {});
   }
   function gesture(e) {
-    if (off) return;
-    if (e.target && e.target.closest && e.target.closest(".listen-play, .listen-picker, .listen-exit")) return;
-    start();
+    if (off || leaving) return;
+    if (e && e.type === "keydown" && e.key === "Escape") return;
+    if (e && e.target && e.target.closest && e.target.closest(".listen-play, .listen-picker")) return;
+    if (ctx && ctx.state === "suspended") ctx.resume().catch(function () {});
+    if (audio.paused) start();
+    else analyse();
   }
 
   if (playBtn) {
@@ -317,6 +362,10 @@
       }
       seeking = false;
     });
+    // If the drag ends without a change event (a click released in
+    // place, focus lost mid-drag), unfreeze the readout anyway.
+    seek.addEventListener("pointerup", function () { seeking = false; });
+    seek.addEventListener("blur", function () { seeking = false; });
   }
   // The song picker: a themed dropdown that opens upward over the bar.
   function togglePick(open) {
@@ -389,7 +438,6 @@
     document.body.classList.add("net-leaving");
     setTimeout(function () { location.href = "/"; }, 650);
   }
-  if (exitLink) exitLink.addEventListener("click", leave);
   addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       if (pickList && !pickList.hidden) {
@@ -420,7 +468,7 @@
 
   addEventListener("pagehide", function () {
     try {
-      localStorage.setItem("ambience-i", String(trackIdx));
+      localStorage.setItem("ambience-s", TRACKS[trackIdx].slug);
       localStorage.setItem("ambience-t", String(audio.currentTime || 0));
     } catch (e) {}
   });
