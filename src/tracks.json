@@ -158,5 +158,13 @@
     "cat": "Hip Hop",
     "sub": "Kid Cudi",
     "title": "love. by Kid Cudi"
+  },
+  {
+    "slug": "linger",
+    "src": "/audio/linger.m4a",
+    "name": "Linger",
+    "cat": "Alternative",
+    "sub": "The Cranberries",
+    "title": "Linger by The Cranberries"
   }
 ]
