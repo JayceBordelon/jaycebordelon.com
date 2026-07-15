@@ -246,7 +246,7 @@
   function clampZoom(v) { return Math.max(0.35, Math.min(3, v)); }
   if (!still) {
     addEventListener("pointerdown", function (e) {
-      if (e.target && e.target.closest && e.target.closest(".listen-bar, header, a, button, input, select")) return;
+      if (e.target && e.target.closest && e.target.closest(".listen-bar, .song-panel, header, a, button, input, select")) return;
       touches[e.pointerId] = [e.clientX, e.clientY];
       touchCount++;
       if (touchCount === 2) {
@@ -294,9 +294,10 @@
       if (touches[e.pointerId]) { delete touches[e.pointerId]; touchCount--; }
       pinchLast = 0;
     });
-    // Scroll to zoom, except over the scrollable song list and bar.
+    // Scroll to zoom, except over the bar, the song popup (its list
+    // owns the wheel), and the math tooltips.
     addEventListener("wheel", function (e) {
-      if (e.target && e.target.closest && e.target.closest(".listen-bar, .listen-tracklist, .net-label")) return;
+      if (e.target && e.target.closest && e.target.closest(".listen-bar, .song-panel, .net-label")) return;
       e.preventDefault();
       zoomT = clampZoom(zoomT * Math.exp(-e.deltaY * 0.0012));
     }, { passive: false });

@@ -1074,6 +1074,11 @@
     padding: 4px 8px 10px;
     list-style: none;
     font-family: var(--font-mono);
+    /* The page body disables touch-action for the net's drag-to-spin;
+       the list opts back in to vertical panning, and contains its
+       scroll so hitting an edge never chains anywhere else. */
+    touch-action: pan-y;
+    overscroll-behavior: contain;
   }
   .song-list .song-cat {
     padding: 14px 12px 5px;
