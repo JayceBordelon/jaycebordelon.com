@@ -12,7 +12,7 @@
  *
  * Matching: LRCLIB /api/get with the real file duration (probed via
  * ffprobe), falling back to /api/get without duration, then /api/search
- * scored by duration distance. A match more than 8s off is rejected —
+ * scored by duration distance. A match more than 8s off is rejected:
  * that is almost always a different edit of the song, and its
  * timestamps would drift badly.
  *
