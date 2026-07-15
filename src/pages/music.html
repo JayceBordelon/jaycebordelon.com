@@ -25,7 +25,6 @@ bodyClass: "music-page"
     </div>
   </div>
   <button type="button" id="net-scramble" class="net-mathtip-btn net-scramble" aria-label="Scramble a new shape">&#8635;</button>
-  <button type="button" id="net-lyrics" class="net-mathtip-btn net-lyrics" aria-label="Toggle lyrics" hidden>&#8220;&#8221;</button>
   <div class="net-mix" id="net-mix">
     <button type="button" id="net-mix-btn" class="net-mathtip-btn net-mix-btn" aria-expanded="false" aria-label="Signal mix controls">&#955;</button>
     <div id="net-mix-panel" class="net-label net-mix-panel">
@@ -49,9 +48,12 @@ a neuron fires when drive exceeds its threshold</div>
   </div>
 </div>
 <!-- Live lyrics: the current line rides above the transport bar,
-     following audio.currentTime (lyrics.js). Hidden on instrumentals. -->
+     following audio.currentTime (lyrics.js). Two stacked spans
+     crossfade on every line change: the leaving line drifts up while
+     the arriving one rises in. Hidden on instrumentals. -->
 <div id="lyrics" class="lyrics" aria-live="polite" hidden>
-  <span id="lyrics-line" class="lyrics-line"></span>
+  <span id="lyrics-a" class="lyrics-line"></span>
+  <span id="lyrics-b" class="lyrics-line"></span>
 </div>
 <div id="listen-bar" class="listen-bar">
   <button type="button" id="listen-play" class="listen-play" aria-label="Pause">
