@@ -79,6 +79,40 @@ The song list is `src/tracks.json`, the single source of truth. The build inject
 
 3. `npm run build`, then check `dist/music/<slug>.html` and `dist/audio/<slug>.m4a` exist.
 
+4. If the song has words, fetch its synced lyrics: `node scripts/fetch-lyrics.mjs <slug>` (see below). If it is an instrumental, add the slug to INSTRUMENTAL in that script instead.
+
+5. Render the song's OG card (every `/music/<slug>` page points at `/images/og/<slug>.png`, and there is no build-time check that it exists, so this is easy to forget):
+
+   ```bash
+   npx -y -p http-server@14 http-server . -p 4980 &
+   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+     --window-size=1200,630 --virtual-time-budget=4000 \
+     --screenshot=public/images/og/<slug>.png \
+     "http://localhost:4980/scripts/og-template.html?name=<url-encoded name>&sub=<url-encoded sub>"
+   ```
+
+## Synced lyrics on /music
+
+Every vocal track can show live lyrics: the current line rides above the transport bar and follows `audio.currentTime`. The pieces:
+
+- `src/lyrics/<slug>.lrc` is the data, standard LRC (`[mm:ss.xx] line`), one file per vocal track. No file means no lyrics UI (that is how instrumentals opt out).
+- `scripts/fetch-lyrics.mjs` pulls synced lyrics from LRCLIB, matching by artist, title, and real file duration (via ffprobe). Artist/title spelling quirks (BØRNS, RÜFÜS DU SOL, parenthesized titles) live in its OVERRIDES map, instrumentals in its INSTRUMENTAL set, and vocal tracks where LRCLIB only has wrong-edit timestamps in NO_USABLE_MATCH (those ship without lyrics on purpose). `--force` accepts the best candidate past the 8s duration cap, but only keep such a file if validation passes.
+- `scripts/build.mjs` parses the LRC at build time, inlines each song's own lines into its `/music/<slug>` page as `window.SITE_LYRICS`, emits `dist/lyrics/<slug>.json` for in-place track switches, and marks `lyr: 1` on `window.SITE_TRACKS`.
+- `src/scripts/lyrics.js` renders the line. It identifies the current track from the URL path, NEVER from `audio.src`: ambience.js hot-swaps the element onto a `blob:` URL once the full file has downloaded, so the src tells you nothing. ambience.js rewrites the path to `/music/<slug>` on init and on every track change, which is exactly the signal to trust.
+- Timing correction: put `[offset:±ms]` at the top of an .lrc file. Positive shifts the words later. Applied at build time, so re-run `npm run build` after editing.
+
+Validate that lyrics really sync to the words being sung:
+
+```bash
+uv run --with mlx-whisper python scripts/validate-lyrics.py [slug ...]
+```
+
+It cuts audio around sampled lyric timestamps, transcribes with whisper (word timestamps on), fuzzy-locates each expected line, and reports SYNCED, OFFSET (with the suggested `[offset:]` tag), or UNVERIFIED per track. UNVERIFIED means whisper could not hear the vocals clearly (dense mix), not that the sync is wrong. Full sample detail lands in `/tmp/lyrics-validation.json`. First run downloads the whisper model from Hugging Face.
+
+## Sharing a moment on /music
+
+The address bar stays clean at `/music/<slug>`. Deep links with `?ts=<seconds>` still seek on load, but they are only ever created intentionally: the link button in the transport bar copies the current song and second to the clipboard. Do not reintroduce ambient URL rewriting with timestamps.
+
 ## Adding a page
 
 1. `src/pages/<route>.html` with YAML frontmatter at the top (`title`, `description`, `ogImage`, `canonical`, `header: home` or `blog`).

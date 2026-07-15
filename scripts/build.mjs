@@ -230,7 +230,51 @@ const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")),
 // /music/<slug> with song-specific SEO, since crawlers read static
 // HTML and ignore query params.
 const TRACKS = JSON.parse(read(join(SRC, "tracks.json")));
-const tracksScript = `<script>window.SITE_TRACKS=${escapeJSONForScript(TRACKS)}</script>`;
+
+// Time-synced lyrics. src/lyrics/<slug>.lrc is fetched from LRCLIB by
+// scripts/fetch-lyrics.mjs and timing-verified against the actual audio
+// by scripts/validate-lyrics.sh. Each song page inlines its own lines;
+// in-place track switches fetch /lyrics/<slug>.json instead. Tracks
+// without an .lrc file (the instrumentals) simply show no lyrics.
+const LYRICS = loadLyrics();
+const tracksScript = `<script>window.SITE_TRACKS=${escapeJSONForScript(
+  TRACKS.map((t) => ({ ...t, lyr: LYRICS[t.slug] ? 1 : 0 }))
+)}</script>`;
+const lyricsInclude = `<script src="/scripts/lyrics.js" defer></script>`;
+
+function loadLyrics() {
+  const dir = join(SRC, "lyrics");
+  const out = {};
+  if (!existsSync(dir)) return out;
+  for (const file of readdirSync(dir).filter((f) => f.endsWith(".lrc"))) {
+    const lines = parseLRC(read(join(dir, file)));
+    if (lines.length) out[basename(file, ".lrc")] = lines;
+  }
+  return out;
+}
+
+// [mm:ss.xx] timestamped lines -> [[seconds, text], ...]. An
+// [offset:±ms] tag shifts every line, positive meaning the words render
+// LATER (use it when the audio file has a longer lead-in than the
+// LRCLIB master). Lines with a timestamp but no text are kept: they
+// clear the display through instrumental gaps. Multiple timestamps on
+// one line each get their own entry.
+function parseLRC(raw) {
+  const offMatch = raw.match(/^\[offset:([+-]?\d+)\]/im);
+  const offset = offMatch ? parseInt(offMatch[1], 10) / 1000 : 0;
+  const lines = [];
+  for (const line of raw.split(/\r?\n/)) {
+    const stamps = [...line.matchAll(/\[(\d+):(\d{1,2}(?:\.\d+)?)\]/g)];
+    if (!stamps.length) continue;
+    const text = line.replace(/\[[^\]]*\]/g, "").trim();
+    for (const s of stamps) {
+      const t = parseInt(s[1], 10) * 60 + parseFloat(s[2]) + offset;
+      lines.push([Math.max(0, +t.toFixed(2)), text]);
+    }
+  }
+  lines.sort((a, b) => a[0] - b[0]);
+  return lines;
+}
 
 function renderPage({ frontmatter, body, slug }) {
   const header = frontmatter.header === "blog" ? headerBlog : headerHome;
@@ -280,7 +324,7 @@ function buildPages() {
     if (rel === "blog/index.html") continue;
     const raw = read(file);
     const { data, content } = parsePageFrontmatter(raw);
-    if (rel === "music.html") data.pageScripts = tracksScript + (data.pageScripts || "");
+    if (rel === "music.html") data.pageScripts = tracksScript + lyricsInclude + (data.pageScripts || "");
     const slug = "/" + (rel === "index.html" ? "" : rel.replace(/\/index\.html$/, "").replace(/\.html$/, ""));
     const html = renderPage({ frontmatter: data, body: content, slug });
     write(join(DIST, rel), html);
@@ -300,7 +344,11 @@ function buildSongPages() {
     fm.ogImage = `/images/og/${tr.slug}.png`;
     fm.canonical = `${SITE_URL}/music/${tr.slug}`;
     fm.ogType = "music.song";
-    fm.pageScripts = tracksScript + `<script>window.INITIAL_SONG=${escapeJSONForScript(tr.slug)}</script>` + (data.pageScripts || "");
+    const inlineLyrics = LYRICS[tr.slug]
+      ? `<script>window.SITE_LYRICS=${escapeJSONForScript({ slug: tr.slug, lines: LYRICS[tr.slug] })}</script>`
+      : "";
+    fm.pageScripts =
+      tracksScript + `<script>window.INITIAL_SONG=${escapeJSONForScript(tr.slug)}</script>` + inlineLyrics + lyricsInclude + (data.pageScripts || "");
     // The audio element must be baked with this page's own song. The
     // shared markup carries the default track, and leaving it would
     // briefly cue (and start downloading) the wrong file before the
@@ -502,6 +550,14 @@ function copyAssets() {
   if (existsSync(scriptsDir)) cpSync(scriptsDir, join(DIST, "scripts"), { recursive: true });
 }
 
+// One JSON per lyric track so an in-place track switch on /music can
+// pull just the new song's lines (the page only inlines its own song).
+function writeLyricsJSON() {
+  for (const [slug, lines] of Object.entries(LYRICS)) {
+    write(join(DIST, "lyrics", `${slug}.json`), JSON.stringify({ slug, lines }));
+  }
+}
+
 function writeSitemap(posts) {
   const urls = ["/", "/blog", "/music", ...TRACKS.map((t) => `/music/${t.slug}`), ...posts.map((p) => `/blog/posts/${p.id}`)];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -542,13 +598,14 @@ buildSongPages();
   const posts = buildPosts();
   buildBlogIndex(posts);
   copyAssets();
+  writeLyricsJSON();
   writeSitemap(posts);
   writeRobots();
 
   // Crude size summary so the dev sees how cheap this is at a glance.
   let total = 0;
   for (const f of walk(DIST)) total += statSync(f).size;
-  console.log(`build: dist/ ready (${posts.length} posts, ${Math.round(total / 1024)}KB on disk)`);
+  console.log(`build: dist/ ready (${posts.length} posts, ${Object.keys(LYRICS).length} lyric tracks, ${Math.round(total / 1024)}KB on disk)`);
 }
 
 main().catch((err) => {
