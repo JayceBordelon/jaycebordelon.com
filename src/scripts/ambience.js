@@ -458,13 +458,23 @@
   audio.addEventListener("pause", paintBar);
   audio.addEventListener("durationchange", paintBar);
 
-  setInterval(function () {
-    if (!audio.paused && audio.duration) {
+  // Sharing a moment is explicit: the button copies a link to the
+  // current song stamped with the current second. The address bar
+  // itself stays clean at /music/<slug>; inbound ?ts= links are still
+  // honored on load.
+  var shareBtn = document.getElementById("listen-share");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", function () {
+      var ts = Math.floor(audio.currentTime);
+      var url = location.origin + "/music/" + TRACKS[trackIdx].slug + (ts >= 1 ? "?ts=" + ts : "");
       try {
-        history.replaceState(null, "", "/music/" + TRACKS[trackIdx].slug + "?ts=" + Math.floor(audio.currentTime));
+        navigator.clipboard.writeText(url).then(function () {
+          shareBtn.classList.add("copied");
+          setTimeout(function () { shareBtn.classList.remove("copied"); }, 1400);
+        }, function () {});
       } catch (e) {}
-    }
-  }, 5000);
+    });
+  }
 
   addEventListener("pagehide", function () {
     try {

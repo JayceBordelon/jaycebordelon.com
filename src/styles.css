@@ -748,6 +748,55 @@
     }
   }
 
+  /* Live lyrics: a single line riding above the transport bar, easing
+     in per line. Serif against the field so it reads as the song's
+     voice, not another HUD element. */
+  .lyrics {
+    position: fixed;
+    left: 50%;
+    bottom: 86px;
+    transform: translateX(-50%);
+    z-index: 55;
+    width: min(760px, 88vw);
+    text-align: center;
+    pointer-events: none;
+  }
+  .lyrics-line {
+    display: inline-block;
+    font-family: var(--font-serif);
+    font-size: clamp(16px, 2.1vw, 22px);
+    font-style: italic;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--foreground) 92%, transparent);
+    text-shadow: 0 1px 14px color-mix(in srgb, var(--background) 75%, transparent);
+    opacity: 0;
+    transform: translateY(7px);
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+  }
+  .lyrics.on .lyrics-line {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .net-lyrics {
+    font-style: normal;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .net-lyrics[aria-pressed="true"] {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  @media (max-width: 640px) {
+    /* Clear the taller two-row bar AND the net-tools button cluster
+       (which sits at bottom: 118px), or a wrapped second line lands
+       on the buttons. */
+    .lyrics {
+      bottom: 168px;
+    }
+  }
+
   .listen-bar {
     transition: opacity 0.45s ease;
     position: fixed;
@@ -795,6 +844,34 @@
     color: var(--muted-foreground);
     min-width: 4ch;
     text-align: center;
+  }
+  /* Copy-a-moment: the link glyph swaps to an accent check while the
+     copied state holds. */
+  .listen-share {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--muted-foreground);
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .listen-share:hover {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .listen-share .ls-check {
+    display: none;
+  }
+  .listen-share.copied .ls-link {
+    display: none;
+  }
+  .listen-share.copied .ls-check {
+    display: block;
+    color: var(--accent);
   }
   .listen-picker {
     position: relative;
