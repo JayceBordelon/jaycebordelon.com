@@ -3,24 +3,23 @@
 // switching tracks without a page load fetches /lyrics/<slug>.json.
 // The current line follows audio.currentTime on a rAF loop while
 // playing, so seeks and scrubs land on the right words immediately.
+// Every line change is a crossfade between two stacked spans: the
+// leaving line drifts up and out while the arriving one rises in.
 // Instrumentals have no lyric file and show nothing at all.
 (function () {
   var audio = document.getElementById("ambience-track");
   var box = document.getElementById("lyrics");
-  var lineEl = document.getElementById("lyrics-line");
-  var toggle = document.getElementById("net-lyrics");
-  if (!audio || !box || !lineEl) return;
+  var spanA = document.getElementById("lyrics-a");
+  var spanB = document.getElementById("lyrics-b");
+  if (!audio || !box || !spanA || !spanB) return;
 
   var TRACKS = window.SITE_TRACKS || [];
   var cache = {}; // slug -> [[t, text], ...] | null (fetched, none)
   var lines = null;
   var slug = null;
   var lineIdx = -1;
+  var cur = null; // the span currently holding the visible line
   var raf = 0;
-  var off = false;
-  try {
-    off = localStorage.getItem("lyrics-off") === "1";
-  } catch (e) {}
 
   if (window.SITE_LYRICS && window.SITE_LYRICS.lines) {
     cache[window.SITE_LYRICS.slug] = window.SITE_LYRICS.lines;
@@ -56,39 +55,50 @@
     return ans;
   }
 
+  function clearLines() {
+    spanA.className = spanB.className = "lyrics-line";
+    spanA.textContent = spanB.textContent = "";
+    cur = null;
+  }
+
   function render(idx) {
     if (idx === lineIdx) return;
     lineIdx = idx;
     var text = idx >= 0 ? lines[idx][1] : "";
-    // Swap through a fade: retint the box rather than juggling nodes.
+    if (cur) {
+      cur.classList.remove("on");
+      cur.classList.add("out");
+    }
     if (!text) {
-      box.classList.remove("on");
+      // An instrumental gap: the old line fades out and nothing replaces
+      // it until the next timestamped words arrive.
+      cur = null;
       return;
     }
-    box.classList.remove("on");
-    // Double rAF so the removal paints before the new line eases in.
+    var next = cur === spanA ? spanB : spanA;
+    next.classList.remove("on");
+    next.classList.remove("out");
+    next.textContent = text;
+    // Double rAF so the reset state paints before .on lands, otherwise
+    // the browser coalesces both and the fade-in never runs. If an even
+    // faster line change already marked this span as leaving again,
+    // let it leave.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        lineEl.textContent = text;
-        box.classList.add("on");
+        if (!next.classList.contains("out")) next.classList.add("on");
       });
     });
+    cur = next;
   }
 
   function tick() {
     raf = 0;
-    if (!lines || off) return;
+    if (!lines) return;
     render(lineAt(audio.currentTime));
     if (!audio.paused) raf = requestAnimationFrame(tick);
   }
   function kick() {
     if (!raf) raf = requestAnimationFrame(tick);
-  }
-
-  function setAvailable(has) {
-    if (toggle) toggle.hidden = !has;
-    box.hidden = !has || off;
-    if (box.hidden) box.classList.remove("on");
   }
 
   function load() {
@@ -98,17 +108,17 @@
     if (track && track.slug === slug && lines) return;
     lines = null;
     lineIdx = -1;
-    box.classList.remove("on");
+    clearLines();
     if (!track || !track.lyr) {
       slug = track ? track.slug : null;
-      setAvailable(false);
+      box.hidden = true;
       return;
     }
     slug = track.slug;
-    setAvailable(true);
+    box.hidden = false;
     if (slug in cache) {
       lines = cache[slug];
-      if (!lines) setAvailable(false);
+      if (!lines) box.hidden = true;
       kick();
       return;
     }
@@ -121,27 +131,13 @@
         cache[want] = data && data.lines ? data.lines : null;
         if (want !== slug) return; // the user has moved on
         lines = cache[want];
-        if (!lines) setAvailable(false);
+        if (!lines) box.hidden = true;
         else kick();
       })
       .catch(function () {
         cache[want] = null;
-        if (want === slug) setAvailable(false);
+        if (want === slug) box.hidden = true;
       });
-  }
-
-  if (toggle) {
-    toggle.addEventListener("click", function () {
-      off = !off;
-      try {
-        localStorage.setItem("lyrics-off", off ? "1" : "0");
-      } catch (e) {}
-      toggle.setAttribute("aria-pressed", off ? "false" : "true");
-      box.hidden = off || !lines;
-      lineIdx = -1;
-      if (!off) kick();
-    });
-    toggle.setAttribute("aria-pressed", off ? "false" : "true");
   }
 
   audio.addEventListener("loadstart", load); // fires on every src swap

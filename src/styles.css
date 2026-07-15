@@ -748,9 +748,11 @@
     }
   }
 
-  /* Live lyrics: a single line riding above the transport bar, easing
-     in per line. Serif against the field so it reads as the song's
-     voice, not another HUD element. */
+  /* Live lyrics: the current line rides above the transport bar in the
+     serif voice. Two spans stack on the same bottom-anchored baseline
+     and crossfade: the leaving line drifts up as it fades while the
+     arriving one rises in. The container carries the type metrics so
+     both spans always agree on em-based layout. */
   .lyrics {
     position: fixed;
     left: 50%;
@@ -758,35 +760,32 @@
     transform: translateX(-50%);
     z-index: 55;
     width: min(760px, 88vw);
-    text-align: center;
-    pointer-events: none;
-  }
-  .lyrics-line {
-    display: inline-block;
+    height: 4.5em;
     font-family: var(--font-serif);
     font-size: clamp(16px, 2.1vw, 22px);
     font-style: italic;
     line-height: 1.45;
+    pointer-events: none;
+  }
+  .lyrics-line {
+    position: absolute;
+    inset: auto 0 0 0;
+    text-align: center;
     color: color-mix(in srgb, var(--foreground) 92%, transparent);
     text-shadow: 0 1px 14px color-mix(in srgb, var(--background) 75%, transparent);
     opacity: 0;
-    transform: translateY(7px);
+    transform: translateY(10px);
     transition:
-      opacity 0.3s ease,
-      transform 0.3s ease;
+      opacity 0.5s ease,
+      transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
-  .lyrics.on .lyrics-line {
+  .lyrics-line.on {
     opacity: 1;
     transform: translateY(0);
   }
-  .net-lyrics {
-    font-style: normal;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-  }
-  .net-lyrics[aria-pressed="true"] {
-    color: var(--accent);
-    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  .lyrics-line.out {
+    opacity: 0;
+    transform: translateY(-10px);
   }
   @media (max-width: 640px) {
     /* Clear the taller two-row bar AND the net-tools button cluster
