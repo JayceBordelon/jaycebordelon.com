@@ -774,18 +774,13 @@
     color: color-mix(in srgb, var(--foreground) 92%, transparent);
     text-shadow: 0 1px 14px color-mix(in srgb, var(--background) 75%, transparent);
     opacity: 0;
-    transform: translateY(10px);
-    transition:
-      opacity 0.5s ease,
-      transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: opacity 0.5s ease;
   }
   .lyrics-line.on {
     opacity: 1;
-    transform: translateY(0);
   }
   .lyrics-line.out {
     opacity: 0;
-    transform: translateY(-10px);
   }
   @media (max-width: 640px) {
     /* Clear the taller two-row bar AND the net-tools button cluster
@@ -872,116 +867,6 @@
     display: block;
     color: var(--accent);
   }
-  .listen-picker {
-    position: relative;
-    margin-left: auto;
-  }
-  .listen-track {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    max-width: 32ch;
-    min-width: 0;
-    padding: 7px 12px;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) - 2px);
-    background: transparent;
-    color: var(--muted-foreground);
-    font: inherit;
-    letter-spacing: inherit;
-    white-space: nowrap;
-    transition:
-      color 0.2s ease,
-      border-color 0.2s ease;
-  }
-  .listen-track span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-  }
-  /* The chevron points up: the list opens above the bar. */
-  .listen-track::after {
-    content: "";
-    width: 6px;
-    height: 6px;
-    flex: none;
-    border-top: 1px solid currentColor;
-    border-right: 1px solid currentColor;
-    transform: rotate(-45deg) translateY(2px);
-    transition: transform 0.2s ease;
-  }
-  .listen-track[aria-expanded="true"]::after {
-    transform: rotate(135deg) translateY(2px);
-  }
-  .listen-track:hover {
-    color: var(--foreground);
-    border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
-  }
-  .listen-tracklist {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 10px);
-    min-width: 100%;
-    max-height: min(58vh, 440px);
-    overflow-y: auto;
-    margin: 0;
-    padding: 6px;
-    list-style: none;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) - 2px);
-    background: color-mix(in srgb, var(--background) 92%, transparent);
-    backdrop-filter: blur(8px);
-  }
-  .listen-tracklist li {
-    padding: 9px 12px;
-    border-radius: calc(var(--radius) - 4px);
-    color: var(--muted-foreground);
-    white-space: nowrap;
-    transition:
-      color 0.15s ease,
-      background-color 0.15s ease;
-  }
-  .listen-tracklist li:hover {
-    color: var(--foreground);
-    background: color-mix(in srgb, var(--foreground) 7%, transparent);
-  }
-  .listen-tracklist li[aria-selected="true"] {
-    color: var(--cat-color, var(--accent));
-  }
-  .listen-tracklist li[aria-selected="true"] .lt-sub {
-    color: color-mix(in srgb, var(--cat-color, var(--foreground)) 62%, transparent);
-  }
-  .listen-tracklist .listen-cat {
-    padding: 12px 12px 4px;
-    font-size: 9px;
-    letter-spacing: 0.26em;
-    color: color-mix(in srgb, var(--cat-color, var(--foreground)) 78%, transparent);
-    pointer-events: none;
-  }
-  .listen-tracklist li[role="option"] {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    position: relative;
-    padding-left: 24px;
-  }
-  .listen-tracklist li[role="option"]::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 14px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--cat-color, var(--accent));
-    opacity: 0.75;
-  }
-  .listen-tracklist .lt-sub {
-    font-size: 9.5px;
-    letter-spacing: 0.06em;
-    color: color-mix(in srgb, var(--foreground) 48%, transparent);
-  }
   .listen-seek {
     flex: 1;
     appearance: none;
@@ -1009,12 +894,38 @@
   }
 
   /* Now playing: genre-colored eq bars and the track identity, like a
-     real listening platform. */
+     real listening platform. The whole block is the button that opens
+     the song browser, with an up chevron as the tell. */
   .np {
     display: flex;
     align-items: center;
     gap: 11px;
     min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .np::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex: none;
+    border-top: 1px solid currentColor;
+    border-right: 1px solid currentColor;
+    transform: rotate(-45deg) translateY(2px);
+    color: var(--muted-foreground);
+    transition: color 0.2s ease;
+  }
+  .np:hover::after {
+    color: var(--foreground);
+  }
+  .np:hover .np-name {
+    color: var(--accent);
   }
   .np-eq {
     display: flex;
@@ -1068,8 +979,7 @@
     white-space: nowrap;
   }
   /* Small screens: the scrubber takes its own full-width row on top,
-     the controls settle beneath it, and the picker stays usable with
-     ellipsized names. */
+     the controls settle beneath it. */
   @media (max-width: 640px) {
     .listen-bar {
       flex-wrap: wrap;
@@ -1080,18 +990,169 @@
       order: -1;
       flex-basis: 100%;
     }
-    .listen-track {
-      max-width: 34vw;
-    }
     #listen-dur {
       display: none;
     }
-    .listen-tracklist {
-      max-width: 86vw;
+  }
+
+  /* The song browser: a search-first popup over the machine. */
+  .song-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .song-modal-scrim {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--background) 62%, transparent);
+    backdrop-filter: blur(9px);
+  }
+  .song-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(560px, 100%);
+    max-height: min(72vh, 620px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    box-shadow: 0 24px 80px -24px color-mix(in srgb, var(--foreground) 25%, transparent);
+    overflow: hidden;
+    animation: song-panel-in 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  @keyframes song-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.985);
     }
-    .listen-tracklist li {
-      overflow: hidden;
-      text-overflow: ellipsis;
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .song-search-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .song-search {
+    flex: 1;
+    min-width: 0;
+    padding: 15px 18px;
+    border: 0;
+    background: none;
+    outline: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--foreground);
+  }
+  .song-search::placeholder {
+    color: color-mix(in srgb, var(--foreground) 40%, transparent);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+  }
+  .song-close {
+    flex: none;
+    padding: 10px 16px;
+    font-size: 17px;
+    color: var(--muted-foreground);
+    transition: color 0.15s ease;
+  }
+  .song-close:hover {
+    color: var(--foreground);
+  }
+  .song-list {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+    padding: 4px 8px 10px;
+    list-style: none;
+    font-family: var(--font-mono);
+  }
+  .song-list .song-cat {
+    padding: 14px 12px 5px;
+    font-size: 9px;
+    letter-spacing: 0.26em;
+    color: color-mix(in srgb, var(--cat-color, var(--foreground)) 78%, transparent);
+    pointer-events: none;
+  }
+  .song-list li[role="option"] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 76px 10px 28px;
+    border-radius: calc(var(--radius) - 4px);
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .song-list li[role="option"]::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 15px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cat-color, var(--accent));
+    opacity: 0.75;
+  }
+  .song-list li[role="option"]:hover,
+  .song-list li[role="option"]:focus-visible {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--foreground) 7%, transparent);
+    outline: none;
+  }
+  .song-list li[aria-selected="true"] {
+    color: var(--cat-color, var(--accent));
+  }
+  .song-list li[aria-selected="true"]::after {
+    content: "PLAYING";
+    position: absolute;
+    right: 12px;
+    top: 13px;
+    font-size: 8px;
+    letter-spacing: 0.24em;
+    color: color-mix(in srgb, var(--cat-color, var(--accent)) 80%, transparent);
+  }
+  .song-name {
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+  }
+  .song-sub {
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--foreground) 48%, transparent);
+  }
+  .song-list li[aria-selected="true"] .song-sub {
+    color: color-mix(in srgb, var(--cat-color, var(--foreground)) 62%, transparent);
+  }
+  .song-empty {
+    padding: 26px 18px 30px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--muted-foreground);
+  }
+  /* Phones: anchor high so the keyboard never swallows the panel. */
+  @media (max-width: 640px) {
+    .song-modal {
+      align-items: flex-start;
+      padding: 12px;
+    }
+    .song-panel {
+      margin-top: 7dvh;
+      max-height: calc(86dvh - 24px);
     }
   }
 }

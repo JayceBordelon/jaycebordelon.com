@@ -82,8 +82,11 @@
   var seek = document.getElementById("listen-seek");
   var timeEl = document.getElementById("listen-time");
   var durEl = document.getElementById("listen-dur");
-  var pickBtn = document.getElementById("listen-track-btn");
-  var pickList = document.getElementById("listen-track-list");
+  var npOpen = document.getElementById("np-open");
+  var songModal = document.getElementById("song-modal");
+  var songSearch = document.getElementById("song-search");
+  var songList = document.getElementById("song-list");
+  var songEmpty = document.getElementById("song-empty");
   var seeking = false;
 
   function fmt(sec) {
@@ -110,11 +113,8 @@
       seek.style.background = "linear-gradient(to right, var(--np-color) " + pct + "%, color-mix(in srgb, var(--foreground) 22%, transparent) " + pct + "%)";
     }
   }
-  var pickName = document.getElementById("listen-track-name");
   var optionEls = [];
   function paintPicker() {
-    if (pickName) pickName.textContent = TRACKS[trackIdx].name;
-    else if (pickBtn) pickBtn.textContent = TRACKS[trackIdx].name;
     for (var li = 0; li < optionEls.length; li++) {
       if (optionEls[li]) optionEls[li].setAttribute("aria-selected", li === trackIdx ? "true" : "false");
     }
@@ -367,64 +367,116 @@
     seek.addEventListener("pointerup", function () { seeking = false; });
     seek.addEventListener("blur", function () { seeking = false; });
   }
-  // The song picker: a themed dropdown that opens upward over the bar.
-  function togglePick(open) {
-    if (!pickList || !pickBtn) return;
-    pickList.hidden = !open;
-    pickBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  // The song browser: a full popup opened from the now-playing title
+  // in the bar. One list grouped by category (first-appearance order,
+  // so a new category can never silently vanish), filtered live by the
+  // search box across song, artist, and genre.
+  var catHeads = [];
+  function modalOpen() {
+    return songModal && !songModal.hidden;
   }
-  if (pickBtn && pickList) {
-    // Grouped by category, each entry verbose: the song on one line,
-    // its credit on the next.
-    // Categories come from the manifest in first-appearance order, so
-    // a new category can never silently vanish from the picker.
+  function toggleModal(open) {
+    if (!songModal) return;
+    songModal.hidden = !open;
+    if (npOpen) npOpen.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      if (songSearch) songSearch.value = "";
+      filterSongs("");
+      var sel = songList ? songList.querySelector('[aria-selected="true"]') : null;
+      if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: "center" });
+      if (songSearch) songSearch.focus();
+    } else if (npOpen) npOpen.focus();
+  }
+  function filterSongs(q) {
+    q = q.trim().toLowerCase();
+    var any = false;
+    for (var i = 0; i < optionEls.length; i++) {
+      var el = optionEls[i];
+      if (!el) continue;
+      var hit = !q || el.getAttribute("data-search").indexOf(q) >= 0;
+      el.hidden = !hit;
+      if (hit) any = true;
+    }
+    catHeads.forEach(function (h) {
+      h.el.hidden = !h.members.some(function (el) {
+        return !el.hidden;
+      });
+    });
+    if (songEmpty) songEmpty.hidden = any;
+  }
+  if (npOpen && songModal && songList) {
     var CATS = [];
     TRACKS.forEach(function (tr) {
       if (CATS.indexOf(tr.cat) < 0) CATS.push(tr.cat);
     });
     CATS.forEach(function (cat) {
-      var members = [];
-      TRACKS.forEach(function (tr, ti) {
-        if (tr.cat === cat) members.push(ti);
-      });
-      if (!members.length) return;
       var head = document.createElement("li");
-      head.className = "listen-cat";
+      head.className = "song-cat";
       head.setAttribute("role", "presentation");
       head.textContent = cat.toUpperCase();
       head.style.setProperty("--cat-color", catColor(cat));
-      pickList.appendChild(head);
-      members.forEach(function (ti) {
-        var tr = TRACKS[ti];
+      songList.appendChild(head);
+      var memberEls = [];
+      TRACKS.forEach(function (tr, ti) {
+        if (tr.cat !== cat) return;
         var li = document.createElement("li");
         li.setAttribute("role", "option");
         li.setAttribute("aria-selected", "false");
+        li.tabIndex = 0;
         li.title = tr.title;
         li.style.setProperty("--cat-color", catColor(tr.cat));
+        li.setAttribute("data-search", (tr.name + " " + tr.sub + " " + tr.cat).toLowerCase());
         var nm = document.createElement("span");
-        nm.className = "lt-name";
+        nm.className = "song-name";
         nm.textContent = tr.name;
         var sb = document.createElement("span");
-        sb.className = "lt-sub";
+        sb.className = "song-sub";
         sb.textContent = tr.sub;
         li.appendChild(nm);
         li.appendChild(sb);
-        li.addEventListener("click", function () {
+        var choose = function () {
           off = false;
           try { localStorage.setItem("ambience", "on"); } catch (e) {}
           setTrack(ti, true);
-          togglePick(false);
+          toggleModal(false);
+        };
+        li.addEventListener("click", choose);
+        li.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            choose();
+          }
         });
-        pickList.appendChild(li);
+        songList.appendChild(li);
         optionEls[ti] = li;
+        memberEls.push(li);
       });
+      catHeads.push({ el: head, members: memberEls });
     });
-    pickBtn.addEventListener("click", function () {
-      togglePick(pickList.hidden);
+    npOpen.addEventListener("click", function () {
+      toggleModal(songModal.hidden);
     });
-    document.addEventListener("pointerdown", function (e) {
-      if (!pickList.hidden && e.target && e.target.closest && !e.target.closest(".listen-picker")) togglePick(false);
+    songModal.addEventListener("pointerdown", function (e) {
+      if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-close")) toggleModal(false);
     });
+    var songClose = document.getElementById("song-close");
+    if (songClose) {
+      songClose.addEventListener("click", function () {
+        toggleModal(false);
+      });
+    }
+    if (songSearch) {
+      songSearch.addEventListener("input", function () {
+        filterSongs(songSearch.value);
+      });
+      // Enter plays the first match: type a few letters, hit Enter, done.
+      songSearch.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          var first = songList.querySelector('li[role="option"]:not([hidden])');
+          if (first) first.click();
+        }
+      });
+    }
     paintPicker();
   }
 
@@ -440,8 +492,8 @@
   }
   addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
-      if (pickList && !pickList.hidden) {
-        togglePick(false);
+      if (modalOpen()) {
+        toggleModal(false);
         return;
       }
       if (document.querySelector(".net-mix.open")) return;
