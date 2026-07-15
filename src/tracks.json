@@ -520,6 +520,22 @@
     "title": "Daydreaming by Radiohead"
   },
   {
+    "slug": "let-down-radiohead",
+    "src": "/audio/let-down-radiohead.m4a",
+    "name": "Let Down",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Let Down by Radiohead"
+  },
+  {
+    "slug": "exit-music",
+    "src": "/audio/exit-music.m4a",
+    "name": "Exit Music (For A Film)",
+    "cat": "Alternative",
+    "sub": "Radiohead",
+    "title": "Exit Music (For A Film) by Radiohead"
+  },
+  {
     "slug": "ode-to-the-mets",
     "src": "/audio/ode-to-the-mets.m4a",
     "name": "Ode To The Mets",

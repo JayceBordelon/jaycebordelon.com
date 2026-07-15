@@ -57,6 +57,28 @@ Pages: `src/pages/*.html`. Plain HTML with `{{ placeholders }}` for values the l
 2. Cover image in `public/images/`.
 3. `npm run build` → post HTML at `dist/blog/posts/<slug>.html`, card on the blog index, entry in `sitemap.xml`.
 
+## Adding a song to the /music player
+
+The song list is `src/tracks.json`, the single source of truth. The build injects it into the music page and generates a shareable per-song page at `/music/<slug>` for every entry. Nothing else needs editing.
+
+1. Get the audio as `public/audio/<slug>.m4a`. Library convention is AAC around 96 kbps, 48 kHz stereo (the whole catalog was captured this way). From a YouTube link, with `yt-dlp` and `ffmpeg` already on PATH via Homebrew:
+
+   ```bash
+   yt-dlp --no-playlist -f bestaudio -x --audio-format m4a --audio-quality 96K \
+     -o "public/audio/<slug>.%(ext)s" "<youtube-url>"
+   ```
+
+2. Add an entry to `src/tracks.json`:
+   - `slug`: unique, kebab-case. Heads up: `let-down` is the Gabriel Piano cover, the original Radiohead track lives at `let-down-radiohead`.
+   - `src`: `/audio/<slug>.m4a`
+   - `name`: display name in the player
+   - `cat`: genre bucket, drives the picker grouping and the neural net's per-genre tuning. Existing values: Originals, Piano Covers, Alternative, Rock, Pop, Folk, Hip Hop, Electronic, Classical, Film Scores. Reuse one before inventing a new one.
+   - `sub`: artist line shown under the name (e.g. "Radiohead" or "Chopin, played by Rousseau")
+   - `title`: full sentence-ish title used for the per-song page metadata
+   Keep entries grouped with their artist/category neighbors in the file.
+
+3. `npm run build`, then check `dist/music/<slug>.html` and `dist/audio/<slug>.m4a` exist.
+
 ## Adding a page
 
 1. `src/pages/<route>.html` with YAML frontmatter at the top (`title`, `description`, `ogImage`, `canonical`, `header: home` or `blog`).
