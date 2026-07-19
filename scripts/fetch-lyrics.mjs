@@ -77,6 +77,7 @@ const OVERRIDES = {
   "no-place": { artist: "RÜFÜS DU SOL" },
   "like-an-animal": { artist: "RÜFÜS DU SOL" },
   "say-a-prayer-for-me": { artist: "RÜFÜS DU SOL" },
+  "until-the-sun-needs-to-rise": { artist: "RÜFÜS DU SOL" },
 };
 
 function fileDuration(track) {
