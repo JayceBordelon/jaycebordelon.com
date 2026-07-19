@@ -746,6 +746,30 @@
       left: 16px;
       bottom: 118px;
     }
+    /* On phones the anchored tooltips become viewport sheets: pinned
+       to the screen edges above the tools row so nothing can hang
+       offscreen, wrapping instead of nowrap, and scrollable when tall.
+       touch-action and overscroll-behavior keep the scroll from being
+       eaten by the net's drag-to-spin (see the two-traps note). */
+    .net-label {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 162px;
+      min-width: 0;
+      max-width: none;
+      white-space: normal;
+      max-height: min(46vh, 340px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
+    .net-label::after {
+      display: none;
+    }
+    .net-label-eqn {
+      white-space: pre-wrap;
+    }
   }
 
   /* Live lyrics: the current line rides above the transport bar in the
