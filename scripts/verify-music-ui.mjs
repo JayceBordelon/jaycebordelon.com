@@ -92,7 +92,13 @@ const mobState = await mob.evaluate(async () => {
   audio.muted = true;
   await audio.play().catch(() => {});
   audio.currentTime = 40;
-  await new Promise((r) => setTimeout(r, 800));
+  // Poll instead of a fixed sleep: after a cold seek the first line
+  // can take a beat over a second to arrive.
+  for (let w = 0; w < 30; w++) {
+    await new Promise((r) => setTimeout(r, 100));
+    const line = document.querySelector("#lyrics .lyrics-line.on");
+    if (line && line.textContent.length > 0) break;
+  }
   const box = document.getElementById("lyrics").getBoundingClientRect();
   const bar = document.getElementById("listen-bar").getBoundingClientRect();
   return {

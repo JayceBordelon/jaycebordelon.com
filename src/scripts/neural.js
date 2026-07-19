@@ -1,4 +1,4 @@
-// The background as a listening neural machine, symmetrically random.
+// The background as a listening neural machine, shaped like a galaxy.
 // Every load seeds a fresh cloud of motif neurons and stamps each one
 // eight times through the D4 symmetry group (four rotations about the
 // vertical axis, then the mirror of each), so the machine is different
@@ -75,16 +75,19 @@
     return reg * 4 + sub;
   }
   function generate() {
-    // Pure mirrored chaos. No structure pretends to be anything: a
-    // uniform scatter through the volume, unevenly weighted clumps
-    // wherever they land, a few random-walk wisps, and every point
-    // stamped with its reflection through the vertical plane. Twins
-    // share a pitch cell and light together.
+    // A spiral galaxy. One log-spiral arm is generated and every point
+    // is stamped with its half-turn twin about the vertical axis, so
+    // the counterpart arm is the same arm rotated by pi. Radius and
+    // height survive that rotation, so twins share a pitch cell and
+    // light together. Density is earned by the mathematics: uniform
+    // sampling in theta piles points onto the tight inner turns and
+    // starves the rim, a gaussian bulge packs the core, and the disk
+    // and halo stay sparse.
     function gauss() { return (rnd() + rnd() + rnd() - 1.5) / 1.5; }
-    var YS = 0.52 + rnd() * 0.18;
+    var YS = 0.42 + rnd() * 0.12;
     nodes = [];
     edges = [];
-    function pushMirrored(x, y, z, bias) {
+    function pushTwin(x, y, z, bias) {
       y = Math.max(-0.7, Math.min(0.7, y));
       // Soft radial compression: outliers get pulled back toward the
       // body instead of dangling far outside it.
@@ -96,68 +99,96 @@
       }
       var rad = Math.hypot(x, z);
       nodes.push({ x: x, y: y, z: z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
-      // A point on the mirror plane would reflect onto itself and
-      // stack an identical twin there, so it stays single.
-      if (Math.abs(z) >= 0.02) nodes.push({ x: x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
+      // A point on the axis would rotate onto itself and stack an
+      // identical twin there, so it stays single.
+      if (rad >= 0.02) nodes.push({ x: -x, y: y, z: -z, cell: cellAt(rad, y, YS), bias: bias, act: 0 });
     }
 
-    // The open scatter.
-    var SCATTER = 70 + ((rnd() * 40) | 0);
-    for (var s0 = 0; s0 < SCATTER; s0++) {
-      var sa = rnd() * TAU;
-      var sr = Math.pow(rnd(), 0.5) * 0.95;
-      pushMirrored(Math.cos(sa) * sr, (rnd() * 2 - 1) * YS, Math.sin(sa) * sr, 0.1 + rnd() * 0.5);
+    // The arm pair: r = r0 * e^(k * theta), wound a random number of
+    // turns each visit, k chosen so the arm lands exactly on the rim.
+    // The controlling variables, all rolled fresh per generation:
+    // winding, launch angle, core and rim radii, arm population and
+    // width and fan-out, how hard sampling favors the core, disk
+    // thickness, bulge size and height and bar stretch, and how far
+    // and high the halo drifts. Together they span tight dense
+    // pinwheels, loose fluffy open spirals, and barred galaxies.
+    var TURNS = 1.0 + rnd() * 1.4;
+    var THETA0 = rnd() * TAU;
+    var R0 = 0.055 + rnd() * 0.03;
+    var RMAX = 0.88 + rnd() * 0.12;
+    var K = Math.log(RMAX / R0) / (TURNS * TAU);
+    var ARMN = 240 + ((rnd() * 180) | 0);
+    var SPREAD = 0.02 + rnd() * 0.05;
+    var W0 = 0.01 + rnd() * 0.012;
+    var CORE = 0.55 + rnd() * 0.3;
+    var THICK = 0.18 + rnd() * 0.12;
+    for (var a1 = 0; a1 < ARMN; a1++) {
+      // The outward bias keeps the unwound half of the arm populated
+      // while the bulge carries the core density.
+      var th = Math.pow(rnd(), CORE) * TURNS * TAU;
+      var r1 = R0 * Math.exp(K * th);
+      // The arm fans out as it unwinds and thins with radius.
+      var w1 = W0 + r1 * SPREAD;
+      var ax = Math.cos(th + THETA0) * r1 + gauss() * w1;
+      var az = Math.sin(th + THETA0) * r1 + gauss() * w1;
+      var ay = gauss() * (THICK - r1 * THICK * 0.45);
+      pushTwin(ax, ay, az, 0.1 + rnd() * 0.5);
     }
 
-    // Unevenly weighted clumps.
-    var K = 4 + ((rnd() * 5) | 0);
-    for (var c1 = 0; c1 < K; c1++) {
-      var cx1 = (rnd() - 0.5) * 1.7;
-      var cy1 = (rnd() * 2 - 1) * YS;
-      var cz1 = (rnd() - 0.5) * 1.7;
-      var cr1 = 0.07 + rnd() * 0.2;
-      var cn1 = 8 + ((rnd() * rnd() * 40) | 0);
-      for (var c2 = 0; c2 < cn1; c2++) {
-        pushMirrored(cx1 + gauss() * cr1, cy1 + gauss() * cr1, cz1 + gauss() * cr1, 0.1 + rnd() * 0.5);
-      }
+    // The bulge: a dense gaussian ball on the core, sometimes
+    // stretched into a bar along the arms' launch angle.
+    var BULGEN = 80 + ((rnd() * 90) | 0);
+    var BR = 0.12 + rnd() * 0.1;
+    var BH = 0.3 + rnd() * 0.2;
+    var BAR = 1 + rnd() * 1.4;
+    var bca = Math.cos(THETA0), bsa = Math.sin(THETA0);
+    for (var b1 = 0; b1 < BULGEN; b1++) {
+      var bx = gauss() * BR * BAR, bz = gauss() * BR;
+      pushTwin(bx * bca - bz * bsa, gauss() * BH, bx * bsa + bz * bca, 0.15 + rnd() * 0.5);
     }
 
-    // Random-walk wisps.
-    var WISPS = 4 + ((rnd() * 5) | 0);
-    for (var w0 = 0; w0 < WISPS; w0++) {
-      var wx = (rnd() - 0.5) * 1.2, wy = (rnd() * 2 - 1) * YS * 0.9, wz = (rnd() - 0.5) * 1.2;
-      var dirx = gauss(), diry = gauss() * 0.95, dirz = gauss();
-      var dl = Math.hypot(dirx, diry, dirz) || 1;
-      dirx /= dl; diry /= dl; dirz /= dl;
-      var steps = 5 + ((rnd() * 8) | 0);
-      for (var st0 = 0; st0 < steps; st0++) {
-        wx += dirx * (0.08 + rnd() * 0.07);
-        wy += diry * (0.09 + rnd() * 0.07);
-        wz += dirz * (0.08 + rnd() * 0.07);
-        dirx += gauss() * 0.4;
-        diry += gauss() * 0.38;
-        dirz += gauss() * 0.4;
-        dl = Math.hypot(dirx, diry, dirz) || 1;
-        dirx /= dl; diry /= dl; dirz /= dl;
-        pushMirrored(wx, wy, wz, 0.1 + rnd() * 0.5);
-      }
+    // The sparse field: a thin disk sprinkle between the arms and
+    // halo points drifting past the rim.
+    var DISKN = 25 + ((rnd() * 45) | 0);
+    for (var d1 = 0; d1 < DISKN; d1++) {
+      var da = rnd() * TAU;
+      var dr = Math.pow(rnd(), 0.6) * RMAX * 0.95;
+      pushTwin(Math.cos(da) * dr, gauss() * (0.2 - dr * 0.08), Math.sin(da) * dr, 0.1 + rnd() * 0.4);
+    }
+    var HALON = 25 + ((rnd() * 45) | 0);
+    var HB = RMAX * (0.86 + rnd() * 0.1);
+    var HH = 0.35 + rnd() * 0.2;
+    for (var h1 = 0; h1 < HALON; h1++) {
+      var ha = rnd() * TAU;
+      var hr = HB + rnd() * 0.25;
+      pushTwin(Math.cos(ha) * hr, gauss() * HH, Math.sin(ha) * hr, 0.1 + rnd() * 0.3);
     }
 
-    var label = "MIRRORED CHAOS \u00b7 " + K + " CLUMPS " + WISPS + " WISPS";
-    var eqn = "uniform scatter through the volume\nunevenly weighted random clumps\nrandom-walk wisps\nevery point reflected z \u2192 \u2212z";
+    var barred = BAR >= 1.5;
+    var label = (barred ? "BARRED SPIRAL" : "SPIRAL GALAXY") + " \u00b7 2 ARMS " + TURNS.toFixed(1) + " TURNS" + (barred ? " BAR " + BAR.toFixed(1) : "");
+    var eqn = "arms on r = r\u2080 \u00b7 e^(k\u03b8)\n" + (barred ? "bar-stretched bulge" : "gaussian bulge") + ", disk thinning with radius\nsparse halo past the rim\nevery point rotated \u03c0 about the axis";
 
     // Wiring: three nearest neighbors each, deduped, plus a few long
     // chords straight through the tangle.
     var seen = {};
     nodes.forEach(function (n, ai) {
-      var ds = nodes.map(function (q, bi) {
+      // Three nearest by linear scan: at a thousand stars a full sort
+      // per node turns the regenerate button into a hiccup.
+      var b1i = -1, b1d = Infinity, b2i = -1, b2d = Infinity, b3i = -1, b3d = Infinity;
+      for (var bi = 0; bi < nodes.length; bi++) {
+        if (bi === ai) continue;
+        var q = nodes[bi];
         var dx = n.x - q.x, dy = n.y - q.y, dz = n.z - q.z;
-        return { d: dx * dx + dy * dy + dz * dz, i: bi };
-      }).sort(function (p1, q1) { return p1.d - q1.d; });
-      for (var k = 1; k <= 3; k++) {
-        var key = Math.min(ai, ds[k].i) + ":" + Math.max(ai, ds[k].i);
-        if (!seen[key]) { seen[key] = 1; edges.push([ai, ds[k].i]); }
+        var d = dx * dx + dy * dy + dz * dz;
+        if (d < b1d) { b3i = b2i; b3d = b2d; b2i = b1i; b2d = b1d; b1i = bi; b1d = d; }
+        else if (d < b2d) { b3i = b2i; b3d = b2d; b2i = bi; b2d = d; }
+        else if (d < b3d) { b3i = bi; b3d = d; }
       }
+      [b1i, b2i, b3i].forEach(function (ni) {
+        if (ni < 0) return;
+        var key = Math.min(ai, ni) + ":" + Math.max(ai, ni);
+        if (!seen[key]) { seen[key] = 1; edges.push([ai, ni]); }
+      });
     });
     var CHORDS = 6 + ((rnd() * 8) | 0);
     for (var c0 = 0; c0 < CHORDS; c0++) {
@@ -246,7 +277,7 @@
   function clampZoom(v) { return Math.max(0.35, Math.min(3, v)); }
   if (!still) {
     addEventListener("pointerdown", function (e) {
-      if (e.target && e.target.closest && e.target.closest(".listen-bar, .song-panel, header, a, button, input, select")) return;
+      if (e.target && e.target.closest && e.target.closest(".listen-bar, .song-panel, .net-label, header, a, button, input, select")) return;
       touches[e.pointerId] = [e.clientX, e.clientY];
       touchCount++;
       if (touchCount === 2) {
@@ -435,7 +466,12 @@
     var tilt = 0.32 + userTilt;
     var cy1 = Math.cos(yaw), sy1 = Math.sin(yaw);
     var cx1 = Math.cos(tilt), sx1 = Math.sin(tilt);
-    var S = Math.min(W, H) * (W < H ? 0.46 : 0.36) * zoom;
+    // Width and height scale apart: the disk spreads to fill the frame
+    // side to side while the height cap keeps the rim clear of the
+    // lyric line riding above the transport bar.
+    var SB = Math.min(W, H) * (W < H ? 0.52 : 0.55) * zoom;
+    var SX = Math.min(SB, W * (W < H ? 0.6 : 0.34) * zoom);
+    var SY = Math.min(SB, H * 0.4 * zoom);
     var CX = W * 0.5, CY = H * 0.47;
     var prog = [];
     for (var j = 0; j < nodes.length; j++) {
@@ -449,8 +485,8 @@
       var yr = m.y * sc * cx1 - zr * sx1;
       var z2 = m.y * sc * sx1 + zr * cx1;
       var per = 3.4 / (3.4 + z2);
-      px[j] = CX + xr * S * per;
-      py[j] = CY + yr * S * per;
+      px[j] = CX + xr * SX * per;
+      py[j] = CY + yr * SY * per;
       pz[j] = per;
     }
 
@@ -473,24 +509,8 @@
       g.stroke();
     }
 
-    // Edges: quiet wiring that brightens and heats up when both ends
-    // are lit, with the whole loom lifting slightly in loud passages.
-    // Threads only exist once both endpoints have arrived.
-    g.lineCap = "round";
-    for (var e2 = 0; e2 < edges.length; e2++) {
-      var a = edges[e2][0], d2 = edges[e2][1];
-      var knit = Math.min(prog[a], prog[d2]);
-      if (knit <= 0.02) continue;
-      var act = Math.min(nodes[a].act, nodes[d2].act);
-      var depth = (pz[a] + pz[d2]) * 0.5;
-      g.strokeStyle = act > 0.03 ? ramp(act) : ink;
-      g.globalAlpha = (0.11 + loud * 0.05 + act * 0.42) * depth * knit * knit;
-      g.lineWidth = (0.6 + act * 1.2) * depth;
-      g.beginPath();
-      g.moveTo(px[a], py[a]);
-      g.lineTo(px[d2], py[d2]);
-      g.stroke();
-    }
+    // The wiring itself stays invisible: stars hang free like a real
+    // galaxy, and only the signals betray the connections.
 
     // Signal pulses race along the wiring and excite their targets.
     // In loud passages an arrival can chain-fire onward, so climaxes
@@ -533,9 +553,9 @@
         g.arc(px[w2], py[w2], (5 + nn.act * 9) * per2, 0, 6.2832);
         g.fill();
       }
-      g.globalAlpha = (0.34 + nn.act * 0.6) * per2 * born;
+      g.globalAlpha = (0.38 + nn.act * 0.55) * per2 * born;
       g.beginPath();
-      g.arc(px[w2], py[w2], (1.15 + nn.act * 1.9) * per2, 0, 6.2832);
+      g.arc(px[w2], py[w2], (1.25 + nn.act * 1.9) * per2, 0, 6.2832);
       g.fill();
     }
     // Hover: ring the nearest point and print its model coordinates.
