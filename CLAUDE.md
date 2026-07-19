@@ -109,6 +109,28 @@ uv run --with mlx-whisper python scripts/validate-lyrics.py [slug ...]
 
 It cuts audio around sampled lyric timestamps, transcribes with whisper (word timestamps on), fuzzy-locates each expected line, and reports SYNCED, OFFSET (with the suggested `[offset:]` tag), or UNVERIFIED per track. UNVERIFIED means whisper could not hear the vocals clearly (dense mix), not that the sync is wrong. Full sample detail lands in `/tmp/lyrics-validation.json`. First run downloads the whisper model from Hugging Face.
 
+## Verifying /music in a real browser
+
+Two headless-Chrome harnesses live in `scripts/`. They need `npm i --no-save playwright-core` once per checkout (kept out of package.json on purpose: CI cannot run them, they need Chrome and real playback) and use the system Chrome via `channel: "chrome"`.
+
+```bash
+npm run build && npm run serve   # or point BASE_URL at prod
+node scripts/verify-lyrics-live.mjs [slug ...]   # lyric lines match audio.currentTime, popup search + track switch
+node scripts/verify-music-ui.mjs                 # share button, clean URLs, ?ts= deep links, popup scroll, mobile layout
+BASE_URL=https://jaycebordelon.com node scripts/verify-music-ui.mjs
+```
+
+Run both after touching ambience.js, lyrics.js, neural.js, or the /music markup, and once more against prod after the deploy.
+
+## Overlay UI on /music: two traps
+
+Any new panel or popup that floats over the neural net needs BOTH of these, or its scroll and drag get eaten by the machine:
+
+1. `neural.js` has two exclusion lists (one in the `pointerdown` drag handler, one in the `wheel` zoom handler). Add the new panel's selector to both, or wheel events zoom the net instead of scrolling the panel and drags spin it.
+2. `body.music-page` sets `touch-action: none` for the net's drag-to-spin, so a scrollable region inside an overlay must set `touch-action: pan-y` (plus `overscroll-behavior: contain`) to be scrollable by touch at all.
+
+The song popup (`.song-panel`) is the reference implementation of both.
+
 ## Sharing a moment on /music
 
 The address bar stays clean at `/music/<slug>`. Deep links with `?ts=<seconds>` still seek on load, but they are only ever created intentionally: the link button in the transport bar copies the current song and second to the clipboard. Do not reintroduce ambient URL rewriting with timestamps.
