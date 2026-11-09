@@ -1,28 +1,12 @@
 #!/usr/bin/env node
-/*
- * Static site build.
- * Input: src/ tree (pages with frontmatter + partials + markdown posts).
- * Output: dist/ tree (plain HTML + CSS + images), drop-in for nginx.
- *
- * Pipeline:
- *   1. Render the reward-surface background once (seeded generator, so
- *      the geometry is deterministic across builds).
- *   2. Render each src/pages/**.html through the layout partial.
- *   3. Render each src/posts/*.md to a blog post HTML via the post partial.
- *   4. Render the blog index with the list of post cards.
- *   5. Compile Tailwind (separate npm step; not done here).
- *   6. Copy public assets + scripts/ to dist/.
- *   7. Emit sitemap.xml + robots.txt.
- *
- * No JS frameworks, no JSX. marked + gray-matter + the standard library.
- */
+// Generate static pages, posts, and shared assets.
 import { readFileSync, writeFileSync, mkdirSync, cpSync, existsSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join, dirname, basename, extname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
-import { renderRewardField } from "./contours.mjs";
 import { marked } from "marked";
 import { createHighlighter } from "shiki";
+import { renderGitHub } from './github.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -216,68 +200,9 @@ function configureMarked(highlighter) {
  * ---------------------------------------------------------------- */
 
 const layoutTemplate = read(join(SRC, "partials/layout.html"));
-const headerHome = read(join(SRC, "partials/header-home.html"));
-const headerBlog = read(join(SRC, "partials/header-blog.html"));
-const postTemplate = read(join(SRC, "partials/post.html"));
-// The background is the reward surface: isolines of reward, the
-// emerald policy rollout to the pi-star convergence marker, and mono
-// reward readings, in landscape and portrait compositions. Static ink
-// here: the audio-reactive machine lives at /music.
-const backgroundSVG = applyTemplate(read(join(SRC, "partials/background.html")), renderRewardField());
-
-// One source of truth for the /music library: the player reads it off
-// window.SITE_TRACKS, and every track gets its own prebuilt page at
-// /music/<slug> with song-specific SEO, since crawlers read static
-// HTML and ignore query params.
-const TRACKS = JSON.parse(read(join(SRC, "tracks.json")));
-
-// Time-synced lyrics. src/lyrics/<slug>.lrc is fetched from LRCLIB by
-// scripts/fetch-lyrics.mjs and timing-verified against the actual audio
-// by scripts/validate-lyrics.sh. Each song page inlines its own lines;
-// in-place track switches fetch /lyrics/<slug>.json instead. Tracks
-// without an .lrc file (the instrumentals) simply show no lyrics.
-const LYRICS = loadLyrics();
-const tracksScript = `<script>window.SITE_TRACKS=${escapeJSONForScript(
-  TRACKS.map((t) => ({ ...t, lyr: LYRICS[t.slug] ? 1 : 0 }))
-)}</script>`;
-const lyricsInclude = `<script src="/scripts/lyrics.js" defer></script>`;
-
-function loadLyrics() {
-  const dir = join(SRC, "lyrics");
-  const out = {};
-  if (!existsSync(dir)) return out;
-  for (const file of readdirSync(dir).filter((f) => f.endsWith(".lrc"))) {
-    const lines = parseLRC(read(join(dir, file)));
-    if (lines.length) out[basename(file, ".lrc")] = lines;
-  }
-  return out;
-}
-
-// [mm:ss.xx] timestamped lines -> [[seconds, text], ...]. An
-// [offset:±ms] tag shifts every line, positive meaning the words render
-// LATER (use it when the audio file has a longer lead-in than the
-// LRCLIB master). Lines with a timestamp but no text are kept: they
-// clear the display through instrumental gaps. Multiple timestamps on
-// one line each get their own entry.
-function parseLRC(raw) {
-  const offMatch = raw.match(/^\[offset:([+-]?\d+)\]/im);
-  const offset = offMatch ? parseInt(offMatch[1], 10) / 1000 : 0;
-  const lines = [];
-  for (const line of raw.split(/\r?\n/)) {
-    const stamps = [...line.matchAll(/\[(\d+):(\d{1,2}(?:\.\d+)?)\]/g)];
-    if (!stamps.length) continue;
-    const text = line.replace(/\[[^\]]*\]/g, "").trim();
-    for (const s of stamps) {
-      const t = parseInt(s[1], 10) * 60 + parseFloat(s[2]) + offset;
-      lines.push([Math.max(0, +t.toFixed(2)), text]);
-    }
-  }
-  lines.sort((a, b) => a[0] - b[0]);
-  return lines;
-}
+const postTemplate = read(join(SRC, "partials/post.html"))
 
 function renderPage({ frontmatter, body, slug }) {
-  const header = frontmatter.header === "blog" ? headerBlog : headerHome;
   const jsonLd = frontmatter.jsonLd ?? defaultJsonLd();
   return applyTemplate(layoutTemplate, {
     title: escapeHTML(frontmatter.title || "Jayce Bordelon"),
@@ -288,9 +213,7 @@ function renderPage({ frontmatter, body, slug }) {
     ogImage: frontmatter.ogImage ? `${SITE_URL}${frontmatter.ogImage}` : `${SITE_URL}/images/dawg.jpg`,
     htmlClass: frontmatter.htmlClass || "",
     bodyClass: frontmatter.bodyClass || "min-h-screen",
-    header,
     content: body,
-    background: backgroundSVG,
     pageScripts: frontmatter.pageScripts || "",
     jsonLd: escapeJSONForScript(jsonLd),
   });
@@ -324,56 +247,13 @@ function buildPages() {
     if (rel === "blog/index.html") continue;
     const raw = read(file);
     const { data, content } = parsePageFrontmatter(raw);
-    if (rel === "music.html") data.pageScripts = tracksScript + lyricsInclude + (data.pageScripts || "");
     const slug = "/" + (rel === "index.html" ? "" : rel.replace(/\/index\.html$/, "").replace(/\.html$/, ""));
-    const html = renderPage({ frontmatter: data, body: content, slug });
+    const body = rel === 'index.html'
+      ? applyTemplate(content, { githubContent: renderGitHub(JSON.parse(read(join(SRC, 'data/github.json')))) })
+      : content
+    const html = renderPage({ frontmatter: data, body, slug });
     write(join(DIST, rel), html);
   }
-}
-
-// Each track gets its own page: same machine, song-specific metadata
-// and og image, the song cued by a baked-in slug.
-function buildSongPages() {
-  const raw = read(join(SRC, "pages/music.html"));
-  const { data, content } = parsePageFrontmatter(raw);
-  for (const tr of TRACKS) {
-    const fm = { ...data };
-    fm.title = `${tr.name} | music | Jayce Bordelon`;
-    fm.ogTitle = `${tr.name} | jaycebordelon.com/music`;
-    fm.description = `Listen to ${tr.name} (${tr.sub}) inside the listening machine, a neural net that lights up note by note as the song plays.`;
-    fm.ogImage = `/images/og/${tr.slug}.png`;
-    fm.canonical = `${SITE_URL}/music/${tr.slug}`;
-    fm.ogType = "music.song";
-    const inlineLyrics = LYRICS[tr.slug]
-      ? `<script>window.SITE_LYRICS=${escapeJSONForScript({ slug: tr.slug, lines: LYRICS[tr.slug] })}</script>`
-      : "";
-    fm.pageScripts =
-      tracksScript + `<script>window.INITIAL_SONG=${escapeJSONForScript(tr.slug)}</script>` + inlineLyrics + lyricsInclude + (data.pageScripts || "");
-    // The audio element must be baked with this page's own song. The
-    // shared markup carries the default track, and leaving it would
-    // briefly cue (and start downloading) the wrong file before the
-    // player script swaps it.
-    const body = content.replace(
-      /(<audio id="ambience-track" src=")[^"]+(")/,
-      `$1${tr.src}$2`,
-    );
-    const html = renderPage({ frontmatter: fm, body, slug: `/music/${tr.slug}` });
-    write(join(DIST, "music", `${tr.slug}.html`), html);
-  }
-}
-
-/* ---------------------------------------------------------------- *
- * Posts                                                             *
- * ---------------------------------------------------------------- */
-
-function authorInitials(name) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .filter(Boolean)
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 }
 
 function formatDate(iso) {
@@ -392,25 +272,7 @@ function buildPosts() {
     const { data, content } = matter(raw);
     const html = marked.parse(content);
 
-    // Final row of the title block: tags as small mono part labels.
-    const tagBlock =
-      data.tags && data.tags.length > 0
-        ? `<div class="flex flex-wrap gap-2 border-t border-border px-5 py-3 sm:px-7">${data.tags
-            .map(
-              (t) =>
-                `<span class="inline-flex items-center border border-border px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">${escapeHTML(t)}</span>`
-            )
-            .join("")}</div>`
-        : "";
-
-    // Fourth title-block cell. Falls back to an empty cell so the
-    // 4-column grid stays fully ruled when a post omits readTime.
-    const readTimeBlock = data.readTime
-      ? `<div class="tb-cell">
-        <span class="tb-label" aria-hidden="true">Read Time</span>
-        <span>${escapeHTML(data.readTime)}</span>
-      </div>`
-      : `<div class="tb-cell" aria-hidden="true"></div>`;
+    const readTimeBlock = data.readTime ? `<span>${escapeHTML(data.readTime)}</span>` : ""
 
     const body = applyTemplate(postTemplate, {
       label: escapeHTML(data.label || ""),
@@ -418,11 +280,9 @@ function buildPosts() {
       summary: escapeHTML(data.summary || ""),
       author: escapeHTML(data.author || ""),
       authorDesc: escapeHTML(data.authorDesc || ""),
-      authorInitials: escapeHTML(authorInitials(data.author || "")),
       published: data.published || "",
       publishedFormatted: formatDate(data.published),
       readTimeBlock,
-      tagBlock,
       content: html,
     });
 
@@ -449,7 +309,6 @@ function buildPosts() {
         canonical,
         ogType: "article",
         ogImage: data.image,
-        header: "blog",
         bodyClass: "min-h-screen",
         pageScripts: '<script src="/scripts/copy-code.js" defer></script>',
         jsonLd,
@@ -470,73 +329,20 @@ function buildPosts() {
  * Blog index                                                        *
  * ---------------------------------------------------------------- */
 
-// Each card reads like a Taste catalog entry: a squircle cover tile beside
-// an editorial body — a mono part-number / label / date / read-time line, the
-// title, the summary, tags, and a "Read" affordance (see .work-card in
-// styles.css). Hover lifts the card and eases the cover in.
-function renderPostCard(post, index) {
-  const num = String(index + 1).padStart(3, "0");
-  const tags = (post.tags || [])
-    .map(
-      (t) =>
-        `<span class="tag inline-flex cursor-pointer items-center rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors duration-150 hover:border-accent hover:text-accent" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</span>`
-    )
-    .join("");
-
-  const metaPieces = [`<span class="text-accent">No. ${num}</span>`];
-  if (post.label) metaPieces.push(escapeHTML(post.label));
-  metaPieces.push(`<time datetime="${escapeHTML(post.published)}">${formatDate(post.published)}</time>`);
-  if (post.readTime) metaPieces.push(escapeHTML(post.readTime));
-  const meta = metaPieces.join(`<span class="text-border" aria-hidden="true">|</span>`);
-
-  const tagsAttr = (post.tags || []).map((t) => escapeHTML(t)).join("|");
-
-  const thumb = post.image
-    ? `<div class="work-thumb aspect-[16/10] border-b border-border sm:aspect-auto sm:border-b-0 sm:border-r">
-    <img src="${escapeHTML(post.image)}" alt="" width="640" height="400" loading="lazy" />
-  </div>`
-    : "";
-  const cols = post.image ? "sm:grid-cols-[210px_1fr]" : "";
-
-  return `
-<a href="/blog/posts/${post.id}" class="group post-card work-card block border border-border bg-card/40" data-tags="${tagsAttr}">
-  <div class="grid grid-cols-1 ${cols}">
-    ${thumb}
-    <div class="flex flex-col px-5 py-5 sm:px-7 sm:py-6">
-      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-        ${meta}
-      </div>
-      <h2 class="mt-3 font-display text-xl font-semibold leading-snug tracking-tight text-foreground transition-colors duration-150 group-hover:text-accent sm:text-2xl">${escapeHTML(post.title)}</h2>
-      <p class="mt-2.5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">${escapeHTML(post.summary || "")}</p>
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap gap-2">${tags}</div>
-        <span class="read-link" aria-hidden="true"><span class="dot"></span>Read</span>
-      </div>
-    </div>
-  </div>
-</a>`;
+function renderPostEntry(post) {
+  return `<article class="post-entry">
+    <h2><a class="link link-hover" href="/blog/posts/${post.id}">${escapeHTML(post.title)}</a></h2>
+    <p class="muted">${escapeHTML(post.summary || "")}</p>
+  </article>`
 }
 
 function buildBlogIndex(posts) {
-  const file = join(SRC, "pages/blog/index.html");
-  const raw = read(file);
-  const { data, content } = parsePageFrontmatter(raw);
-
-  const allTags = Array.from(new Set(posts.flatMap((p) => p.tags || [])));
-  const tagButtons = [
-    `<button type="button" class="tag-button active" data-tag="">All Posts</button>`,
-    ...allTags.map((t) => `<button type="button" class="tag-button" data-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>`),
-  ].join("");
-
-  const cards = posts.map((post, index) => renderPostCard(post, index)).join("\n");
-
+  const { data, content } = parsePageFrontmatter(read(join(SRC, "pages/blog/index.html")))
   const body = applyTemplate(content, {
-    tagFilter: tagButtons,
-    postCards: cards || `<p class="border border-border py-12 text-center font-mono text-sm uppercase tracking-[0.18em] text-muted-foreground">No posts yet.</p>`,
-  });
-
-  const html = renderPage({ frontmatter: data, body, slug: "/blog" });
-  write(join(DIST, "blog/index.html"), html);
+    postCards: posts.map(renderPostEntry).join("\n") || '<p class="muted">No posts yet.</p>',
+  })
+  const html = renderPage({ frontmatter: data, body, slug: "/blog" })
+  write(join(DIST, "blog/index.html"), html)
 }
 
 /* ---------------------------------------------------------------- *
@@ -550,16 +356,8 @@ function copyAssets() {
   if (existsSync(scriptsDir)) cpSync(scriptsDir, join(DIST, "scripts"), { recursive: true });
 }
 
-// One JSON per lyric track so an in-place track switch on /music can
-// pull just the new song's lines (the page only inlines its own song).
-function writeLyricsJSON() {
-  for (const [slug, lines] of Object.entries(LYRICS)) {
-    write(join(DIST, "lyrics", `${slug}.json`), JSON.stringify({ slug, lines }));
-  }
-}
-
 function writeSitemap(posts) {
-  const urls = ["/", "/blog", "/music", ...TRACKS.map((t) => `/music/${t.slug}`), ...posts.map((p) => `/blog/posts/${p.id}`)];
+  const urls = ["/", "/blog", ...posts.map((p) => `/blog/posts/${p.id}`)];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${SITE_URL}${u}</loc></url>`).join("\n")}
@@ -594,18 +392,16 @@ async function main() {
   configureMarked(highlighter);
 
   buildPages();
-buildSongPages();
   const posts = buildPosts();
   buildBlogIndex(posts);
   copyAssets();
-  writeLyricsJSON();
   writeSitemap(posts);
   writeRobots();
 
   // Crude size summary so the dev sees how cheap this is at a glance.
   let total = 0;
   for (const f of walk(DIST)) total += statSync(f).size;
-  console.log(`build: dist/ ready (${posts.length} posts, ${Object.keys(LYRICS).length} lyric tracks, ${Math.round(total / 1024)}KB on disk)`);
+  console.log(`build: dist/ ready (${posts.length} posts, ${Math.round(total / 1024)}KB on disk)`);
 }
 
 main().catch((err) => {
