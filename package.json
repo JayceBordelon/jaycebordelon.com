@@ -4,19 +4,25 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
+    "test": "node --test scripts/*.test.mjs",
+    "refresh:github": "node scripts/update-github.mjs",
     "build:css": "tailwindcss -i src/styles.css -o dist/styles.css --minify",
     "build:html": "node scripts/build.mjs",
     "build": "npm run build:html && npm run build:css",
     "watch:css": "tailwindcss -i src/styles.css -o dist/styles.css --watch",
-    "serve": "npx -y -p http-server@14 http-server dist -p 3000 -c-1"
+    "serve": "npx --yes --package=serve@14 -- serve dist --listen tcp://127.0.0.1:3000 --no-clipboard"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
     "marked": "^16.2.0"
   },
   "devDependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@tailwindcss/cli": "^4.1.0",
     "@tailwindcss/typography": "^0.5.16",
+    "daisyui": "^5.7.50",
     "shiki": "^4.1.0",
     "tailwindcss": "^4.1.0"
   }
