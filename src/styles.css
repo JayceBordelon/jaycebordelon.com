@@ -7,13 +7,6 @@
 }
 
 @font-face {
-  font-family: "Barlow Condensed";
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url("/fonts/barlow-condensed-latin-800-normal.woff2") format("woff2");
-}
-@font-face {
   font-family: "DM Sans";
   font-style: normal;
   font-weight: 100 1000;
@@ -52,7 +45,6 @@
   --line: #d6d6d6;
   --code-bg: #f0f0f0;
   --gutter: 40px;
-  --display: "Barlow Condensed", sans-serif;
   --color-base-100: var(--background);
   --color-base-200: var(--code-bg);
   --color-base-300: var(--line);
@@ -133,36 +125,35 @@
 .portrait-print img { display: block; width: 100%; height: auto; object-fit: cover; object-position: 85% center; }
 .has-scroll-motion .intro-story { min-height: 110svh; }
 .has-scroll-motion .intro-stage { position: sticky; top: 0; }
-.work-story { padding: clamp(64px, 7vw, 104px) var(--gutter); background: var(--ink); color: var(--paper); }
+.work-story { padding: clamp(56px, 6vw, 88px) var(--gutter); background: var(--ink); color: var(--paper); }
 .work-layout { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; }
 .work-heading h2 { color: var(--accent-light); }
 .work-heading { align-self: start; }
-.work-heading h2, .writing-layout > h2 { font-family: var(--display); font-size: clamp(64px, 9.5vw, 160px); font-weight: 800; line-height: 0.9; letter-spacing: -0.025em; text-transform: uppercase; }
-.work-heading h2 { font-size: clamp(48px, 7.2vw, 128px); }
+.work-heading h2, .writing-layout > h2 { font-size: clamp(28px, 2.6vw, 36px); font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
 .career-step { display: grid; grid-template-columns: 48px minmax(0, 1fr); column-gap: 20px; align-items: center; padding-block: 32px; border-bottom: 1px solid color-mix(in srgb, var(--paper) 24%, transparent); }
 .career-step:first-child { padding-top: 0; }
 .career-step:last-child { padding-bottom: 0; border-bottom: 0; }
 .company-logo { grid-column: 1; grid-row: 1; width: 48px; height: 48px; padding: 6px; object-fit: contain; background: var(--paper); border-radius: 4px; }
 .company-logo-full { padding: 0; }
-.career-step h3 { grid-column: 2; margin: 0; font-family: var(--display); font-size: clamp(42px, 4.5vw, 72px); font-weight: 800; line-height: 1.08; letter-spacing: -0.02em; text-transform: uppercase; }
-.career-step p { grid-column: 2; max-width: 36ch; margin-top: 16px; font-size: 20px; line-height: 1.6; }
+.career-step h3 { grid-column: 2; margin: 0; font-size: 26px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.career-step p { grid-column: 2; max-width: 36ch; margin-top: 8px; font-size: 18px; line-height: 1.6; }
 .has-scroll-motion .work-heading { position: sticky; top: 64px; }
-.writing-story { padding: 24px var(--gutter) 120px; }
-.writing-layout { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; padding-top: 96px; }
+.writing-story { padding: 24px var(--gutter) 96px; }
+.writing-layout { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; padding-top: 64px; }
 .writing-layout > h2 { color: var(--ink); }
 .featured-note { display: flex; flex-direction: column; align-items: flex-start; padding-top: 8px; }
-.featured-note h3 { margin-top: 0; font-size: clamp(32px, 3.6vw, 56px); font-weight: 400; line-height: 1.15; letter-spacing: -0.04em; }
+.featured-note h3 { margin-top: 0; font-size: clamp(28px, 3vw, 40px); font-weight: 400; line-height: 1.15; letter-spacing: -0.04em; }
 .featured-note h3 a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
-.contact-story { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: center; padding: 72px var(--gutter); background: var(--accent-light); color: var(--ink); }
-.contact-story h2 { margin: 0; font-family: var(--display); font-size: clamp(64px, 8vw, 112px); font-weight: 800; line-height: 0.96; letter-spacing: -0.025em; text-transform: uppercase; color: var(--accent); }
+.contact-story { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: center; padding: 64px var(--gutter); background: var(--accent-light); color: var(--ink); }
+.contact-story h2 { margin: 0; font-size: clamp(32px, 3.4vw, 44px); font-weight: 500; line-height: 1.15; letter-spacing: -0.03em; color: var(--accent); }
 .contact-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; width: 100%; max-width: 480px; }
 .contact-booking { display: inline-flex; align-items: center; min-height: 44px; font-size: 28px; line-height: 1.5; letter-spacing: -0.03em; text-decoration-thickness: 1px; text-underline-offset: 8px; }
 .contact-booking:hover { color: var(--accent); }
 .contact-email { display: inline-flex; align-items: center; min-height: 44px; font-size: 18px; overflow-wrap: anywhere; }
 
-.github-story { padding: 80px var(--gutter) 96px; border-top: 1px solid var(--line); }
+.github-story { padding: 64px var(--gutter) 80px; border-top: 1px solid var(--line); }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 32px; }
-.section-heading h2, .linkedin-profile > h2 { margin: 0; font-family: var(--display); font-size: clamp(56px, 7.2vw, 96px); font-weight: 800; line-height: 0.96; letter-spacing: -0.025em; text-transform: uppercase; }
+.section-heading h2, .linkedin-profile > h2 { margin: 0; font-size: clamp(28px, 2.6vw, 36px); font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
 .section-heading > a { display: inline-flex; align-items: center; min-height: 44px; flex-shrink: 0; }
 .github-summary { margin-bottom: 24px; color: var(--muted-foreground); }
 .github-profiles { display: flex; flex-wrap: wrap; gap: 8px 24px; }
@@ -173,7 +164,7 @@
 .contribution-day[data-level="2"] { background: var(--activity-medium); }
 .contribution-day[data-level="3"] { background: var(--activity-high); }
 .contribution-day[data-level="4"] { background: var(--accent); }
-.profiles-story { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: start; padding: 80px var(--gutter); background: var(--profile-bg); }
+.profiles-story { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: start; padding: 64px var(--gutter); background: var(--profile-bg); }
 .profile-introduction { margin-top: 40px; }
 .profile-introduction h3 { font-size: 36px; font-weight: 400; line-height: 1.2; letter-spacing: -0.03em; }
 .profile-role { font-size: 24px; margin-top: 12px; }
@@ -201,7 +192,7 @@
 .is-zoomed .resume-document { width: 1237px; }
 
 .page-heading { margin-bottom: 48px; }
-.page-heading > h1 { font-family: var(--display); font-size: 96px; font-weight: 800; color: var(--ink); text-transform: uppercase; line-height: 1; letter-spacing: -0.025em; }
+.page-heading > h1 { font-size: 48px; font-weight: 500; color: var(--ink); line-height: 1.14; letter-spacing: -0.04em; }
 .page-heading > p { margin-top: 24px; }
 .post-entry { border-top: 1px solid var(--line); padding-block: 32px; }
 .post-entry h2 { margin-top: 16px; font-size: 32px; }
@@ -258,7 +249,6 @@
 @media (max-width: 900px) {
   :root { --gutter: 24px; }
   .work-layout, .writing-layout, .contact-story, .profiles-story { gap: 32px; }
-  .writing-layout > h2 { font-size: 11vw; }
 }
 @media (max-width: 600px) {
   :root { --gutter: 20px; }
@@ -271,20 +261,14 @@
   .work-layout { display: block; }
   .work-heading { margin-bottom: 40px; }
   .has-scroll-motion .work-heading { position: static; }
-  .work-heading h2 { font-size: 16vw; line-height: 0.85; }
   .career-step { grid-template-columns: 40px minmax(0, 1fr); column-gap: 16px; padding-block: 28px; }
   .company-logo { width: 40px; height: 40px; padding: 5px; }
   .company-logo-full { padding: 0; }
-  .career-step p { font-size: 18px; }
   .writing-story { padding-bottom: 64px; }
   .writing-layout { grid-template-columns: 1fr; gap: 48px; padding-top: 48px; }
-  .writing-layout > h2 { font-size: 22vw; }
-  .featured-note h3 { font-size: 36px; }
   .contact-story { grid-template-columns: 1fr; padding-block: 56px; }
-  .contact-story h2 { font-size: clamp(64px, 20vw, 104px); }
   .github-story { padding-block: 56px 64px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 16px; margin-bottom: 24px; }
-  .section-heading h2, .linkedin-profile > h2 { font-size: 20vw; }
   .contribution-calendar { gap: 2px; }
   .contribution-day { border-radius: 1px; }
   .profiles-story { grid-template-columns: 1fr; gap: 64px; padding-block: 64px; }
@@ -295,7 +279,7 @@
   .resume-tools .btn { padding-inline: 10px; }
   .resume-reader-scroll { padding: 12px; }
   .resume-reader.modal-box { width: calc(100vw - 16px); height: calc(100dvh - 16px); }
-  .page-heading > h1 { font-size: 80px; }
+  .page-heading > h1 { font-size: 36px; }
   .article-heading > h1 { font-size: 36px; }
   .post-entry h2 { font-size: 28px; }
 }

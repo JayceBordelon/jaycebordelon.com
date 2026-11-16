@@ -14,7 +14,7 @@ Read `README.md` for setup, content authoring, and hosting.
 ## Design
 
 The home page is a personal scroll story with a professional black-and-white
-layout, muted sky-blue accents, condensed display type, and Jayce's
+layout, muted sky-blue accents, calm mixed-case headings, and Jayce's
 selected portrait in its original colors. The hero uses mixed-case DM Sans
 with an indented italic surname and an offset photograph capped at 440px wide.
 The opening subtitle is exactly “RL & Evals”. Keep the content focused
@@ -22,9 +22,11 @@ on work and writing. There is no navigation header. Keep the scroll progress bar
 and omit image captions, sports references, up-right arrow icons, small section
 labels, chapter counters, and decorative numbering.
 
-Use the tokens in `src/styles.css`. Barlow Condensed 800 is the display face,
-DM Sans is the body face, and IBM Plex Mono is for labels and code. Font files
-and licenses live in `public/fonts/`. Use the installed daisyUI buttons and links
+Use the tokens in `src/styles.css`. DM Sans is the only display and body face,
+and IBM Plex Mono is for labels and code. Section headings are mixed case at
+modest sizes (28 to 44px), styled through size, weight, and color rather than
+scale. Do not reintroduce oversized all-caps condensed display headings. Font
+files and licenses live in `public/fonts/`. Use the installed daisyUI buttons and links
 where applicable. Body copy is at least 18px and labels are at least 12px.
 Desktop gutters are 40px and mobile gutters are 20px.
 
@@ -56,6 +58,7 @@ been removed at Jayce's request.
 
 ## Hosting
 
-Cloudflare Pages builds `main` and serves `dist/`. Preserve the existing
-Cloudflare configuration and custom-domain redirects. Do not add Docker, nginx,
+Cloudflare Workers Builds (`wrangler.jsonc`, static assets, the "Workers
+Builds: portfolio" check) builds `main` and serves `dist/`. Preserve the
+existing Cloudflare configuration and custom-domain redirects. Do not add Docker, nginx,
 authentication, or a separate deployment server.
