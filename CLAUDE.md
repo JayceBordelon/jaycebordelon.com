@@ -13,42 +13,36 @@ Read `README.md` for setup, content authoring, and hosting.
 
 ## Design
 
-The home page is a personal scroll story with a professional black-and-white
-layout, muted sky-blue accents, calm mixed-case headings, and Jayce's
-selected portrait in its original colors. The hero uses mixed-case DM Sans
-with an indented italic surname and an offset photograph capped at 440px wide.
-The opening subtitle is exactly “RL & Evals”. Keep the content focused
-on work and writing. There is no navigation header. Keep the scroll progress bar,
-and omit image captions, sports references, up-right arrow icons, small section
-labels, chapter counters, and decorative numbering.
+The home page is a compact single-page profile: all information in one 840px
+column with minimal scrolling. Order: name with the italic accent surname, a
+role line of exactly "RL & Evals · Taste Labs · San Francisco", a short
+summary, a mono stack line, the LinkedIn, résumé, booking, and email links,
+then Experience, Writing, and GitHub sections. The portrait sits beside the
+intro at about 200px wide in its original colors. There is no navigation
+header, no scroll story, no reading progress bar, and no decorative numbering,
+image captions, or chapter counters.
 
 Use the tokens in `src/styles.css`. DM Sans is the only display and body face,
-and IBM Plex Mono is for labels and code. Section headings are mixed case at
-modest sizes (28 to 44px), styled through size, weight, and color rather than
-scale. Do not reintroduce oversized all-caps condensed display headings. Font
-files and licenses live in `public/fonts/`. Use the installed daisyUI buttons and links
-where applicable. Body copy is at least 18px and labels are at least 12px.
-Desktop gutters are 40px and mobile gutters are 20px.
+and IBM Plex Mono is for labels and code. Section headings are small uppercase
+mono labels. Do not reintroduce oversized display headings or full-viewport
+scenes. Font files and licenses live in `public/fonts/`. Use the installed
+daisyUI buttons and links where applicable. Body copy is at least 18px and
+labels are at least 12px. Desktop gutters are 40px and mobile gutters are 20px.
 
-Keep normal browser scrolling. The home script updates transforms and a progress line. It must not intercept wheel or touch input.
-Reduced motion and pages without JavaScript use normal document flow.
-Keep visible keyboard focus, real navigation links, and all content available.
-Check narrow screens, short viewports, and the reduced-motion layout after
-changing sticky positioning or display type. Keep experience entries sized to
-their content, with consistent gaps between headings, descriptions, and dividers.
-Do not give each entry a viewport-based minimum height or a scroll transform.
-The experience heading scrolls normally on mobile.
+Keep normal browser scrolling with no scroll-driven script. The only home page
+script is the résumé modal (`profiles.js`). Pages without JavaScript keep all
+content available through ordinary links. Keep visible keyboard focus, real
+navigation links, and 44px touch targets. Experience entries are single
+compact rows (logo, company and role, location) in reverse chronological
+order, sized to their content.
 
-Give GitHub, LinkedIn, and the résumé real content within the page. GitHub uses
-saved public contribution data from JayceBordelon and jb-taste below the résumé,
-with no project previews. Add daily counts across accounts and keep the
-per-account breakdown available. Never invent activity hidden by GitHub.
-The LinkedIn preview uses verified
-résumé and site details, without claiming to be a live feed. The original résumé
-remains available as a PDF and a zoomable page preview. Preserve keyboard focus,
+Give GitHub and the résumé real content within the page. GitHub uses saved
+public contribution data from JayceBordelon and jb-taste, with no project
+previews. Add daily counts across accounts and keep the per-account breakdown
+available. Never invent activity hidden by GitHub. The original résumé remains
+available as a PDF and the zoomable modal preview. Preserve keyboard focus,
 Escape to close, and ordinary PDF links when JavaScript is unavailable.
-Keep the final contact section compact, with a pale-blue background, a “Say hello.”
-heading, a clearly named “Book a call” link, and Jayce's public contact email.
+Contact is the email address and the "Book a call" link in the intro.
 
 The writing index is a plain article list. Articles use a 720px reading column,
 colored syntax highlighting, heading links, and code-copy buttons. Keep code
