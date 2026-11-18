@@ -4,94 +4,65 @@ description: Jayce Bordelon. RL & Evals.
 ogImage: /images/jayce-portrait.jpg
 canonical: https://jaycebordelon.com/
 bodyClass: home
-pageScripts: '<script src="/scripts/story.js" defer></script><script src="/scripts/profiles.js" defer></script>'
+pageScripts: '<script src="/scripts/profiles.js" defer></script>'
 ---
-<div class="reading-progress" aria-hidden="true"></div>
-<section class="intro-story" data-scene="intro" aria-labelledby="intro-title">
-  <div class="intro-stage">
-    <div class="hero-composition">
-      <h1 id="intro-title" class="hero-name"><span class="name-first">Jayce</span> <span class="name-last">Bordelon</span></h1>
-      <p class="hero-role">RL &amp; Evals</p>
-      <figure class="portrait-print">
-        <img src="/images/jayce-portrait.jpg" alt="Jayce Bordelon in San Francisco" width="3200" height="2133" fetchpriority="high" />
-      </figure>
-    </div>
+<header class="profile-head">
+  <div class="profile-intro">
+    <h1>Jayce <span class="name-last">Bordelon</span></h1>
+    <p class="profile-role">RL &amp; Evals · Taste Labs · San Francisco</p>
+    <p class="profile-summary">Reinforcement learning environments for frontier AI labs, evaluation infrastructure, and software engineering. Previously at Mechanize, Mastercard, and Synopsys. B.S. in Computer Science from Washington University in St. Louis.</p>
+    <p class="profile-stack">TypeScript · Go · Java · Python · Ruby · C++</p>
+    <ul class="profile-links">
+      <li><a class="link" href="https://linkedin.com/in/JayceBordelon">LinkedIn</a></li>
+      <li><a class="link" href="/Resume.pdf" data-resume-open>Résumé</a></li>
+      <li><a class="link" href="https://calendly.com/jaycebordelon/30min">Book a call</a></li>
+      <li><a class="link" href="mailto:bordelonjayce@gmail.com">bordelonjayce@gmail.com</a></li>
+    </ul>
   </div>
+  <img class="profile-photo" src="/images/jayce-portrait.jpg" alt="Jayce Bordelon in San Francisco" width="3200" height="2133" fetchpriority="high" />
+</header>
+
+<section class="profile-section" aria-labelledby="experience-title">
+  <h2 id="experience-title">Experience</h2>
+  <ol class="experience-list">
+    <li>
+      <img class="company-logo company-logo-full" src="/images/logos/taste-labs.png" alt="" width="28" height="28" loading="lazy" />
+      <p><a class="link link-hover" href="https://tastelabs.com/">Taste Labs</a> <span class="muted">· RL &amp; Evals</span></p>
+      <p class="experience-where">San Francisco, California</p>
+    </li>
+    <li>
+      <img class="company-logo company-logo-full" src="/images/logos/mechanize.svg" alt="" width="28" height="28" loading="lazy" />
+      <p><a class="link link-hover" href="https://www.mechanize.work/">Mechanize</a> <span class="muted">· RL &amp; Evals</span></p>
+      <p class="experience-where">San Francisco, California</p>
+    </li>
+    <li>
+      <img class="company-logo" src="/images/logos/mastercard.svg" alt="" width="28" height="28" loading="lazy" />
+      <p><a class="link link-hover" href="https://www.mastercard.com/">Mastercard</a> <span class="muted">· Software engineering</span></p>
+      <p class="experience-where">St. Louis, Missouri</p>
+    </li>
+    <li>
+      <img class="company-logo" src="/images/logos/washu.png" alt="" width="28" height="28" loading="lazy" />
+      <p><a class="link link-hover" href="https://washu.edu/">WashU</a> <span class="muted">· Computer science</span></p>
+      <p class="experience-where">St. Louis, Missouri</p>
+    </li>
+  </ol>
 </section>
-<section id="story" class="work-story" aria-labelledby="work-title">
-  <div class="work-layout">
-    <div class="work-heading">
-      <h2 id="work-title">My experiences</h2>
-    </div>
-    <ol class="career-steps">
-      <li class="career-step">
-        <img class="company-logo" src="/images/logos/washu.png" alt="" width="48" height="48" loading="lazy" />
-        <h3><a class="link link-hover" href="https://washu.edu/">WashU</a></h3>
-        <p>Computer science.<br />St. Louis, Missouri.</p>
-      </li>
-      <li class="career-step">
-        <img class="company-logo" src="/images/logos/mastercard.svg" alt="" width="48" height="48" loading="lazy" />
-        <h3><a class="link link-hover" href="https://www.mastercard.com/">Mastercard</a></h3>
-        <p>Software engineering.<br />St. Louis, Missouri.</p>
-      </li>
-      <li class="career-step">
-        <img class="company-logo company-logo-full" src="/images/logos/mechanize.svg" alt="" width="48" height="48" loading="lazy" />
-        <h3><a class="link link-hover" href="https://www.mechanize.work/">Mechanize</a></h3>
-        <p>RL &amp; Evals.<br />San Francisco, California.</p>
-      </li>
-      <li class="career-step">
-        <img class="company-logo company-logo-full" src="/images/logos/taste-labs.png" alt="" width="48" height="48" loading="lazy" />
-        <h3><a class="link link-hover" href="https://tastelabs.com/">Taste Labs</a></h3>
-        <p>RL &amp; Evals.<br />San Francisco, California.</p>
-      </li>
-    </ol>
-  </div>
+
+<section class="profile-section" aria-labelledby="writing-title">
+  <h2 id="writing-title">Writing</h2>
+  <p class="writing-item"><a class="link link-hover" href="/blog/posts/blended-protos">Request Correlation in a gRPC Microservices Architecture</a></p>
+  <p class="writing-more"><a class="link" href="/blog">All writing</a></p>
 </section>
-<section id="writing" class="writing-story" aria-labelledby="notes-title">
-  <div class="writing-layout">
-    <h2 id="notes-title">Personal takes</h2>
-    <article class="featured-note">
-      <h3><a href="/blog/posts/blended-protos">Request Correlation in a gRPC Microservices Architecture</a></h3>
-    </article>
-  </div>
-</section>
-<section class="profiles-story" aria-label="Professional profile and résumé">
-  <article class="linkedin-profile" aria-labelledby="linkedin-title">
-    <h2 id="linkedin-title">LinkedIn</h2>
-    <div class="profile-introduction">
-      <h3>Jayce Bordelon</h3>
-      <p class="profile-role">RL &amp; Evals</p>
-      <p>Taste Labs · San Francisco</p>
-    </div>
-    <p class="profile-description">Reinforcement learning environments for frontier AI labs, evaluation infrastructure, and software engineering.</p>
-    <div class="profile-background">
-      <p>Previously at Mechanize, Mastercard, and Synopsys.</p>
-      <p>B.S. in Computer Science from Washington University in St. Louis.</p>
-      <p>TypeScript, Go, Java, Python, Ruby, and C++.</p>
-    </div>
-    <a class="profile-link link" href="https://linkedin.com/in/JayceBordelon">Connect on LinkedIn</a>
-  </article>
-  <article class="resume-profile" aria-labelledby="resume-title">
-    <div class="section-heading">
-      <h2 id="resume-title">Résumé</h2>
-      <a class="link" href="/Resume.pdf" download="Jayce-Bordelon-Resume.pdf">Download PDF</a>
-    </div>
-    <a class="resume-sheet" href="/Resume.pdf" data-resume-open aria-label="Read Jayce Bordelon’s résumé">
-      <img src="/images/resume-preview.png" alt="Jayce Bordelon’s résumé, including experience, education, and technical skills" width="1237" height="1600" loading="lazy" />
-    </a>
-    <a class="resume-read-link link" href="/Resume.pdf" data-resume-open>Read résumé</a>
-  </article>
-</section>
-<section id="github" class="github-story" aria-labelledby="github-title">
-  <div class="section-heading">
-    <h2 id="github-title">GitHub</h2>
-    <nav class="github-profiles" aria-label="GitHub profiles">
-      <a class="link" href="https://github.com/JayceBordelon">JayceBordelon</a>
-      <a class="link" href="https://github.com/jb-taste">jb-taste</a>
-    </nav>
-  </div>
+
+<section class="profile-section" aria-labelledby="github-title">
+  <h2 id="github-title">GitHub</h2>
   {{ githubContent }}
+  <nav class="github-profiles" aria-label="GitHub profiles">
+    <a class="link" href="https://github.com/JayceBordelon">JayceBordelon</a>
+    <a class="link" href="https://github.com/jb-taste">jb-taste</a>
+  </nav>
 </section>
+
 <dialog id="resume-dialog" class="modal resume-modal" aria-labelledby="resume-dialog-title">
   <div class="modal-box resume-reader">
     <header class="resume-toolbar">
@@ -108,10 +79,3 @@ pageScripts: '<script src="/scripts/story.js" defer></script><script src="/scrip
   </div>
   <form method="dialog" class="modal-backdrop"><button>Close résumé</button></form>
 </dialog>
-<footer id="contact" class="contact-story" aria-labelledby="contact-title">
-  <h2 id="contact-title">Say hello.</h2>
-  <div class="contact-actions">
-    <a class="contact-booking link" href="https://calendly.com/jaycebordelon/30min">Book a call</a>
-    <a class="contact-email link link-hover" href="mailto:bordelonjayce@gmail.com">bordelonjayce@gmail.com</a>
-  </div>
-</footer>
